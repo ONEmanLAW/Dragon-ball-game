@@ -1,0 +1,17 @@
+{
+  "name": "dragon-ball-tactical-clash",
+  "version": "1.0.0",
+  "type": "module",
+  "main": "electron/main.ts",
+  "scripts": {
+    "dev": "vite --open",
+    "build": "vite build",
+    "game": "npm run build && electron ."
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "electron": "^31.0.0",
+    "typescript": "^5.0.0",
+    "vite": "^5.0.0"
+  }
+}

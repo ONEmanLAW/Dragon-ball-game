@@ -1,0 +1,18 @@
+body {
+  margin: 0;
+  background: radial-gradient(circle at center, #181818, #000);
+  color: white;
+  font-family: "Saiyan Sans", sans-serif;
+  text-align: center;
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+}
+
+h1 {
+  font-size: 2rem;
+  margin-bottom: 10px;
+}
+
