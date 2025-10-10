@@ -1,42 +1,90 @@
 // src/combat/Attacks.ts
-/**
- * Combat Attacks System
- * ------------------------------------------------------------------
- * Main pattern: TEMPLATE METHOD
- *  - Attack.execute(attacker, defender) is the invariant algorithm:
- *      1) attacker spends Ki (Android overrides to no-op)
- *      2) computeDamage(attacker.type)
- *      3) defender receives damage
- *      4) return structured AttackResult (no console.log here)
- *
- * Implemented attacks now:
- *  - NormalAttack   (Ki cost = 30)
- *  - KiEnergyAttack (Ki cost = 50)
- * SpecialAttack (cooldown 2 turns) will come next.
- */
+// TEMPLATE METHOD + STATE-AWARE
+// ------------------------------------------------------------------
+// - Template Method: Attack.execute() définit l'algorithme invariant.
+// - STATE-aware: state du Warrior ajuste le coût en Ki + les dégâts via
+//   attacker.adjustKiCost() et attacker.adjustOutgoingDamage().
 
 import { Warrior } from "../models/Warrior";
 import type { WarriorType } from "../models/Warrior";
 
 export type AttackKind = "Normal" | "KiEnergy" | "Special";
 
+//#region Attack Constants
+/*
+  =========================
+   === Attack constants ===
+  =========================
+  But: centraliser tous les chiffres (coûts, dégâts, noms) pour
+       faciliter la maintenance sans toucher aux classes.
+*/
+
+// -- Normal Attack --
+const NORMAL_ATTACK_KI_COST = 30 as const;
+const NORMAL_ATTACK_DAMAGE_BY_TYPE: Record<WarriorType, number> = {
+  Saiyan: 20,
+  Namekian: 15,
+  Android: 25,
+};
+const NORMAL_ATTACK_NAME = "Basic Attack" as const;
+
+// -- Ki / Energy Attack --
+const KI_ENERGY_ATTACK_KI_COST = 50 as const;
+const KI_ENERGY_ATTACK_DAMAGE_BY_TYPE: Record<WarriorType, number> = {
+  Saiyan: 40,
+  Namekian: 50,
+  Android: 35,
+};
+const KI_ENERGY_ATTACK_NAME_BY_TYPE: Record<WarriorType, string> = {
+  Saiyan:   "KI Energy (KAMEHAMEHA / FINAL FLASH)",
+  Namekian: "KI Energy (MAKANKOSAPPO)",
+  Android:  "KI Energy (LASER SHOT)",
+};
+
+// -- Special (on définit plus tard) --
+const SPECIAL_ATTACK_KI_COST = 0 as const;
+
+//#endregion
+
+//#region Result Object
+/*
+  =========================
+  ===== Result Object =====
+  =========================
+*/
 export class AttackResult {
   constructor(
     public readonly attackerName: string,
     public readonly defenderName: string,
     public readonly attackName: string,
-    public readonly kiSpent: number,
+    public readonly kiSpent: number,             
     public readonly damageDealt: number,
     public readonly defenderRemainingVitality: number,
     public readonly attackerRemainingKi: number
   ) {}
 
   public toLine(): string {
-    return `${this.attackerName} → ${this.attackName} → ${this.defenderName} ` + `(Ki -${this.kiSpent}, Damage ${this.damageDealt}, ` + `Defender VIT ${this.defenderRemainingVitality})`;
+    return (
+      `${this.attackerName} → ${this.attackName} → ${this.defenderName} ` +
+      `(Ki -${this.kiSpent}, Damage ${this.damageDealt}, ` +
+      `Defender VIT ${this.defenderRemainingVitality})`
+    );
   }
 }
 
-/** Abstract attack (Template Method) */
+//#endregion
+
+//#region Base Template
+/*
+  =========================
+  ===== Base Template =====
+  =========================
+  TEMPLATE METHOD:
+    1) Ajuste et dépense le Ki (state du Warrior pris en compte)
+    2) Calcule les damage de base par type puis applique l'état
+    3) Inflige les damage au défenseur
+    4) Retourne un AttackResult
+*/
 export abstract class Attack {
   protected readonly kiCost: number;
 
@@ -45,88 +93,89 @@ export abstract class Attack {
   }
 
   public abstract getNameFor(attackerType: WarriorType): string;
+
   protected abstract computeBaseDamage(attackerType: WarriorType): number;
 
-  /** Template Method */
+  /** TEMPLATE METHOD */
   public execute(attacker: Warrior, defender: Warrior): AttackResult {
-    // 1) Ki spending
+    // 1) Ki spending (STATE-aware)
     const adjustedCost = attacker.adjustKiCost(this.kiCost);
     const kiBefore = attacker.getKi();
-    attacker.spendKi(adjustedCost);     // Android: ne baissera pas
+    attacker.spendKi(adjustedCost);           // Android : ne perds pas son ki
     const kiAfter = attacker.getKi();
     const kiSpent = Math.max(0, kiBefore - kiAfter);
 
-    // 2) Compute damage based on attacker type
+    // 2) Damage compute (type) + adjust (STATE-aware)
     const baseDamage = this.computeBaseDamage(attacker.type);
     const finalDamage = attacker.adjustOutgoingDamage(baseDamage);
 
     // 3) Apply to defender
     defender.receiveDamage(finalDamage);
 
-    // 4) Return structured result (no console output here)
+    // 4) Return structured result
     return new AttackResult(
       attacker.name,
       defender.name,
       this.getNameFor(attacker.type),
-      this.kiCost,
+      kiSpent,    
       finalDamage,
       defender.getVitality(),
-      attacker.getKi() 
+      attacker.getKi()
     );
   }
 }
 
-// normal
+//#endregion
+
+//#region Concrete Attacks
+/*
+  =========================
+  ====== Concrete atk =====
+  =========================
+  Ces classes ne font que lire dans les constantes + fournir le nom.
+*/
+
+// -- Normal Attack --
 export class NormalAttack extends Attack {
   constructor() {
-    super("Normal", 30);
+    super("Normal", NORMAL_ATTACK_KI_COST);
   }
 
   public getNameFor(_type: WarriorType): string {
-    return "Basic Attack";
+    return NORMAL_ATTACK_NAME;
   }
 
   protected computeBaseDamage(attackerType: WarriorType): number {
-    switch (attackerType) {
-      case "Saiyan":   return 20;
-      case "Namekian": return 15;
-      case "Android":  return 25;
-    }
+    return NORMAL_ATTACK_DAMAGE_BY_TYPE[attackerType];
   }
 }
 
-// attaque ki
+// -- Ki / Energy Attack --
 export class KiEnergyAttack extends Attack {
   constructor() {
-    super("KiEnergy", 50);
+    super("KiEnergy", KI_ENERGY_ATTACK_KI_COST);
   }
 
   public getNameFor(type: WarriorType): string {
-    switch (type) {
-      case "Saiyan":   return "Ki Energy (Kamehameha / Final Flash)";
-      case "Namekian": return "Ki Energy (Makankōsappō)";
-      case "Android":  return "Ki Energy (Laser Shot)";
-    }
+    return KI_ENERGY_ATTACK_NAME_BY_TYPE[type];
   }
 
   protected computeBaseDamage(attackerType: WarriorType): number {
-    switch (attackerType) {
-      case "Saiyan":   return 40;
-      case "Namekian": return 50;
-      case "Android":  return 35;
-    }
+    return KI_ENERGY_ATTACK_DAMAGE_BY_TYPE[attackerType];
   }
 }
 
-// on mettera plus tard les valeur
+// -- Special (on définit plus tard) --
 export class SpecialAttack extends Attack {
   constructor() {
-    super("Special", 0);
+    super("Special", SPECIAL_ATTACK_KI_COST);
   }
   public getNameFor(_type: WarriorType): string {
     return "Special (to be defined)";
   }
   protected computeBaseDamage(_attackerType: WarriorType): number {
-    return 0;
+    return 0; // sera défini avec le TurnManager + cooldown
   }
 }
+
+//#endregion
