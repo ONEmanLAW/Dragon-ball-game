@@ -10,7 +10,6 @@
  * Notes d’implémentation :
  *  - On centralise les coefficients dans des constantes pour clarifier et
  *    faciliter les ajustements sans toucher à la logique des classes.
- *  - Aucun console.log ici : ce module ne produit pas de sortie.
  */
 
 //#region State types
