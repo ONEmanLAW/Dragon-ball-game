@@ -21,7 +21,7 @@ export class GameManager {
   private attackConstructors: Map<AttackKind, AttackConstructor> = new Map();
 
   private constructor() {
-    // On enregistre ici les attaques "officielles" du jeu
+    // Attacks
     this.registerAttack("Normal", NormalAttack);
     this.registerAttack("KiEnergy", KiEnergyAttack);
     // Special viendra plus tard, quand définie

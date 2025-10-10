@@ -45,19 +45,23 @@ export abstract class Attack {
   }
 
   public abstract getNameFor(attackerType: WarriorType): string;
-
-  protected abstract computeDamage(attackerType: WarriorType): number;
+  protected abstract computeBaseDamage(attackerType: WarriorType): number;
 
   /** Template Method */
   public execute(attacker: Warrior, defender: Warrior): AttackResult {
-    // 1) Ki spending (Android overrides behavior)
-    attacker.spendKi(this.kiCost);
+    // 1) Ki spending
+    const adjustedCost = attacker.adjustKiCost(this.kiCost);
+    const kiBefore = attacker.getKi();
+    attacker.spendKi(adjustedCost);     // Android: ne baissera pas
+    const kiAfter = attacker.getKi();
+    const kiSpent = Math.max(0, kiBefore - kiAfter);
 
     // 2) Compute damage based on attacker type
-    const damage = this.computeDamage(attacker.type);
+    const baseDamage = this.computeBaseDamage(attacker.type);
+    const finalDamage = attacker.adjustOutgoingDamage(baseDamage);
 
     // 3) Apply to defender
-    defender.receiveDamage(damage);
+    defender.receiveDamage(finalDamage);
 
     // 4) Return structured result (no console output here)
     return new AttackResult(
@@ -65,7 +69,7 @@ export abstract class Attack {
       defender.name,
       this.getNameFor(attacker.type),
       this.kiCost,
-      damage,
+      finalDamage,
       defender.getVitality(),
       attacker.getKi() 
     );
@@ -82,7 +86,7 @@ export class NormalAttack extends Attack {
     return "Basic Attack";
   }
 
-  protected computeDamage(attackerType: WarriorType): number {
+  protected computeBaseDamage(attackerType: WarriorType): number {
     switch (attackerType) {
       case "Saiyan":   return 20;
       case "Namekian": return 15;
@@ -105,7 +109,7 @@ export class KiEnergyAttack extends Attack {
     }
   }
 
-  protected computeDamage(attackerType: WarriorType): number {
+  protected computeBaseDamage(attackerType: WarriorType): number {
     switch (attackerType) {
       case "Saiyan":   return 40;
       case "Namekian": return 50;
@@ -122,7 +126,7 @@ export class SpecialAttack extends Attack {
   public getNameFor(_type: WarriorType): string {
     return "Special (to be defined)";
   }
-  protected computeDamage(_attackerType: WarriorType): number {
+  protected computeBaseDamage(_attackerType: WarriorType): number {
     return 0;
   }
 }

@@ -9,8 +9,8 @@
  */
 import { GameManager } from "./core/GameManagerSingleton";
 import { WarriorFactory } from "./core/WarriorFactory";
-import { NormalAttack, KiEnergyAttack, AttackResult } from "./combat/Attacks";
-import { Warrior } from "./models/Warrior";
+import { AttackResult } from "./combat/Attacks";
+
 
 class Main {
   public static start(): void {
@@ -19,7 +19,7 @@ class Main {
     // Création
     const goku = WarriorFactory.create("Saiyan", "Goku", "Proud Saiyan warrior");
     const piccolo = WarriorFactory.create("Namekian", "Piccolo", "Wise Namekian strategist");
-    const c18 = WarriorFactory.create("Android", "C-18", "Powerful android", { speed: 115 });
+    const c18 = WarriorFactory.create("Android", "C-18", "Powerful android");
 
     // Singleton registers
     gameManager.registerWarrior(goku);
@@ -47,24 +47,30 @@ class Main {
     const kiShot = gameManager.createAttack("KiEnergy");
 
     const results: AttackResult[] = [];
-    results.push(kiShot.execute(goku, c18)); 
-    results.push(basicShot.execute(piccolo, goku));   
+
+    // Fatigu + Douleur
     results.push(basicShot.execute(c18, piccolo));
-    results.push(kiShot.execute(goku, c18));
-    results.push(kiShot.execute(piccolo, c18));   
+    results.push(basicShot.execute(c18, piccolo));  
+    results.push(basicShot.execute(c18, piccolo));  
+    results.push(basicShot.execute(goku, piccolo));
+
+    results.push(basicShot.execute(c18, goku)); 
+    results.push(basicShot.execute(c18, goku));      
+    results.push(basicShot.execute(c18, goku)); 
+    
 
 
-    // report
+    // console.log of my elements
     const reportLines: string[] = [];
-    reportLines.push("=== Turn 1 ===");
+    reportLines.push("=== Actions (with attacker state) ===");
     for (const r of results) reportLines.push("- " + r.toLine());
+
     reportLines.push("");
     reportLines.push("=== Final Status ===");
-    reportLines.push(`${goku.name}    | KI ${goku.getKi()} | VIT ${goku.getVitality()}`);
-    reportLines.push(`${piccolo.name} | KI ${piccolo.getKi()} | VIT ${piccolo.getVitality()}`);
-    reportLines.push(`${c18.name}     | KI ${c18.getKi()} | VIT ${c18.getVitality()}`);
+    reportLines.push(`Goku    → expected: Exhausted when KI ≤ 10% | got: ${goku.getStateName()} (KI ${goku.getKi()})`);
+    reportLines.push(`Piccolo → expected: Injured   when VIT ≤ 10% | got: ${piccolo.getStateName()} (VIT ${piccolo.getVitality()})`);
 
-    // Single output
+
     console.log(reportLines.join("\n"));
   }
 }

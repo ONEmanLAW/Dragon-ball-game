@@ -8,9 +8,9 @@
  * Stats : strength, ki, speed, vitality
  */
 
+import { WarriorState, NormalState, InjuredState, ExhaustedState } from "../state/WarriorState";
+
 export type WarriorType = "Saiyan" | "Namekian" | "Android";
-
-
 
 export abstract class Warrior {
   public readonly name: string;
@@ -21,6 +21,11 @@ export abstract class Warrior {
   // Valeurs évolutives dans le combats;
   protected currentVitality: number;
   protected currentKi: number;
+
+  //  --- STATE ---
+
+  private state: WarriorState = new NormalState();
+
 
   protected constructor(name: string, type: WarriorType, description: string, stats: WarriorStats) {
     this.name = name;
@@ -45,11 +50,25 @@ export abstract class Warrior {
     return this.currentVitality > 0;
   }
 
+   // --- STATE ----
+  public getStateName(): string {
+    return this.state.name;
+  }
+
+  public adjustKiCost(baseCost: number): number {
+    return this.state.adjustKiCost(baseCost);
+  }
+
+  public adjustOutgoingDamage(baseDamage: number): number {
+    return this.state.adjustOutgoingDamage(baseDamage);
+  }
+
 
   // Ki + Degats
   public receiveDamage(amount: number): void {
     const damage = Math.max(0, Math.floor(amount));
     this.currentVitality = Math.max(0, this.currentVitality - damage);
+    this.recomputeState();
   }
 
   public canSpendKi(cost: number): boolean {
@@ -64,6 +83,20 @@ export abstract class Warrior {
     }
 
     this.currentKi = Math.max(0, this.currentKi - cost);
+    this.recomputeState();
+  }
+
+  private recomputeState(): void {
+    const vitalityRatio = this.currentVitality / this.stats.vitality;
+    const kiRatio = this.currentKi / this.stats.ki;
+
+    if (vitalityRatio <= 0.10) {
+      this.state = new InjuredState();
+    } else if (kiRatio <= 0.10) {
+      this.state = new ExhaustedState();
+    } else {
+      this.state = new NormalState();
+    }
   }
 
   public summary(): string {
@@ -84,9 +117,9 @@ export type WarriorStats = {
 
 
 
-const DEFAULT_SAIYAN: WarriorStats   = { strength: 120, ki: 110, speed: 110, vitality: 100 };
-const DEFAULT_NAMEKIAN: WarriorStats = { strength: 100, ki: 95,  speed: 100, vitality: 120 };
-const DEFAULT_ANDROID: WarriorStats  = { strength: 105, ki: 9999, speed: 105, vitality: 110 };
+const DEFAULT_SAIYAN: WarriorStats   = { strength: 100, ki: 100, speed: 100, vitality: 100 };
+const DEFAULT_NAMEKIAN: WarriorStats = { strength: 100, ki: 100,  speed: 100, vitality: 100 };
+const DEFAULT_ANDROID: WarriorStats  = { strength: 100, ki: 9999, speed: 100, vitality: 100 };
 
 
 export class SaiyanWarrior extends Warrior {
