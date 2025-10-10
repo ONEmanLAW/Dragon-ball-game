@@ -1,37 +1,38 @@
 // src/main.ts
 /**
- * Point d’entrée console
- * -------------------------------------------------------------
- * Démonstration d’un flux correct :
- *   1) La Factory CRÉE les objets (Goku, Piccolo, C-18).
- *   2) Le Singleton les ENREGISTRE et les LISTE.
- *   3) Preuve du Singleton (instance unique).
- *
- * NB : POO only — tout est encapsulé en classes.
+ * Console entry point (demo)
+ * ------------------------------------------------------------------
+ * Flow:
+ *  1) Factory CREATES warriors with the elements
+ *  2) Singleton REGISTERS and LISTS them
+ *  3) Proof Singleton is unique
  */
-import { GameManager } from "./core/GameManagerSingleton.ts";
+import { GameManager } from "./core/GameManagerSingleton";
 import { WarriorFactory } from "./core/WarriorFactory";
 
 class Main {
   public static start(): void {
     const gameManager = GameManager.getInstance();
 
-    // La Factory crée…
-    const goku = WarriorFactory.create("Saiyan", "Goku");
-    const piccolo = WarriorFactory.create("Namekian", "Piccolo");
-    const c18 = WarriorFactory.create("Android", "C-18");
+    // 1) Factory creates elements
+    const goku = WarriorFactory.create("Saiyan", "Goku", "Proud Saiyan warrior");
+    const piccolo = WarriorFactory.create("Namekian", "Piccolo", "Wise Namekian strategist");
+    const c18 = WarriorFactory.create("Android", "C-18", "Powerful android", { speed: 115 });
 
-    // le Singleton enregistre
     gameManager.registerWarrior(goku);
     gameManager.registerWarrior(piccolo);
     gameManager.registerWarrior(c18);
 
-    // list des warriors
     gameManager.listWarriors();
 
-    // Preuve : le Singleton n’a pas créé les objets, il ne fait que les gérer
+    const maybePiccolo = gameManager.getWarrior("Piccolo");
+    if (maybePiccolo) {
+      console.log("Retrieved:", maybePiccolo.summary());
+    }
+
+    // preve du singlton
     const gameManager2 = GameManager.getInstance();
-    console.log("Singleton OK ? ", gameManager === gameManager2);
+    console.log("Singleton OK? ", gameManager === gameManager2);
   }
 }
 

@@ -1,67 +1,67 @@
 // src/models/Warrior.ts
 /**
- * Modèle de domaine (POO compacte dans un seul fichier)
+ * Domaine guerrier
  * ------------------------------------------------------------------
- * Pattern : (Aucun — contrat + implémentations concrètes)
- * Rôle :
- *   - Définir le contrat commun d’un guerrier (interface Warrior).
- *   - Fournir une classe de base réutilisable (BaseWarrior).
- *   - Déclarer les classes concrètes (SaiyanWarrior, NamekianWarrior, AndroidWarrior)
- *     DANS CE FICHIER pour éviter la dispersion en petits fichiers.
- *
- * À NE PAS FAIRE ICI :
- *   - Créer les instances (c’est la Factory qui s’en occupe).
- *   - Gérer les états/combat (ce sera State/Observer/Decorator plus tard).
+ * Choix : une seule hiérarchie orientée classes.
+ * - Classe abstraite Warrior : contrat + logique commune minimale.
+ * - Trois sous-classes concrètes dans le même fichier.
+ * Stats : strength, ki, speed, vitality
  */
 
 export type WarriorType = "Saiyan" | "Namekian" | "Android";
 
-// Contrat d'un warroior
-export interface Warrior {
-  readonly name: string;
-  readonly type: WarriorType;
-  hp: number;
-  ki: number;
-  summary(): string;
-}
 
 
-export class BaseWarrior implements Warrior {
+export abstract class Warrior {
   public readonly name: string;
   public readonly type: WarriorType;
-  public hp: number;
-  public ki: number;
+  public readonly description: string;
+  public readonly stats: WarriorStats;
 
-  constructor(name: string, type: WarriorType, hp: number = 100, ki: number = 100) {
+  protected constructor(name: string, type: WarriorType, description: string, stats: WarriorStats) {
     this.name = name;
     this.type = type;
-    this.hp = hp;
-    this.ki = ki;
+    this.description = description;
+    this.stats = stats;
   }
 
   public summary(): string {
-    return `[${this.type}] ${this.name} | HP: ${this.hp} | KI: ${this.ki}`;
+    const s = this.stats;
+    return `[${this.type}] ${this.name} — ${this.description} | ` + `STR: ${s.strength} | KI: ${s.ki} | SPD: ${s.speed} | VIT: ${s.vitality}`;
   }
 }
 
+export type WarriorStats = {
+  strength: number;
+  ki: number;    
+  speed: number;  
+  vitality: number; // vie
+};
 
 
 
 
-export class SaiyanWarrior extends BaseWarrior {
-  constructor(name: string) {
-    super(name, "Saiyan", 110, 120);
+
+
+const DEFAULT_SAIYAN: WarriorStats   = { strength: 120, ki: 110, speed: 110, vitality: 100 };
+const DEFAULT_NAMEKIAN: WarriorStats = { strength: 100, ki: 95,  speed: 100, vitality: 120 };
+const DEFAULT_ANDROID: WarriorStats  = { strength: 105, ki: 9999, speed: 105, vitality: 110 };
+
+
+export class SaiyanWarrior extends Warrior {
+  constructor(name: string, description: string, statsOverride?: Partial<WarriorStats>) {
+    super(name, "Saiyan", description, { ...DEFAULT_SAIYAN, ...statsOverride });
   }
 }
 
-export class NamekianWarrior extends BaseWarrior {
-  constructor(name: string) {
-    super(name, "Namekian", 120, 90);
+export class NamekianWarrior extends Warrior {
+  constructor(name: string, description: string, statsOverride?: Partial<WarriorStats>) {
+    super(name, "Namekian", description, { ...DEFAULT_NAMEKIAN, ...statsOverride });
   }
 }
 
-export class AndroidWarrior extends BaseWarrior {
-  constructor(name: string) {
-    super(name, "Android", 100, 9999); // infini le ki
+export class AndroidWarrior extends Warrior {
+  constructor(name: string, description: string, statsOverride?: Partial<WarriorStats>) {
+    super(name, "Android", description, { ...DEFAULT_ANDROID, ...statsOverride });
   }
 }
