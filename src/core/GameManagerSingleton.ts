@@ -11,12 +11,22 @@
  *  - Il enregistre, récupère, liste.
  */
 import { Warrior } from "../models/Warrior";
+import { Attack, AttackKind, NormalAttack, KiEnergyAttack } from "../combat/Attacks";
+
+type AttackConstructor = new () => Attack;
 
 export class GameManager {
   private static instance: GameManager;
   private warriors: Map<string, Warrior> = new Map();
+  private attackConstructors: Map<AttackKind, AttackConstructor> = new Map();
 
-  private constructor() {}
+  private constructor() {
+    // On enregistre ici les attaques "officielles" du jeu
+    this.registerAttack("Normal", NormalAttack);
+    this.registerAttack("KiEnergy", KiEnergyAttack);
+    // Special viendra plus tard, quand définie
+    // this.registerAttack("Special", SpecialAttack);
+  }
 
   public static getInstance(): GameManager {
     if (!GameManager.instance) {
@@ -39,8 +49,26 @@ export class GameManager {
 
   public listWarriors(): void {
     console.log("List of all warriors:");
-    for (const w of this.warriors.values()) {
-      console.log(" -", w.summary());
+    for (const warrior of this.warriors.values()) {
+      console.log(" -", warrior.summary());
     }
+  }
+
+
+
+  public registerAttack(kind: AttackKind, ctor: AttackConstructor): void {
+    this.attackConstructors.set(kind, ctor);
+  }
+
+  public createAttack(kind: AttackKind): Attack {
+    const Ctor = this.attackConstructors.get(kind);
+    if (!Ctor) {
+      throw new Error(`Attack kind not registered: ${kind}`);
+    }
+    return new Ctor();
+  }
+
+  public listAvailableAttacks(): AttackKind[] {
+    return Array.from(this.attackConstructors.keys());
   }
 }

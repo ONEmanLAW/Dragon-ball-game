@@ -43,8 +43,8 @@ class Main {
 
 
     // attacks
-    const basicShot = new NormalAttack();
-    const kiShot = new KiEnergyAttack();
+    const basicShot = gameManager.createAttack("Normal");
+    const kiShot = gameManager.createAttack("KiEnergy");
 
     const results: AttackResult[] = [];
     results.push(kiShot.execute(goku, c18)); 
