@@ -53,8 +53,8 @@ class Main {
 
     results.push(basic.execute(c18, goku));
     results.push(basic.execute(goku, piccolo)); 
-    results.push(basic.execute(goku, piccolo));
-    results.push(basic.execute(goku, piccolo)); 
+    results.push(kiShot.execute(piccolo, c18));
+    results.push(kiShot.execute(piccolo, c18)); 
 
     return results;
   }
@@ -73,10 +73,10 @@ class Main {
     lines.push("");
     lines.push("=== Final Status (STATE checks) ===");
     lines.push(
-      `Goku    → expected: Exhausted when KI ≤ 10% | got: ${goku.getStateName()} (KI ${goku.getKi()}, VIT ${goku.getVitality()})`
+      `Goku    → expected: Injured when KI ≤ 10% | got: ${goku.getStateName()} (KI ${goku.getKi()}, VIT ${goku.getVitality()})`
     );
     lines.push(
-      `Piccolo → expected: Injured   when VIT ≤ 10% | got: ${piccolo.getStateName()} (KI ${piccolo.getKi()}, VIT ${piccolo.getVitality()})`
+      `Piccolo → expected: Exhausted   when VIT ≤ 10% | got: ${piccolo.getStateName()} (KI ${piccolo.getKi()}, VIT ${piccolo.getVitality()})`
     );
     lines.push(
       `C-18    → state: ${c18.getStateName()} (KI ${c18.getKi()}, VIT ${c18.getVitality()})`
