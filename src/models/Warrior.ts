@@ -11,11 +11,6 @@
  *    => les attaques appellent attacker.adjustKiCost(...) et
  *       attacker.adjustOutgoingDamage(...), puis Warrior met à jour
  *       son état après chaque dépense de Ki / dégâts reçus.
- *
- * Remarques :
- *  - Aucun console.log ici.
- *  - Les valeurs courantes (currentKi / currentVitality) sont distinctes
- *    des valeurs max (stats.ki / stats.vitality).
  */
 
 import { WarriorState, NormalState, InjuredState, ExhaustedState } from "../state/WarriorState";

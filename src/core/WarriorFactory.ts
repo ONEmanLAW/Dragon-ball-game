@@ -1,17 +1,34 @@
 // src/core/WarriorFactory.ts
 /**
- * Pattern : Factory
- * - Crée un guerrier (type, name, description) avec option de statsOverride.
+ * Pattern : FACTORY
+ * ------------------------------------------------------------------
+ * Rôle :
+ *  - Centraliser la création des guerriers (type, name, description).
+ *  - Éviter les `new` éparpillés et rester ouvert à l’extension via `register`.
+ *
  */
-import { Warrior, WarriorType, WarriorStats, SaiyanWarrior, NamekianWarrior, AndroidWarrior,
-} from "../models/Warrior";
+
+import {Warrior, WarriorType, WarriorStats, SaiyanWarrior, NamekianWarrior, AndroidWarrior} from "../models/Warrior";
+
+//#region Types
 
 interface WarriorClassConstructor {
-  new (name: string, description: string, statsOverride?: Partial<WarriorStats>): Warrior;
+  new (
+    name: string,
+    description: string,
+    statsOverride?: Partial<WarriorStats>
+  ): Warrior;
 }
 
+// -- Registre typé des constructeurs par type. -- //
+type ConstructorsMap = Record<WarriorType, WarriorClassConstructor>;
+
+//#endregion
+
+//#region Factory
 export class WarriorFactory {
-  private static constructorsByType: Record<WarriorType, WarriorClassConstructor> = {
+
+  private static constructorsByType: ConstructorsMap = {
     Saiyan: SaiyanWarrior,
     Namekian: NamekianWarrior,
     Android: AndroidWarrior,
@@ -24,8 +41,10 @@ export class WarriorFactory {
     statsOverride?: Partial<WarriorStats>
   ): Warrior {
     const Ctor = this.constructorsByType[warriorType];
-    if (!Ctor) throw new Error(`Unknown warrior type: ${warriorType}`);
-      return new Ctor(warriorName, description, statsOverride);
+    if (!Ctor) {
+      throw new Error(`Unknown warrior type: ${warriorType}`);
+    }
+    return new Ctor(warriorName, description, statsOverride);
   }
 
   public static register(
@@ -35,3 +54,5 @@ export class WarriorFactory {
     this.constructorsByType[warriorType] = constructorFunction;
   }
 }
+
+//#endregion
