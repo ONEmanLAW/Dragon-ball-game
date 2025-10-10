@@ -4,27 +4,37 @@
  * ------------------------------------------------------------------
  * Rôle :
  *  - Fournir UNE SEULE instance centralisant la "base" du jeu :
- *    registre des guerriers, accès, listage, orchestration globale.
+ *    registre des guerriers + registre des attaques.
  *
  * Important :
- *  - Le Singleton NE CRÉE PAS les guerriers → c’est la Factory.
- *  - Il enregistre, récupère, liste.
+ *  - Le Singleton NE CRÉE PAS les guerriers : c’est la Factory.
+ *  - Il enregistre, récupère et liste.
+ *  - Les attaques sont enregistrées ici (constructeurs) puis instanciées à la demande.
  */
+
+
 import { Warrior } from "../models/Warrior";
 import { Attack, AttackKind, NormalAttack, KiEnergyAttack } from "../combat/Attacks";
 
+//#region Types
+// -- Signature d'un constructeur d'attaque -- //
 type AttackConstructor = new () => Attack;
 
+//#endregion
+
+//#region Singleton
 export class GameManager {
   private static instance: GameManager;
+
   private warriors: Map<string, Warrior> = new Map();
+
   private attackConstructors: Map<AttackKind, AttackConstructor> = new Map();
 
+  // -- Constructeur privé (Singleton). -- //
   private constructor() {
-    // Attacks
-    this.registerAttack("Normal", NormalAttack);
+    this.registerAttack("Normal",   NormalAttack);
     this.registerAttack("KiEnergy", KiEnergyAttack);
-    // Special viendra plus tard, quand définie
+    // Special viendra plus tard
     // this.registerAttack("Special", SpecialAttack);
   }
 
@@ -35,6 +45,9 @@ export class GameManager {
     return GameManager.instance;
   }
 
+  //#endregion
+
+  //#region Warriors
   public registerWarrior(warrior: Warrior): void {
     if (this.warriors.has(warrior.name)) {
       console.log(`${warrior.name} already exists. Replacing...`);
@@ -54,8 +67,9 @@ export class GameManager {
     }
   }
 
+  //#endregion
 
-
+  //#region Attacks
   public registerAttack(kind: AttackKind, ctor: AttackConstructor): void {
     this.attackConstructors.set(kind, ctor);
   }
@@ -71,4 +85,6 @@ export class GameManager {
   public listAvailableAttacks(): AttackKind[] {
     return Array.from(this.attackConstructors.keys());
   }
+
+  //#endregion
 }
