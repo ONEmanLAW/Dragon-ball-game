@@ -18,11 +18,52 @@ export abstract class Warrior {
   public readonly description: string;
   public readonly stats: WarriorStats;
 
+  // Valeurs évolutives dans le combats;
+  protected currentVitality: number;
+  protected currentKi: number;
+
   protected constructor(name: string, type: WarriorType, description: string, stats: WarriorStats) {
     this.name = name;
     this.type = type;
     this.description = description;
     this.stats = stats;
+
+    this.currentVitality = stats.vitality;
+    this.currentKi = stats.ki
+  }
+
+  // Pour le combats
+  public getVitality(): number {
+    return this.currentVitality
+  }
+
+  public getKi(): number {
+    return this.currentKi
+  }
+
+  public isAlive(): boolean {
+    return this.currentVitality > 0;
+  }
+
+
+  // Ki + Degats
+  public receiveDamage(amount: number): void {
+    const damage = Math.max(0, Math.floor(amount));
+    this.currentVitality = Math.max(0, this.currentVitality - damage);
+  }
+
+  public canSpendKi(cost: number): boolean {
+    return this.currentKi >= cost
+  }
+
+  public spendKi(cost: number): void {
+    if (cost <= 0)
+      return
+    if (!this.canSpendKi(cost)) {
+      throw new Error (`${this.name} does not have enough Ki.`)
+    }
+
+    this.currentKi = Math.max(0, this.currentKi - cost);
   }
 
   public summary(): string {
@@ -63,5 +104,14 @@ export class NamekianWarrior extends Warrior {
 export class AndroidWarrior extends Warrior {
   constructor(name: string, description: string, statsOverride?: Partial<WarriorStats>) {
     super(name, "Android", description, { ...DEFAULT_ANDROID, ...statsOverride });
+  }
+
+  // Android Ki infini
+  public override canSpendKi(cost: number): boolean {
+    return true;
+  }
+
+  public override spendKi(cost: number): void {
+    // ne reduit pas le Ki vu que c infini
   }
 }
