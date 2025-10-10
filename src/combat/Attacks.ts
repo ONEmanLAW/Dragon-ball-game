@@ -19,7 +19,7 @@ export type AttackKind = "Normal" | "KiEnergy" | "Special";
        faciliter la maintenance sans toucher aux classes.
 */
 
-// -- Normal Attack --
+// -- Normal Attack -- // 
 const NORMAL_ATTACK_KI_COST = 30 as const;
 const NORMAL_ATTACK_DAMAGE_BY_TYPE: Record<WarriorType, number> = {
   Saiyan: 20,
@@ -28,7 +28,7 @@ const NORMAL_ATTACK_DAMAGE_BY_TYPE: Record<WarriorType, number> = {
 };
 const NORMAL_ATTACK_NAME = "Basic Attack" as const;
 
-// -- Ki / Energy Attack --
+// -- Ki / Energy Attack -- //
 const KI_ENERGY_ATTACK_KI_COST = 50 as const;
 const KI_ENERGY_ATTACK_DAMAGE_BY_TYPE: Record<WarriorType, number> = {
   Saiyan: 40,
@@ -41,7 +41,7 @@ const KI_ENERGY_ATTACK_NAME_BY_TYPE: Record<WarriorType, string> = {
   Android:  "KI Energy (LASER SHOT)",
 };
 
-// -- Special (on définit plus tard) --
+// -- Special (on définit plus tard) -- //
 const SPECIAL_ATTACK_KI_COST = 0 as const;
 
 //#endregion
@@ -135,7 +135,7 @@ export abstract class Attack {
   Ces classes ne font que lire dans les constantes + fournir le nom.
 */
 
-// -- Normal Attack --
+// -- Normal Attack -- //
 export class NormalAttack extends Attack {
   constructor() {
     super("Normal", NORMAL_ATTACK_KI_COST);
@@ -150,7 +150,7 @@ export class NormalAttack extends Attack {
   }
 }
 
-// -- Ki / Energy Attack --
+// -- Ki / Energy Attack -- //
 export class KiEnergyAttack extends Attack {
   constructor() {
     super("KiEnergy", KI_ENERGY_ATTACK_KI_COST);
@@ -165,7 +165,7 @@ export class KiEnergyAttack extends Attack {
   }
 }
 
-// -- Special (on définit plus tard) --
+// -- Special (on définit plus tard) -- //
 export class SpecialAttack extends Attack {
   constructor() {
     super("Special", SPECIAL_ATTACK_KI_COST);
