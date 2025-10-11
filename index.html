@@ -1,11 +1,37 @@
-<!DOCTYPE html>
-<html lang="fr">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Dragon Ball</title>
-  </head>
-  <body>
-    <script type="module" src="/src/main.ts"></script>
-  </body>
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>DBZ Game</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <!-- Ton CSS -->
+  <link rel="stylesheet" href="./src/styles/main.css" />
+</head>
+<body>
+  <h1>DBZ Game</h1>
+
+  <div class="layout">
+    <div class="board">
+      <div id="turn">Turn 1 — Active: ?</div>
+
+      <div class="row">
+        <div id="card-1"></div>
+        <div id="card-2"></div>
+      </div>
+
+      <div class="actions">
+        <button id="btn-basic">Basic Attack</button>
+        <button id="btn-ki">Ki Energy</button>
+      </div>
+    </div>
+
+    <div>
+      <h3>Log</h3>
+      <div id="log"></div>
+    </div>
+  </div>
+
+
+  <script type="module" src="./src/main.ts"></script>
+</body>
 </html>

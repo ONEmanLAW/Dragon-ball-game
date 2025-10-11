@@ -1,18 +1,119 @@
+/* src/styles/main.css
+   UI minimale, propre, sans variables. */
+
+/* Reset léger */
+*, *::before, *::after { box-sizing: border-box; }
+html, body { height: 100%; }
 body {
   margin: 0;
-  background: radial-gradient(circle at center, #181818, #000);
-  color: white;
-  font-family: "Saiyan Sans", sans-serif;
-  text-align: center;
-  min-height: 100vh;
+  font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  color: #1f2937;   
+  background: #f6f7fb;      
+  line-height: 1.5;
+}
+
+/* Titres */
+h1 { font-size: 28px; margin: 24px 0; letter-spacing: .2px; }
+h3 { margin: 0 0 8px; font-size: 16px; font-weight: 600; color: #334155; }
+
+/* Layout principal */
+.layout {
+  display: grid;
+  grid-template-columns: 1fr 320px;
+  gap: 20px;
+  align-items: start;
+  max-width: 1100px;
+  padding: 20px;
+  margin: 0 auto;
+}
+
+/* Plateau */
+.board {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: 0 6px 18px rgba(17,24,39,.06);
+}
+#turn { font-weight: 700; font-size: 18px; margin-bottom: 12px; color: #0f172a; }
+
+.row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+/* Cartes perso */
+.card {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 12px;
+  transition: box-shadow .2s ease, border-color .2s ease;
+}
+.card.active {
+  border-color: #2563eb; 
+  box-shadow: 0 0 0 3px rgba(37,99,235,.15);
+}
+.card-header {
   display: flex;
-  justify-content: center;
-  align-items: center;
-  flex-direction: column;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+.card-header .name { font-weight: 700; font-size: 16px; color: #0f172a; }
+.card-header .type { font-size: 13px; color: #6b7280; }
+.card-body { display: grid; gap: 6px; font-size: 14px; color: #111827; }
+
+
+.actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+button {
+  appearance: none;
+  border: 1px solid #d1d5db;
+  background: #ffffff;
+  color: #111827;
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    transform .04s ease,
+    box-shadow .2s ease,
+    border-color .2s ease,
+    background-color .2s ease;
+}
+button:hover { border-color: #9ca3af; box-shadow: 0 4px 14px rgba(17,24,39,.08); }
+button:active { transform: translateY(1px); }
+button:focus { outline: 3px solid rgba(37,99,235,.35); outline-offset: 2px; }
+button:disabled { opacity: .55; cursor: not-allowed; box-shadow: none; }
+
+
+#log {
+  height: 260px;
+  overflow: auto;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 10px;
+  box-shadow: inset 0 1px 0 rgba(0,0,0,.02);
+}
+#log p {
+  margin: 0 0 6px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+  font-size: 13px;
+  color: #334155;
 }
 
-h1 {
-  font-size: 2rem;
-  margin-bottom: 10px;
+@media (max-width: 900px) {
+  .layout { grid-template-columns: 1fr; padding: 16px; }
+  .row { grid-template-columns: 1fr; }
+  .actions { grid-template-columns: 1fr; }
+  #log { height: 200px; }
+  h1 { font-size: 22px; margin: 16px 0; }
 }
-
