@@ -1,6 +1,6 @@
 // src/models/Warrior.ts
 /**
- * Domaine guerrier (POO)
+ * Pattern State
  * ------------------------------------------------------------------
  * Choix : hiérarchie orientée classes.
  *  - Classe abstraite Warrior : contrat + logique commune minimale.
@@ -14,6 +14,8 @@
  */
 
 import { WarriorState, NormalState, InjuredState, ExhaustedState } from "../state/WarriorState";
+import { eventBus } from "../events/EventBus";
+import { StateChangedEvent } from "../events/GameEvents";
 
 //#region Types & interfaces
 export type WarriorType = "Saiyan" | "Namekian" | "Android";
@@ -99,6 +101,8 @@ export abstract class Warrior {
 
   // -- Règles de transition de state -- //
   private recomputeState(): void {
+    const preview = this.state.name;
+
     const vitalityRatio = this.currentVitality / this.stats.vitality;
     const kiRatio = this.currentKi / this.stats.ki;
 
@@ -109,7 +113,20 @@ export abstract class Warrior {
     } else {
       this.state = new NormalState();
     }
+
+    const next = this.state.name;
+    if (preview !== next) {
+      const event: StateChangedEvent = {
+        kind: "StateChanged",
+        timestamp: Date.now(),
+        warrior: this.name,
+        from: preview,
+        to: next,
+      };
+      eventBus.emit(event);
+    }
   }
+
 
   // -- Résumé des stats max -- //
   public summary(): string {

@@ -1,19 +1,18 @@
 // src/combat/Attacks.ts
 // TEMPLATE METHOD + STATE-AWARE
-// ------------------------------------------------------------------
-// - Template Method: Attack.execute() définit l'algorithme invariant.
-// - STATE-aware: state du Warrior ajuste le coût en Ki + les dégâts via
-//   attacker.adjustKiCost() et attacker.adjustOutgoingDamage().
+// ----------------------------------------------------
 
 import { Warrior } from "../models/Warrior";
 import type { WarriorType } from "../models/Warrior";
+import { eventBus } from "../events/EventBus";
+import type { AttackExecutedEvent } from "../events/GameEvents";
 
 export type AttackKind = "Normal" | "KiEnergy" | "Special";
 
 //#region Attack Constants
 /*
   =========================
-   === Attack constants ===
+  === Attack Variables ===
   =========================
   But: centraliser tous les chiffres (coûts, dégâts, noms) pour
        faciliter la maintenance sans toucher aux classes.
@@ -101,7 +100,7 @@ export abstract class Attack {
     // 1) Ki spending (STATE-aware)
     const adjustedCost = attacker.adjustKiCost(this.kiCost);
     const kiBefore = attacker.getKi();
-    attacker.spendKi(adjustedCost);           // Android : ne perds pas son ki
+    attacker.spendKi(adjustedCost); // Android : ne perds pas son ki
     const kiAfter = attacker.getKi();
     const kiSpent = Math.max(0, kiBefore - kiAfter);
 
@@ -113,16 +112,29 @@ export abstract class Attack {
     defender.receiveDamage(finalDamage);
 
     // 4) Return structured result
-    return new AttackResult(
+    const event: AttackExecutedEvent = {
+      kind: "AttackExecuted",
+      timestamp: Date.now(),
+      attacker: attacker.name,
+      defender: defender.name,
+      attackName: this.getNameFor(attacker.type),
+      kiSpent,
+      damage: finalDamage,
+      defenderRemainingVitality: defender.getVitality(),
+      attackerRemainingKi: attacker.getKi(),
+    };
+
+    eventBus.emit(event);
+     return new AttackResult(
       attacker.name,
       defender.name,
       this.getNameFor(attacker.type),
-      kiSpent,    
+      kiSpent,
       finalDamage,
       defender.getVitality(),
       attacker.getKi()
     );
-  }
+  } 
 }
 
 //#endregion

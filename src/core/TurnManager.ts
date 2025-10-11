@@ -6,7 +6,10 @@
  * - Ordre : A → B → A → B etc...
  */
 
+import { TurnChangedEvent } from "../events/GameEvents";
 import { Warrior } from "../models/Warrior";
+
+import { eventBus } from "../events/EventBus";
 
 export class TurnManager {
   private readonly fighters: [Warrior, Warrior];
@@ -34,6 +37,15 @@ export class TurnManager {
   public nextTurn(): void {
     this.activeIndex = 1 - this.activeIndex;
     this.turnNumber += 1;
+
+    const event: TurnChangedEvent = {
+      kind: "TurnChanged",
+      timestamp: Date.now(),
+      turnNumber: this.turnNumber,
+      active: this.getActive().name,
+      opponent: this.getOpponent().name,
+    };
+    eventBus.emit(event)
   }
 
   //#endregion
