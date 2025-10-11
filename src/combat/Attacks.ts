@@ -20,25 +20,17 @@ export type AttackKind = "Normal" | "KiEnergy" | "Special";
 
 // -- Normal Attack -- // 
 const NORMAL_ATTACK_KI_COST = 30 as const;
-const NORMAL_ATTACK_DAMAGE_BY_TYPE: Record<WarriorType, number> = {
-  Saiyan: 20,
-  Namekian: 15,
-  Android: 25,
-};
 const NORMAL_ATTACK_NAME = "Basic Attack" as const;
+const NORMAL_STRENGTH_MULTIPLIER = 1.0 as const;
 
 // -- Ki / Energy Attack -- //
 const KI_ENERGY_ATTACK_KI_COST = 50 as const;
-const KI_ENERGY_ATTACK_DAMAGE_BY_TYPE: Record<WarriorType, number> = {
-  Saiyan: 40,
-  Namekian: 50,
-  Android: 35,
-};
 const KI_ENERGY_ATTACK_NAME_BY_TYPE: Record<WarriorType, string> = {
   Saiyan:   "KI Energy (KAMEHAMEHA / FINAL FLASH)",
   Namekian: "KI Energy (MAKANKOSAPPO)",
   Android:  "KI Energy (LASER SHOT)",
 };
+const KI_ENERGY_STRENGTH_MULTIPLIER = 1.5 as const; // base damage = force * 1.5
 
 // -- Special (on définit plus tard) -- //
 const SPECIAL_ATTACK_KI_COST = 0 as const;
@@ -85,15 +77,13 @@ export class AttackResult {
     4) Retourne un AttackResult
 */
 export abstract class Attack {
-  protected readonly kiCost: number;
 
-  protected constructor(protected readonly kind: AttackKind, kiCost: number) {
-    this.kiCost = kiCost;
-  }
+
+  protected constructor(protected readonly kind: AttackKind, protected readonly kiCost: number) {}
 
   public abstract getNameFor(attackerType: WarriorType): string;
 
-  protected abstract computeBaseDamage(attackerType: WarriorType): number;
+  protected abstract getStrengthMultiplier(): number;
 
   /** TEMPLATE METHOD */
   public execute(attacker: Warrior, defender: Warrior): AttackResult {
@@ -105,7 +95,8 @@ export abstract class Attack {
     const kiSpent = Math.max(0, kiBefore - kiAfter);
 
     // 2) Damage compute (type) + adjust (STATE-aware)
-    const baseDamage = this.computeBaseDamage(attacker.type);
+    const strength = attacker.stats.strength;
+    const baseDamage = Math.floor(strength * this.getStrengthMultiplier());
     const finalDamage = attacker.adjustOutgoingDamage(baseDamage);
 
     // 3) Apply to defender
@@ -139,12 +130,11 @@ export abstract class Attack {
 
 //#endregion
 
-//#region Concrete Attacks
+//#region Attaque class
 /*
   =========================
-  ====== Concrete atk =====
+  ===== Attaque Class =====
   =========================
-  Ces classes ne font que lire dans les constantes + fournir le nom.
 */
 
 // -- Normal Attack -- //
@@ -157,8 +147,8 @@ export class NormalAttack extends Attack {
     return NORMAL_ATTACK_NAME;
   }
 
-  protected computeBaseDamage(attackerType: WarriorType): number {
-    return NORMAL_ATTACK_DAMAGE_BY_TYPE[attackerType];
+  protected getStrengthMultiplier(): number {
+    return NORMAL_STRENGTH_MULTIPLIER;
   }
 }
 
@@ -172,8 +162,8 @@ export class KiEnergyAttack extends Attack {
     return KI_ENERGY_ATTACK_NAME_BY_TYPE[type];
   }
 
-  protected computeBaseDamage(attackerType: WarriorType): number {
-    return KI_ENERGY_ATTACK_DAMAGE_BY_TYPE[attackerType];
+  protected getStrengthMultiplier(): number {
+    return KI_ENERGY_STRENGTH_MULTIPLIER;
   }
 }
 
@@ -185,8 +175,8 @@ export class SpecialAttack extends Attack {
   public getNameFor(_type: WarriorType): string {
     return "Special (to be defined)";
   }
-  protected computeBaseDamage(_attackerType: WarriorType): number {
-    return 0; // sera défini avec le TurnManager + cooldown
+  protected getStrengthMultiplier(): number {
+    return 0;
   }
 }
 
