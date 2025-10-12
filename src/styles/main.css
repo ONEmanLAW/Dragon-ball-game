@@ -117,3 +117,28 @@ button:disabled { opacity: .55; cursor: not-allowed; box-shadow: none; }
   #log { height: 200px; }
   h1 { font-size: 22px; margin: 16px 0; }
 }
+
+.setup {
+  display: grid;
+  grid-template-columns: 1fr 1fr auto;
+  gap: 10px;
+  margin-bottom: 14px;
+  align-items: end;
+  cursor: pointer;
+}
+.setup label {
+  display: grid;
+  gap: 6px;
+  font-size: 13px;
+  color: #334155;
+  cursor: pointer;
+}
+.setup select {
+  appearance: none;
+  border: 1px solid #d1d5db;
+  background: #fff;
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-size: 14px;
+  cursor: pointer;
+}

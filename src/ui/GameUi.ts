@@ -15,38 +15,42 @@ type SimpleAttack = "Normal" | "KiEnergy";
 
 export class GameUI {
   private gameManager = GameManager.getInstance();
-  private turn!: TurnManager;
+  private turn: TurnManager | null = null;
+
+  // - - Data -- //
+  private presets: WarriorPreset[] = [];
 
   // - - DOM refs -- //
   private elTurn!: El<HTMLDivElement>;
   private elLog!: El<HTMLDivElement>;
   private elP1!: El<HTMLDivElement>;
   private elP2!: El<HTMLDivElement>;
+
   private btnBasic!: El<HTMLButtonElement>;
   private btnKi!: El<HTMLButtonElement>;
+  private btnStart!: El<HTMLButtonElement>;
+
+  private selP1!: El<HTMLSelectElement>;
+  private selP2!: El<HTMLSelectElement>;
 
   //#region Boot
   public boot(): void {
-    // Presets => GameManager
-    this.gameManager.loadPresets(presetsJson as WarriorPreset[]);
+    // Presets => GameManager + mémoire locale
+    this.presets = presetsJson as WarriorPreset[];
+    this.gameManager.loadPresets(this.presets);
 
-    // Guerriers via presets
-    const goku = this.gameManager.spawnPreset("goku");
-    const piccolo = this.gameManager.spawnPreset("piccolo");
-
-    // Tour par tour
-    this.turn = new TurnManager(goku, piccolo);
-
-    // DOM
+    // DOM + UI init
     this.cacheDom();
+    this.populateSelects();
     this.bindEvents();
 
-    // Observer
+    // Observer (une seule fois)
     eventBus.subscribe({ update: (event: GameEvent) => this.onGameEvent(event) });
 
-    // Premier rendu
-    this.renderAll();
-    this.log(`Battle started! ${this.turn.getActive().name} begins.`);
+    // UI initiale (pas de combat lancé)
+    this.disableActions(true);
+    this.renderPreBattle();
+    this.log("Select fighters and press Start Battle.");
   }
   //#endregion
 
@@ -60,16 +64,68 @@ export class GameUI {
 
     this.btnBasic = document.getElementById("btn-basic") as HTMLButtonElement;
     this.btnKi    = document.getElementById("btn-ki") as HTMLButtonElement;
+    this.btnStart = document.getElementById("btn-start") as HTMLButtonElement;
+
+    this.selP1 = document.getElementById("select-p1") as HTMLSelectElement;
+    this.selP2 = document.getElementById("select-p2") as HTMLSelectElement;
+  }
+
+  private populateSelects(): void {
+    const toOption = (p: WarriorPreset) =>
+      `<option value="${p.id}">${p.name} [${p.type}]</option>`;
+
+    this.selP1.innerHTML = this.presets.map(toOption).join("");
+    this.selP2.innerHTML = this.presets.map(toOption).join("");
+
+    // -- Default -- //
+    const has = (id: string) => this.presets.some(p => p.id === id);
+    this.selP1.value = has("goku") ? "goku" : this.presets[0]?.id ?? "";
+    this.selP2.value = has("piccolo") ? "piccolo" : this.presets[1]?.id ?? this.presets[0]?.id ?? "";
   }
 
   private bindEvents(): void {
+    // Start battle
+    this.btnStart.addEventListener("click", () => this.onStartBattle());
+
+    // Attacks
     this.btnBasic.addEventListener("click", () => this.handleAttack("Normal"));
     this.btnKi.addEventListener("click", () => this.handleAttack("KiEnergy"));
+
+    const fixMirror = () => {
+      if (this.selP1.value && this.selP1.value === this.selP2.value) {
+        const alt = this.presets.find(p => p.id !== this.selP1.value);
+        if (alt) this.selP2.value = alt.id;
+      }
+    };
+    this.selP1.addEventListener("change", fixMirror);
+    this.selP2.addEventListener("change", fixMirror);
   }
   //#endregion
 
-  //#region Actions
+  //#region Start / Actions
+  private onStartBattle(): void {
+    const id1 = this.selP1.value;
+    const id2 = this.selP2.value;
+
+    if (!id1 || !id2) { this.log("⛔ Choose two fighters."); return; }
+    if (id1 === id2)   { this.log("⛔ Fighters must be different."); return; }
+
+    // Spawn via presets (Factory derrière)
+    const w1 = this.gameManager.spawnPreset(id1);
+    const w2 = this.gameManager.spawnPreset(id2);
+
+    // Tour par tour
+    this.turn = new TurnManager(w1, w2);
+
+    // UI run
+    this.disableActions(false);
+    this.renderAll();
+    this.log(`Battle started! ${this.turn.getActive().name} begins.`);
+  }
+
   private handleAttack(kind: SimpleAttack): void {
+    if (!this.turn) { this.log("⛔ Start a battle first."); return; }
+
     const attacker = this.turn.getActive();
     const defender = this.turn.getOpponent();
     const attack = this.gameManager.createAttack(kind);
@@ -79,7 +135,7 @@ export class GameUI {
 
       if (!defender.isAlive()) {
         this.log(`🏁 ${defender.name} is down. ${attacker.name} wins!`);
-        this.disableButtons();
+        this.disableActions(true);
         return;
       }
 
@@ -119,14 +175,18 @@ export class GameUI {
   //#endregion
 
   //#region Render
+  private renderPreBattle(): void {
+    this.elTurn.textContent = `Select fighters and press Start Battle`;
+    this.renderPlaceholder(this.elP1, "P1");
+    this.renderPlaceholder(this.elP2, "P2");
+  }
+
   private renderAll(): void {
+    if (!this.turn) { this.renderPreBattle(); return; }
+
     this.elTurn.textContent = `Turn ${this.turn.getTurnNumber()} — Active: ${this.turn.getActive().name}`;
     this.renderWarriorCard(this.elP1, this.turn.getActive(), true);
     this.renderWarriorCard(this.elP2, this.turn.getOpponent(), false);
-
-    const ongoing = this.turn.getActive().isAlive() && this.turn.getOpponent().isAlive();
-    this.btnBasic.disabled = !ongoing;
-    this.btnKi.disabled    = !ongoing;
   }
 
   private renderWarriorCard(root: HTMLDivElement, w: Warrior, active: boolean): void {
@@ -144,19 +204,35 @@ export class GameUI {
       </div>
     `;
   }
+
+  private renderPlaceholder(root: HTMLDivElement, label: string): void {
+    root.innerHTML = `
+      <div class="card">
+        <div class="card-header">
+          <span class="name">— ${label} —</span>
+          <span class="type">[N/A]</span>
+        </div>
+        <div class="card-body">
+          <div>State: <strong>—</strong></div>
+          <div>KI: <strong>—</strong></div>
+          <div>VIT: <strong>—</strong></div>
+        </div>
+      </div>
+    `;
+  }
   //#endregion
 
-  //#region Log & utils
+  //#region Utils
+  private disableActions(disabled: boolean): void {
+    this.btnBasic.disabled = disabled;
+    this.btnKi.disabled = disabled;
+  }
+
   private log(line: string): void {
     const p = document.createElement("p");
     p.textContent = line;
     this.elLog.appendChild(p);
     this.elLog.scrollTop = this.elLog.scrollHeight;
-  }
-
-  private disableButtons(): void {
-    this.btnBasic.disabled = true;
-    this.btnKi.disabled = true;
   }
   //#endregion
 }
@@ -165,3 +241,4 @@ export class GameUI {
 export function bootGameUI(): void {
   new GameUI().boot();
 }
+
