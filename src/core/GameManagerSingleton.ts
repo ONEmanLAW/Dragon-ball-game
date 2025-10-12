@@ -15,6 +15,8 @@
 
 import { Warrior } from "../models/Warrior";
 import { Attack, AttackKind, NormalAttack, KiEnergyAttack } from "../combat/Attacks";
+import { WarriorFactory } from "./WarriorFactory";
+import type { WarriorPreset } from "../data/WarriorPreset";
 
 //#region Types
 // -- Signature d'un constructeur d'attaque -- //
@@ -29,6 +31,8 @@ export class GameManager {
   private warriors: Map<string, Warrior> = new Map();
 
   private attackConstructors: Map<AttackKind, AttackConstructor> = new Map();
+
+  private presetsById: Map<string, WarriorPreset> = new Map(); 
 
   // -- Constructeur privé (Singleton). -- //
   private constructor() {
@@ -46,6 +50,24 @@ export class GameManager {
   }
 
   //#endregion
+
+
+  public loadPresets(presets: WarriorPreset[]): void {
+    this.presetsById.clear();
+    for (const preset of presets) this.presetsById.set(preset.id, preset);
+  }
+
+  public spawnPreset(id: string): Warrior {
+    const preset = this.presetsById.get(id);
+    if (!preset) throw new Error(`Coco pas preset: ${id}`);
+
+    const warriors = WarriorFactory.create(preset.type, preset.name, preset.description, preset.statsOverride);
+
+    warriors.setAttackLabels(preset.attackLabels);
+
+    this.registerWarrior(warriors)
+    return warriors
+  }
 
   //#region Warriors
   public registerWarrior(warrior: Warrior): void {

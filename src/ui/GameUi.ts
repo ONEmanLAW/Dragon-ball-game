@@ -4,6 +4,8 @@ import { WarriorFactory } from "../core/WarriorFactory";
 import { TurnManager } from "../core/TurnManager";
 import { eventBus } from "../events/EventBus";
 import type { GameEvent, AttackExecutedEvent, StateChangedEvent, TurnChangedEvent } from "../events/GameEvents";
+import { WarriorPreset } from "../data/WarriorPreset";
+import presetsJson from "../data/warriors.json" assert { type: "json" };
 
 type El<T extends HTMLElement> = T;
 type SimpleAttack = "Normal" | "KiEnergy";
@@ -22,17 +24,16 @@ export class GameUI {
 
   //#region Boot
   public boot(): void {
+
+    this.gameManager.loadPresets(presetsJson as WarriorPreset[]);
+
     // 1) Créer deux guerriers via Factory
-    const c17 = WarriorFactory.create("Android",   "C17", "Android des");
+    const goku = this.gameManager.spawnPreset("goku");
+    const piccolo = this.gameManager.spawnPreset('piccolo');
 
-    const piccolo = WarriorFactory.create("Namekian", "Piccolo", "Wise Namekian strategist");
-
-    // 2) (singleton)
-    // this.gameManager.registerWarrior(goku);
-    // this.gameManager.registerWarrior(piccolo);
 
     // 3) Tour par tour
-    this.turn = new TurnManager(c17, piccolo);
+    this.turn = new TurnManager(goku, piccolo);
 
     // 4) DOM
     this.cacheDom();

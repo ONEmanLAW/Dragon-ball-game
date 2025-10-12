@@ -102,13 +102,15 @@ export abstract class Attack {
     // 3) Apply to defender
     defender.receiveDamage(finalDamage);
 
+    const attackLabel = attacker.getAttackLabel?.(this.kind) ?? this.getNameFor(attacker.type);
+
     // 4) Return structured result
     const event: AttackExecutedEvent = {
       kind: "AttackExecuted",
       timestamp: Date.now(),
       attacker: attacker.name,
       defender: defender.name,
-      attackName: this.getNameFor(attacker.type),
+      attackName: attackLabel,
       kiSpent,
       damage: finalDamage,
       defenderRemainingVitality: defender.getVitality(),
@@ -119,7 +121,7 @@ export abstract class Attack {
      return new AttackResult(
       attacker.name,
       defender.name,
-      this.getNameFor(attacker.type),
+      attackLabel,
       kiSpent,
       finalDamage,
       defender.getVitality(),

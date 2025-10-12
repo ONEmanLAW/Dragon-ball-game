@@ -2,9 +2,11 @@
   "compilerOptions": {
     "target": "ESNext",
     "module": "ESNext",
-    "strict": true,
-    "moduleResolution": "Node",
+    "moduleResolution": "Bundler",
+    "resolveJsonModule": true,
+    "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
+    "strict": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "outDir": "dist"

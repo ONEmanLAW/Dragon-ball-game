@@ -43,6 +43,8 @@ export abstract class Warrior {
   // -- STATE -- //
   private state: WarriorState = new NormalState();
 
+  private attackLabels?: Record<string, string>;
+
   protected constructor(name: string, type: WarriorType, description: string, stats: WarriorStats) {
     this.name = name;
     this.type = type;
@@ -51,6 +53,16 @@ export abstract class Warrior {
 
     this.currentVitality = stats.vitality;
     this.currentKi = stats.ki;
+  }
+
+  public setAttackLabels(labels?: Record<string, string>): void {
+    if (!labels)
+      return
+    this.attackLabels = { ...(this.attackLabels ?? {}), ...labels};
+  }
+
+  public getAttackLabel(kind: string): string | undefined {
+    return this.attackLabels?.[kind];
   }
 
   // -- Accès combat -- //
