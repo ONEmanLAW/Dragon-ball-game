@@ -1,54 +1,47 @@
-// src/combat/Attacks.ts
-// TEMPLATE METHOD + STATE-AWARE
-// ----------------------------------------------------
+// ────────────────────────────────────────────────────────────
+//  TEMPLATE METHOD + State-aware
+//  execute():
+//   1) ajuste/dépense Ki (état pris en compte)
+//   2) calcule dégâts de base par type, puis ajuste selon l’état
+//   3) applique les dégâts au défenseur
+//   4) émet l’événement + retourne un AttackResult
+// ────────────────────────────────────────────────────────────
 
 import { Warrior } from "../models/Warrior";
 import type { WarriorType } from "../models/Warrior";
 import { eventBus } from "../events/EventBus";
 import type { AttackExecutedEvent } from "../events/GameEvents";
 
+//#region Types
 export type AttackKind = "Normal" | "KiEnergy" | "Special";
+//#endregion
 
-//#region Attack Constants
-/*
-  =========================
-  === Attack Variables ===
-  =========================
-  But: centraliser tous les chiffres (coûts, dégâts, noms) pour
-       faciliter la maintenance sans toucher aux classes.
-*/
-
-// -- Normal Attack -- // 
+//#region Attack constants
+// - - Normal -- //
 const NORMAL_ATTACK_KI_COST = 30 as const;
 const NORMAL_ATTACK_NAME = "Basic Attack" as const;
 const NORMAL_STRENGTH_MULTIPLIER = 1.0 as const;
 
-// -- Ki / Energy Attack -- //
+// - - Ki/Energy -- //
 const KI_ENERGY_ATTACK_KI_COST = 50 as const;
 const KI_ENERGY_ATTACK_NAME_BY_TYPE: Record<WarriorType, string> = {
   Saiyan:   "KI Energy (KAMEHAMEHA / FINAL FLASH)",
   Namekian: "KI Energy (MAKANKOSAPPO)",
   Android:  "KI Energy (LASER SHOT)",
 };
-const KI_ENERGY_STRENGTH_MULTIPLIER = 1.5 as const; // base damage = force * 1.5
+const KI_ENERGY_STRENGTH_MULTIPLIER = 1.5 as const;
 
-// -- Special (on définit plus tard) -- //
+// - - Special (placeholder) -- //
 const SPECIAL_ATTACK_KI_COST = 0 as const;
-
 //#endregion
 
 //#region Result Object
-/*
-  =========================
-  ===== Result Object =====
-  =========================
-*/
 export class AttackResult {
   constructor(
     public readonly attackerName: string,
     public readonly defenderName: string,
     public readonly attackName: string,
-    public readonly kiSpent: number,             
+    public readonly kiSpent: number,
     public readonly damageDealt: number,
     public readonly defenderRemainingVitality: number,
     public readonly attackerRemainingKi: number
@@ -62,27 +55,16 @@ export class AttackResult {
     );
   }
 }
-
 //#endregion
 
 //#region Base Template
-/*
-  =========================
-  ===== Base Template =====
-  =========================
-  TEMPLATE METHOD:
-    1) Ajuste et dépense le Ki (state du Warrior pris en compte)
-    2) Calcule les damage de base par type puis applique l'état
-    3) Inflige les damage au défenseur
-    4) Retourne un AttackResult
-*/
 export abstract class Attack {
-
-
-  protected constructor(protected readonly kind: AttackKind, protected readonly kiCost: number) {}
+  protected constructor(
+    protected readonly kind: AttackKind,
+    protected readonly kiCost: number
+  ) {}
 
   public abstract getNameFor(attackerType: WarriorType): string;
-
   protected abstract getStrengthMultiplier(): number;
 
   /** TEMPLATE METHOD */
@@ -90,7 +72,7 @@ export abstract class Attack {
     // 1) Ki spending (STATE-aware)
     const adjustedCost = attacker.adjustKiCost(this.kiCost);
     const kiBefore = attacker.getKi();
-    attacker.spendKi(adjustedCost); // Android : ne perds pas son ki
+    attacker.spendKi(adjustedCost); // Android : no-op
     const kiAfter = attacker.getKi();
     const kiSpent = Math.max(0, kiBefore - kiAfter);
 
@@ -102,9 +84,10 @@ export abstract class Attack {
     // 3) Apply to defender
     defender.receiveDamage(finalDamage);
 
-    const attackLabel = attacker.getAttackLabel?.(this.kind) ?? this.getNameFor(attacker.type);
+    const attackLabel =
+      attacker.getAttackLabel?.(this.kind) ?? this.getNameFor(attacker.type);
 
-    // 4) Return structured result
+    // 4) Event + structured result
     const event: AttackExecutedEvent = {
       kind: "AttackExecuted",
       timestamp: Date.now(),
@@ -116,9 +99,9 @@ export abstract class Attack {
       defenderRemainingVitality: defender.getVitality(),
       attackerRemainingKi: attacker.getKi(),
     };
-
     eventBus.emit(event);
-     return new AttackResult(
+
+    return new AttackResult(
       attacker.name,
       defender.name,
       attackLabel,
@@ -127,59 +110,50 @@ export abstract class Attack {
       defender.getVitality(),
       attacker.getKi()
     );
-  } 
+  }
 }
-
 //#endregion
 
-//#region Attaque class
-/*
-  =========================
-  ===== Attaque Class =====
-  =========================
-*/
-
-// -- Normal Attack -- //
+//#region Concrete Attacks
 export class NormalAttack extends Attack {
-  constructor() {
+  constructor() { 
     super("Normal", NORMAL_ATTACK_KI_COST);
   }
 
-  public getNameFor(_type: WarriorType): string {
-    return NORMAL_ATTACK_NAME;
+  public getNameFor(_type: WarriorType): string { 
+    return NORMAL_ATTACK_NAME; 
   }
 
   protected getStrengthMultiplier(): number {
-    return NORMAL_STRENGTH_MULTIPLIER;
+    return NORMAL_STRENGTH_MULTIPLIER; 
   }
 }
 
-// -- Ki / Energy Attack -- //
 export class KiEnergyAttack extends Attack {
-  constructor() {
-    super("KiEnergy", KI_ENERGY_ATTACK_KI_COST);
+  constructor() { 
+    super("KiEnergy", KI_ENERGY_ATTACK_KI_COST); 
   }
 
-  public getNameFor(type: WarriorType): string {
-    return KI_ENERGY_ATTACK_NAME_BY_TYPE[type];
+  public getNameFor(type: WarriorType): string { 
+    return KI_ENERGY_ATTACK_NAME_BY_TYPE[type]; 
   }
 
-  protected getStrengthMultiplier(): number {
-    return KI_ENERGY_STRENGTH_MULTIPLIER;
+  protected getStrengthMultiplier(): number { 
+    return KI_ENERGY_STRENGTH_MULTIPLIER; 
   }
 }
 
-// -- Special (on définit plus tard) -- //
 export class SpecialAttack extends Attack {
-  constructor() {
-    super("Special", SPECIAL_ATTACK_KI_COST);
+  constructor() { 
+    super("Special", SPECIAL_ATTACK_KI_COST); 
   }
-  public getNameFor(_type: WarriorType): string {
-    return "Special (to be defined)";
+  
+  public getNameFor(_type: WarriorType): string { 
+    return "Special (to be defined)"; 
   }
-  protected getStrengthMultiplier(): number {
-    return 0;
+
+  protected getStrengthMultiplier(): number { 
+    return 0; 
   }
 }
-
 //#endregion

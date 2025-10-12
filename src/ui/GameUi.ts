@@ -1,10 +1,13 @@
-// src/ui/GameUI.ts
+// ────────────────────────────────────────────────────────────
+// GameUI : colle l’UI au système d’événements : (Observer)
+// ────────────────────────────────────────────────────────────
+
 import { GameManager } from "../core/GameManagerSingleton";
-import { WarriorFactory } from "../core/WarriorFactory";
 import { TurnManager } from "../core/TurnManager";
 import { eventBus } from "../events/EventBus";
 import type { GameEvent, AttackExecutedEvent, StateChangedEvent, TurnChangedEvent } from "../events/GameEvents";
-import { WarriorPreset } from "../data/WarriorPreset";
+import type { Warrior } from "../models/Warrior";
+import type { WarriorPreset } from "../data/WarriorPreset";
 import presetsJson from "../data/warriors.json" assert { type: "json" };
 
 type El<T extends HTMLElement> = T;
@@ -14,7 +17,7 @@ export class GameUI {
   private gameManager = GameManager.getInstance();
   private turn!: TurnManager;
 
-  // DOM refs
+  // - - DOM refs -- //
   private elTurn!: El<HTMLDivElement>;
   private elLog!: El<HTMLDivElement>;
   private elP1!: El<HTMLDivElement>;
@@ -24,25 +27,24 @@ export class GameUI {
 
   //#region Boot
   public boot(): void {
-
+    // Presets => GameManager
     this.gameManager.loadPresets(presetsJson as WarriorPreset[]);
 
-    // 1) Créer deux guerriers via Factory
+    // Guerriers via presets
     const goku = this.gameManager.spawnPreset("goku");
-    const piccolo = this.gameManager.spawnPreset('piccolo');
+    const piccolo = this.gameManager.spawnPreset("piccolo");
 
-
-    // 3) Tour par tour
+    // Tour par tour
     this.turn = new TurnManager(goku, piccolo);
 
-    // 4) DOM
+    // DOM
     this.cacheDom();
     this.bindEvents();
 
-    // 5) Observer 
+    // Observer
     eventBus.subscribe({ update: (event: GameEvent) => this.onGameEvent(event) });
 
-    // 6) Premier rendu
+    // Premier rendu
     this.renderAll();
     this.log(`Battle started! ${this.turn.getActive().name} begins.`);
   }
@@ -73,7 +75,6 @@ export class GameUI {
     const attack = this.gameManager.createAttack(kind);
 
     try {
-      // (Observer)
       attack.execute(attacker, defender);
 
       if (!defender.isAlive()) {
@@ -128,7 +129,7 @@ export class GameUI {
     this.btnKi.disabled    = !ongoing;
   }
 
-  private renderWarriorCard(root: HTMLDivElement, w: any, active: boolean): void {
+  private renderWarriorCard(root: HTMLDivElement, w: Warrior, active: boolean): void {
     root.innerHTML = `
       <div class="card ${active ? "active" : ""}">
         <div class="card-header">

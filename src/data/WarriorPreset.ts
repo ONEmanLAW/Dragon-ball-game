@@ -1,3 +1,7 @@
+// ────────────────────────────────────────────────────────────
+// Typage des presets (chargés depuis JSON)
+// ────────────────────────────────────────────────────────────
+
 import type { WarriorStats, WarriorType } from "../models/Warrior";
 
 export type WarriorPreset = {

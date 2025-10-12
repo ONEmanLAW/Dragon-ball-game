@@ -1,33 +1,28 @@
-// src/models/Warrior.ts
-/**
- * Pattern State
- * ------------------------------------------------------------------
- * Choix : hiérarchie orientée classes.
- *  - Classe abstraite Warrior : contrat + logique commune minimale.
- *  - Trois sous-classes concrètes dans le même fichier.
- *
- * Patterns utilisés autour :
- *  - STATE (Normal / Injured / Exhausted) appliqué via WarriorState
- *    => les attaques appellent attacker.adjustKiCost(...) et
- *       attacker.adjustOutgoingDamage(...), puis Warrior met à jour
- *       son état après chaque dépense de Ki / dégâts reçus.
- */
+// ────────────────────────────────────────────────────────────
+//  Pattern : State (WarriorState)
+//  Les états modulent dégâts/coûts.
+//  Les transitions sont centralisées dans recomputeState().
+// ────────────────────────────────────────────────────────────
 
 import { WarriorState, NormalState, InjuredState, ExhaustedState } from "../state/WarriorState";
 import { eventBus } from "../events/EventBus";
 import { StateChangedEvent } from "../events/GameEvents";
 
-//#region Types & interfaces
+//#region Variables
+const DEFAULT_SAIYAN:   WarriorStats = { strength: 100, ki: 100,  speed: 100, vitality: 100 };
+const DEFAULT_NAMEKIAN: WarriorStats = { strength: 100, ki: 100,  speed: 100, vitality: 100 };
+const DEFAULT_ANDROID:  WarriorStats = { strength: 100, ki: 9999, speed: 100, vitality: 100 };
+//#endregion
+
+//#region Types
 export type WarriorType = "Saiyan" | "Namekian" | "Android";
 
-// -- Stats -- //
 export type WarriorStats = {
   strength: number;  // Force
-  ki: number;        // Ki max
+  ki: number;        // Ki
   speed: number;     // Vitesse
-  vitality: number;  // PV max (vie)
+  vitality: number;  // PV
 };
-
 //#endregion
 
 //#region Base class
@@ -40,7 +35,7 @@ export abstract class Warrior {
   protected currentVitality: number;
   protected currentKi: number;
 
-  // -- STATE -- //
+  // - - STATE -- //
   private state: WarriorState = new NormalState();
 
   private attackLabels?: Record<string, string>;
@@ -57,61 +52,64 @@ export abstract class Warrior {
 
   public setAttackLabels(labels?: Record<string, string>): void {
     if (!labels)
-      return
-    this.attackLabels = { ...(this.attackLabels ?? {}), ...labels};
+      return;
+    this.attackLabels = { ...(this.attackLabels ?? {}), ...labels };
   }
 
   public getAttackLabel(kind: string): string | undefined {
     return this.attackLabels?.[kind];
   }
 
-  // -- Accès combat -- //
-  public getVitality(): number {
-    return this.currentVitality;
+  //#region Combat getters
+  public getVitality(): number { 
+    return this.currentVitality; 
   }
 
-  public getKi(): number {
-    return this.currentKi;
+  public getKi(): number { 
+    return this.currentKi; 
+  }
+  
+  public isAlive(): boolean { 
+    return this.currentVitality > 0; 
+  }
+  //#endregion
+
+  //#region State
+  public getStateName(): string { 
+    return this.state.name; 
   }
 
-  public isAlive(): boolean {
-    return this.currentVitality > 0;
+  public adjustKiCost(baseCost: number): number { 
+    return this.state.adjustKiCost(baseCost); 
   }
 
-  // -- STATE -- //
-  public getStateName(): string {
-    return this.state.name;
+  public adjustOutgoingDamage(baseDamage: number): number { 
+    return this.state.adjustOutgoingDamage(baseDamage); 
   }
+  //#endregion
 
-  public adjustKiCost(baseCost: number): number {
-    return this.state.adjustKiCost(baseCost);
-  }
-
-  public adjustOutgoingDamage(baseDamage: number): number {
-    return this.state.adjustOutgoingDamage(baseDamage);
-  }
-
-  // -- Évolution pendant le combat -- //
+  //#region Combat mutations
   public receiveDamage(amount: number): void {
     const damage = Math.max(0, Math.floor(amount));
     this.currentVitality = Math.max(0, this.currentVitality - damage);
     this.recomputeState();
   }
 
-  public canSpendKi(cost: number): boolean {
-    return this.currentKi >= cost;
+  public canSpendKi(cost: number): boolean { 
+    return this.currentKi >= cost; 
   }
 
   public spendKi(cost: number): void {
-    if (cost <= 0) return;
-    if (!this.canSpendKi(cost)) {
+    if (cost <= 0)
+      return;
+    if (!this.canSpendKi(cost)) 
       throw new Error(`${this.name} does not have enough Ki.`);
-    }
     this.currentKi = Math.max(0, this.currentKi - cost);
     this.recomputeState();
   }
+  //#endregion
 
-  // -- Règles de transition de state -- //
+  //#region State transition
   private recomputeState(): void {
     const preview = this.state.name;
 
@@ -138,9 +136,9 @@ export abstract class Warrior {
       eventBus.emit(event);
     }
   }
+  //#endregion
 
-
-  // -- Résumé des stats max -- //
+  //#region Helpers
   public summary(): string {
     const s = this.stats;
     return (
@@ -148,16 +146,10 @@ export abstract class Warrior {
       `STR: ${s.strength} | KI: ${s.ki} | SPD: ${s.speed} | VIT: ${s.vitality}`
     );
   }
+  //#endregion
 }
-
 //#endregion
 
-//#region Defaults
-const DEFAULT_SAIYAN:   WarriorStats = { strength: 100, ki: 100,  speed: 100, vitality: 100 };
-const DEFAULT_NAMEKIAN: WarriorStats = { strength: 100, ki: 100,  speed: 100, vitality: 100 };
-const DEFAULT_ANDROID:  WarriorStats = { strength: 100, ki: 9999, speed: 100, vitality: 100 };
-
-//#endregion
 
 //#region Concrete warriors
 export class SaiyanWarrior extends Warrior {
@@ -177,14 +169,11 @@ export class AndroidWarrior extends Warrior {
     super(name, "Android", description, { ...DEFAULT_ANDROID, ...statsOverride });
   }
 
-  // Android = Ki infini :
-  public override canSpendKi(_cost: number): boolean {
-    return true;
+  // - - Android : Ki infini -- //
+  public override canSpendKi(_cost: number): boolean { 
+    return true; 
+  
   }
-
-  public override spendKi(_cost: number): void {
-    // ne reduit pas le ki
-  }
+  public override spendKi(_cost: number): void { /* rien */ }
 }
-
 //#endregion

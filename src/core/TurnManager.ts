@@ -1,37 +1,31 @@
-// src/core/TurnManager.ts
-/*
- * TurnManager (tour par tour, alternance stricte)
- * ------------------------------------------------------------------
- * - Ne gère AUCUNE logique d'attaque : seulement qui joue, quel tour.
- * - Ordre : A → B → A → B etc...
- */
+// ──────────────────────────────────────────
+// TurnManager : alternance stricte A <=> B
+// ──────────────────────────────────────────
 
 import { TurnChangedEvent } from "../events/GameEvents";
 import { Warrior } from "../models/Warrior";
-
 import { eventBus } from "../events/EventBus";
 
 export class TurnManager {
   private readonly fighters: [Warrior, Warrior];
-  private turnNumber  = 1;
-  private activeIndex = 0; // -- 0 = P1 /// 1 = P2 -- //
+  private turnNumber = 1;
+  private activeIndex = 0; // 0 = P1, 1 = P2
 
-  constructor (a: Warrior, b: Warrior) {
+  constructor(a: Warrior, b: Warrior) {
     this.fighters = [a, b];
   }
 
   //#region API
-
   public getActive(): Warrior {
-    return this.fighters[this.activeIndex];
+    return this.fighters[this.activeIndex]; 
   }
 
-  public getOpponent(): Warrior {
-    return this.fighters[1 - this.activeIndex];
+  public getOpponent(): Warrior { 
+    return this.fighters[1 - this.activeIndex]; 
   }
-
-  public getTurnNumber(): number {
-    return this.turnNumber;
+  
+  public getTurnNumber(): number { 
+    return this.turnNumber; 
   }
 
   public nextTurn(): void {
@@ -45,10 +39,7 @@ export class TurnManager {
       active: this.getActive().name,
       opponent: this.getOpponent().name,
     };
-    eventBus.emit(event)
+    eventBus.emit(event);
   }
-
   //#endregion
 }
-
-
