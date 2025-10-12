@@ -1,0 +1,42 @@
+[
+  {
+    "id": "goku",
+    "type": "Saiyan",
+    "name": "Goku",
+    "description": "Proud Saiyan warrior",
+    "statsOverride": { "strength": 22, "ki": 100, "speed": 18, "vitality": 100 },
+    "attackLabels": { "Normal": "Basic Attack", "KiEnergy": "Kamehameha" }
+  },
+  {
+    "id": "vegeta",
+    "type": "Saiyan",
+    "name": "Vegeta",
+    "description": "Prince of all Saiyans",
+    "statsOverride": { "strength": 23, "ki": 100, "speed": 19, "vitality": 100 },
+    "attackLabels": { "Normal": "Basic Attack", "KiEnergy": "Final Flash" }
+  },
+  {
+    "id": "piccolo",
+    "type": "Namekian",
+    "name": "Piccolo",
+    "description": "Wise Namekian strategist",
+    "statsOverride": { "strength": 18, "ki": 100, "speed": 16, "vitality": 100 },
+    "attackLabels": { "Normal": "Basic Attack", "KiEnergy": "Makankōsappō" }
+  },
+  {
+    "id": "c17",
+    "type": "Android",
+    "name": "C-17",
+    "description": "Relentless android",
+    "statsOverride": { "strength": 24, "ki": 9999, "speed": 17, "vitality": 100 },
+    "attackLabels": { "Normal": "Basic Attack", "KiEnergy": "Laser Shot" }
+  },
+  {
+    "id": "c18",
+    "type": "Android",
+    "name": "C-18",
+    "description": "Powerful android",
+    "statsOverride": { "strength": 24, "ki": 9999, "speed": 17, "vitality": 100 },
+    "attackLabels": { "Normal": "Basic Attack", "KiEnergy": "Laser Shot" }
+  }
+]
