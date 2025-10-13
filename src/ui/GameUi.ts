@@ -5,7 +5,7 @@
 import { GameManager } from "../core/GameManagerSingleton";
 import { TurnManager } from "../core/TurnManager";
 import { eventBus } from "../events/EventBus";
-import type { GameEvent, AttackExecutedEvent, StateChangedEvent, TurnChangedEvent } from "../events/GameEvents";
+import type { GameEvent, AttackExecutedEvent, StateChangedEvent, TurnChangedEvent, BattleEndedEvent } from "../events/GameEvents";
 import type { Warrior, WarriorType } from "../models/Warrior";
 import type { WarriorPreset } from "../data/WarriorPreset";
 import presetsJson from "../data/warriors.json";
@@ -123,6 +123,7 @@ export class GameUI {
     this.sectionCreate.hidden = which !== "create";
     this.sectionRoster.hidden = which !== "roster";
     this.sectionBattle.hidden = which !== "battle";
+    if (which === "battle") this.battleOver = false;
   }
   //#endregion
 
@@ -240,25 +241,23 @@ export class GameUI {
   //#endregion
 
   //#region Battle actions
+  private battleOver = false;
   private handleAttack(kind: SimpleAttack): void {
+    if (this.battleOver) 
+      return;
+
     const attacker = this.turn.getActive();
     const defender = this.turn.getOpponent();
     const attack = this.gameManager.createAttack(kind);
 
     try {
       attack.execute(attacker, defender);
-
-      if (!defender.isAlive()) {
-        this.log(`🏁 ${defender.name} is down. ${attacker.name} wins!`);
-        this.disableButtons();
-        return;
-      }
-
-      this.turn.nextTurn();
+      if (!this.battleOver) this.turn.nextTurn(); 
     } catch (e: any) {
       this.log(`⛔ ${e?.message ?? "Action not allowed."}`);
     }
   }
+
   //#endregion
 
   //#region Observer handler
@@ -279,6 +278,14 @@ export class GameUI {
       case "TurnChanged": {
         const e = event as TurnChangedEvent;
         this.log(`▶️ Turn ${e.turnNumber} — ${e.active}'s turn.`);
+        this.renderAll();
+        break;
+      }
+      case "BattleEnded": {
+        const e = event as BattleEndedEvent;
+        this.battleOver = true;
+        this.log(`🏁 ${e.loser} is down. ${e.winner} wins!`);
+        this.disableButtons();
         this.renderAll();
         break;
       }

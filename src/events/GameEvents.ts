@@ -2,8 +2,8 @@
 // Typage des événements de jeu
 // ─────────────────────────────────
 
-export type GameEvent = | AttackExecutedEvent | StateChangedEvent | TurnChangedEvent;
-export type EventKind = "AttackExecuted" | "StateChanged" | "TurnChanged";
+export type GameEvent = | AttackExecutedEvent | StateChangedEvent | TurnChangedEvent | BattleEndedEvent;
+export type EventKind = "AttackExecuted" | "StateChanged" | "TurnChanged" | "BattleEnded";
 
 export interface BaseEvent {
   kind: EventKind;
@@ -40,3 +40,10 @@ export interface TurnChangedEvent extends BaseEvent {
   opponent: string;
 }
 //#endregion
+
+// #region BattleEnded
+export interface BattleEndedEvent extends BaseEvent {
+  kind: "BattleEnded";
+  winner: string;
+  loser: string;
+}

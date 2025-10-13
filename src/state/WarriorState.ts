@@ -4,7 +4,7 @@
 // ────────────────────────────────────────────────────────────
 
 //#region Types
-export type WarriorStateName = "Normal" | "Injured" | "Exhausted";
+export type WarriorStateName = "Normal" | "Injured" | "Exhausted" | "Dead";
 
 export interface WarriorState {
   readonly name: WarriorStateName;
@@ -60,6 +60,17 @@ export class ExhaustedState implements WarriorState {
 
   adjustKiCost(base: number): number { 
     return roundDownInt(base * EXHAUSTED_KI_COST_MULTIPLIER); 
+  }
+}
+
+export class DeadState implements WarriorState {
+  public readonly name = "Dead";
+  adjustOutgoingDamage(_base: number): number {
+    return 0;
+  }
+
+  adjustKiCost(base: number): number {
+    return base;
   }
 }
 //#endregion

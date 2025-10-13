@@ -10,7 +10,7 @@
 import { Warrior } from "../models/Warrior";
 import type { WarriorType } from "../models/Warrior";
 import { eventBus } from "../events/EventBus";
-import type { AttackExecutedEvent } from "../events/GameEvents";
+import type { AttackExecutedEvent, BattleEndedEvent } from "../events/GameEvents";
 
 //#region Types
 export type AttackKind = "Normal" | "KiEnergy" | "Special";
@@ -69,6 +69,12 @@ export abstract class Attack {
 
   /** TEMPLATE METHOD */
   public execute(attacker: Warrior, defender: Warrior): AttackResult {
+
+    if (!attacker.isAlive())
+      throw new Error (`${attacker.name} cannot act (down).`);
+    if (!defender.isAlive())
+      throw new Error(`${defender.name} is already down.`);
+
     // 1) Ki spending (STATE-aware)
     const adjustedCost = attacker.adjustKiCost(this.kiCost);
     const kiBefore = attacker.getKi();
@@ -100,6 +106,16 @@ export abstract class Attack {
       attackerRemainingKi: attacker.getKi(),
     };
     eventBus.emit(event);
+
+    if (!defender.isAlive()) {
+      const endEvent: BattleEndedEvent = {
+        kind: "BattleEnded",
+        timestamp: Date.now(),
+        winner: attacker.name,
+        loser: defender.name,
+      };
+      eventBus.emit(endEvent);
+    }
 
     return new AttackResult(
       attacker.name,
