@@ -40,6 +40,8 @@ export abstract class Warrior {
 
   private attackLabels?: Record<string, string>;
 
+  private level: number = 1;
+
   protected constructor(name: string, type: WarriorType, description: string, stats: WarriorStats) {
     this.name = name;
     this.type = type;
@@ -58,6 +60,15 @@ export abstract class Warrior {
 
   public getAttackLabel(kind: string): string | undefined {
     return this.attackLabels?.[kind];
+  }
+
+  public getLevel(): number {
+    return this.level;
+  }
+
+  public setLevel(level: number): void {
+    const lvl = Math.max(1, Math.floor(level || 1));
+    this.level = lvl
   }
 
   //#region Combat getters

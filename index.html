@@ -4,45 +4,94 @@
   <meta charset="utf-8" />
   <title>DBZ Game</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <link rel="stylesheet" href="./src/styles/main.css" />
+  <link rel="stylesheet" href="/src/styles/main.css" />
 </head>
 <body>
   <h1>DBZ Game</h1>
 
-  <div class="layout">
-    <div class="board">
+  <!-- ── 1) CRÉATION DU PERSO ───────────────────────────────── -->
+  <section id="create-section" class="panel">
+    <h2>Create your warrior</h2>
 
-      <div class="setup">
-        <label>
-          Player 1
-          <select id="select-p1"></select>
-        </label>
-        <label>
-          Player 2
-          <select id="select-p2"></select>
-        </label>
-        <button id="btn-start">Start Battle</button>
-      </div>
+    <div class="form-grid">
+      <label>
+        <span>Name</span>
+        <input id="input-name" type="text" placeholder="Your warrior name" />
+      </label>
 
-      <div id="turn">Turn 1 — Active: ?</div>
+      <label>
+        <span>Description</span>
+        <input id="input-description" type="text" placeholder="Short flavor text" />
+      </label>
 
-      <div class="row">
-        <div id="card-1"></div>
-        <div id="card-2"></div>
-      </div>
+      <label>
+        <span>Race</span>
+        <select id="select-race">
+          <option value="Saiyan" selected>Saiyan</option>
+          <option value="Namekian">Namekian</option>
+          <option value="Android">Android</option>
+        </select>
+      </label>
 
-      <div class="actions">
-        <button id="btn-basic">Basic Attack</button>
-        <button id="btn-ki">Ki Energy</button>
-      </div>
+      <label>
+        <span>KI Technique</span>
+        <select id="select-ki"></select>
+      </label>
     </div>
 
-    <div>
-      <h3>Log</h3>
-      <div id="log"></div>
+    <div class="row-buttons">
+      <button id="btn-create">Create character</button>
     </div>
-  </div>
 
-  <script type="module" src="./src/main.ts"></script>
+    <div id="create-error" class="error" aria-live="polite"></div>
+  </section>
+
+  <!-- ── 2) ROSTER + CHOIX P1/P2 ───────────────────────────── -->
+  <section id="roster-section" class="panel" hidden>
+    <h2>Your character</h2>
+    <div id="created-card"></div>
+
+    <h3 style="margin-top:16px;">Choose fighters</h3>
+    <div class="form-grid">
+      <label>
+        <span>Player 1</span>
+        <select id="select-p1"></select>
+      </label>
+      <label>
+        <span>Player 2</span>
+        <select id="select-p2"></select>
+      </label>
+    </div>
+
+    <div class="row-buttons">
+      <button id="btn-start-battle">Start Battle</button>
+    </div>
+  </section>
+
+  <!-- ── 3) BATTLE UI ───────────────────────────────────────── -->
+  <section id="battle-section" hidden>
+    <div class="layout">
+      <div class="board">
+        <div id="turn">Turn 1 — Active: ?</div>
+
+        <div class="row">
+          <div id="card-1"></div>
+          <div id="card-2"></div>
+        </div>
+
+        <div class="actions">
+          <button id="btn-basic" disabled>Basic Attack</button>
+          <button id="btn-ki" disabled>Ki Energy</button>
+        </div>
+      </div>
+
+      <div>
+        <h3>Log</h3>
+        <div id="log"></div>
+      </div>
+    </div>
+  </section>
+
+  <script type="module" src="/src/main.ts"></script>
 </body>
 </html>

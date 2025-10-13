@@ -142,3 +142,36 @@ button:disabled { opacity: .55; cursor: not-allowed; box-shadow: none; }
   font-size: 14px;
   cursor: pointer;
 }
+
+.panel {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 16px;
+  margin: 0 auto 16px;
+  max-width: 1100px;
+  box-shadow: 0 6px 18px rgba(17,24,39,.06);
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+.form-grid label { display: grid; gap: 6px; font-size: 14px; color: #374151; }
+.form-grid input, .form-grid select {
+  border: 1px solid #d1d5db;
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-size: 14px;
+  background: #fff;
+}
+
+.row-buttons { margin-top: 12px; display: flex; gap: 10px; }
+
+.error { margin-top: 10px; color: #b91c1c; font-weight: 600; font-size: 14px; }
+
+#created-card .card-body { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+@media (max-width: 900px) {
+  #created-card .card-body { grid-template-columns: 1fr; }
+}

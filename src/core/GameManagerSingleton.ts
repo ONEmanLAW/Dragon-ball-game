@@ -9,11 +9,8 @@ import { Attack, AttackKind, NormalAttack, KiEnergyAttack } from "../combat/Atta
 import { WarriorFactory } from "./WarriorFactory";
 import type { WarriorPreset } from "../data/WarriorPreset";
 
-//#region Types
 type AttackConstructor = new () => Attack;
-//#endregion
 
-//#region Singleton
 export class GameManager {
   private static instance: GameManager;
 
@@ -22,17 +19,14 @@ export class GameManager {
   private presetsById: Map<string, WarriorPreset> = new Map();
 
   private constructor() {
-    // - - Attaques -- //
     this.registerAttack("Normal",   NormalAttack);
     this.registerAttack("KiEnergy", KiEnergyAttack);
-    // this.registerAttack("Special", SpecialAttack); // plus tard
   }
 
   public static getInstance(): GameManager {
     if (!GameManager.instance) GameManager.instance = new GameManager();
     return GameManager.instance;
   }
-  //#endregion
 
   //#region Presets
   public loadPresets(presets: WarriorPreset[]): void {
@@ -42,16 +36,9 @@ export class GameManager {
 
   public spawnPreset(id: string): Warrior {
     const preset = this.presetsById.get(id);
-    if (!preset)
-      throw new Error(`Coco pas preset: ${id}`);
+    if (!preset) throw new Error(`Coco pas preset: ${id}`);
 
-    const warrior = WarriorFactory.create(
-      preset.type,
-      preset.name,
-      preset.description,
-      preset.statsOverride
-    );
-
+    const warrior = WarriorFactory.create(preset.type, preset.name, preset.description, preset.statsOverride);
     warrior.setAttackLabels(preset.attackLabels);
     this.registerWarrior(warrior);
     return warrior;
@@ -67,31 +54,30 @@ export class GameManager {
     console.log(`Registered warrior: ${warrior.summary()}`);
   }
 
-  public getWarrior(name: string): Warrior | undefined {
-    return this.warriors.get(name);
+  public getWarrior(name: string): Warrior | undefined { 
+    return this.warriors.get(name); 
+  }
+
+  public getAllWarriors(): Warrior[] { 
+    return Array.from(this.warriors.values()); 
   }
 
   public listWarriors(): void {
     console.log("List of all warriors:");
-    for (const warrior of this.warriors.values()) {
-      console.log(" -", warrior.summary());
-    }
+    for (const warrior of this.warriors.values()) console.log(" -", warrior.summary());
   }
   //#endregion
 
   //#region Attacks
-  public registerAttack(kind: AttackKind, ctor: AttackConstructor): void {
-    this.attackConstructors.set(kind, ctor);
-  }
-
+  public registerAttack(kind: AttackKind, ctor: AttackConstructor): void { this.attackConstructors.set(kind, ctor); }
   public createAttack(kind: AttackKind): Attack {
     const Ctor = this.attackConstructors.get(kind);
     if (!Ctor) throw new Error(`Attack kind not registered: ${kind}`);
-      return new Ctor();
+    return new Ctor();
   }
-
-  public listAvailableAttacks(): AttackKind[] {
-    return Array.from(this.attackConstructors.keys());
+  
+  public listAvailableAttacks(): AttackKind[] { 
+    return Array.from(this.attackConstructors.keys()); 
   }
   //#endregion
 }
