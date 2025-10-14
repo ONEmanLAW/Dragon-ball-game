@@ -1,16 +1,50 @@
-// ─────────────────────────────────
-// Typage des événements de jeu
-// ─────────────────────────────────
+// GameEvents : contrats d’événements (pub/sub)
 
-export type GameEvent = | AttackExecutedEvent | StateChangedEvent | TurnChangedEvent | BattleEndedEvent;
-export type EventKind = "AttackExecuted" | "StateChanged" | "TurnChanged" | "BattleEnded";
+
+//#region Base
+export type EventKind =
+  | "AttackExecuted"
+  | "StateChanged"
+  | "TurnChanged"
+  | "BattleStarted"
+  | "BattleEnded"
+  | "EffectStarted"
+  | "EffectTick"
+  | "EffectEnded";
 
 export interface BaseEvent {
   kind: EventKind;
-  timestamp: number;
+  timestamp: number; // Date.now() (ms)
+}
+//#endregion
+
+
+//#region Effets (Decorators)
+export type EffectKind = "SuperSaiyan" | "Regeneration" | "EnergyLeech";
+
+export interface EffectStartedEvent extends BaseEvent {
+  kind: "EffectStarted";
+  who: string; // porteur
+  effect: EffectKind;
+  totalRounds: number;
 }
 
-//#region AttackExecuted
+export interface EffectTickEvent extends BaseEvent {
+  kind: "EffectTick";
+  who: string;
+  effect: EffectKind;
+  remainingRounds: number;
+}
+
+export interface EffectEndedEvent extends BaseEvent {
+  kind: "EffectEnded";
+  who: string;
+  effect: EffectKind;
+}
+//#endregion
+
+
+//#region Combat
 export interface AttackExecutedEvent extends BaseEvent {
   kind: "AttackExecuted";
   attacker: string;
@@ -21,29 +55,43 @@ export interface AttackExecutedEvent extends BaseEvent {
   defenderRemainingVitality: number;
   attackerRemainingKi: number;
 }
-//#endregion
 
-//#region StateChanged
 export interface StateChangedEvent extends BaseEvent {
   kind: "StateChanged";
   warrior: string;
   from: string;
   to: string;
 }
-//#endregion
 
-//#region TurnChanged
 export interface TurnChangedEvent extends BaseEvent {
   kind: "TurnChanged";
-  turnNumber: number;
+  turnNumber: number; // round courant (partagé P1/P2)
   active: string;
   opponent: string;
 }
-//#endregion
 
-// #region BattleEnded
+export interface BattleStartedEvent extends BaseEvent {
+  kind: "BattleStarted";
+  p1: string;
+  p2: string;
+}
+
 export interface BattleEndedEvent extends BaseEvent {
   kind: "BattleEnded";
   winner: string;
   loser: string;
 }
+//#endregion
+
+
+//#region Union
+export type GameEvent =
+  | AttackExecutedEvent
+  | StateChangedEvent
+  | TurnChangedEvent
+  | BattleStartedEvent
+  | BattleEndedEvent
+  | EffectStartedEvent
+  | EffectTickEvent
+  | EffectEndedEvent;
+//#endregion

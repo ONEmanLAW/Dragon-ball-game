@@ -7,14 +7,17 @@ html, body { height: 100%; }
 body {
   margin: 0;
   font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-  color: #1f2937;   
-  background: #f6f7fb;      
+  color: #1f2937;
+  background: #f6f7fb;
   line-height: 1.5;
 }
 
 /* Titres */
 h1 { font-size: 28px; margin: 24px 0; letter-spacing: .2px; }
 h3 { margin: 0 0 8px; font-size: 16px; font-weight: 600; color: #334155; }
+
+/* Utils */
+.mt-16 { margin-top: 16px; }
 
 /* Layout principal */
 .layout {
@@ -53,7 +56,7 @@ h3 { margin: 0 0 8px; font-size: 16px; font-weight: 600; color: #334155; }
   transition: box-shadow .2s ease, border-color .2s ease;
 }
 .card.active {
-  border-color: #2563eb; 
+  border-color: #2563eb;
   box-shadow: 0 0 0 3px rgba(37,99,235,.15);
 }
 .card-header {
@@ -66,10 +69,9 @@ h3 { margin: 0 0 8px; font-size: 16px; font-weight: 600; color: #334155; }
 .card-header .type { font-size: 13px; color: #6b7280; }
 .card-body { display: grid; gap: 6px; font-size: 14px; color: #111827; }
 
-
 .actions {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 10px;
 }
 button {
@@ -92,7 +94,6 @@ button:hover { border-color: #9ca3af; box-shadow: 0 4px 14px rgba(17,24,39,.08);
 button:active { transform: translateY(1px); }
 button:focus { outline: 3px solid rgba(37,99,235,.35); outline-offset: 2px; }
 button:disabled { opacity: .55; cursor: not-allowed; box-shadow: none; }
-
 
 #log {
   height: 260px;
@@ -174,4 +175,21 @@ button:disabled { opacity: .55; cursor: not-allowed; box-shadow: none; }
 #created-card .card-body { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 @media (max-width: 900px) {
   #created-card .card-body { grid-template-columns: 1fr; }
+}
+
+.effects {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin: 6px 0 8px;
+}
+.effects .badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 999px;
+  border: 1px solid #d1d5db;
+  font-size: 12px;
+  font-weight: 600;
+  background: #f8fafc;
+  color: #111827;
 }

@@ -4,8 +4,8 @@
     "type": "Saiyan",
     "name": "Goku",
     "description": "Proud Saiyan warrior",
-    "statsOverride": { "strength": 22, "ki": 100, "speed": 18, "vitality": 100 },
-    "attackLabels": { "Normal": "Basic Attack", "KiEnergy": "Kamehameha" }
+    "statsOverride": { "strength": 20, "ki": 100, "speed": 18, "vitality": 100 },
+    "attackLabels": { "Normal": "Basic Attack", "KiEnergy": "Kamehameha", "Special": "Super Saiyan (Goku SSJ1)" }
   },
   {
     "id": "vegeta",
@@ -13,15 +13,15 @@
     "name": "Vegeta",
     "description": "Prince of all Saiyans",
     "statsOverride": { "strength": 23, "ki": 100, "speed": 19, "vitality": 100 },
-    "attackLabels": { "Normal": "Basic Attack", "KiEnergy": "Final Flash" }
+    "attackLabels": { "Normal": "Basic Attack", "KiEnergy": "Final Flash", "Special": "Super Saiyan (Vegeta SSJ1)" }
   },
   {
     "id": "piccolo",
     "type": "Namekian",
     "name": "Piccolo",
     "description": "Wise Namekian strategist",
-    "statsOverride": { "strength": 18, "ki": 100, "speed": 16, "vitality": 100 },
-    "attackLabels": { "Normal": "Basic Attack", "KiEnergy": "Makankōsappō" }
+    "statsOverride": { "strength": 18, "ki": 1000, "speed": 16, "vitality": 100 },
+    "attackLabels": { "Normal": "Basic Attack", "KiEnergy": "Makankōsappō", "Special": "Regeneration" }
   },
   {
     "id": "c17",
@@ -29,7 +29,7 @@
     "name": "C-17",
     "description": "Relentless android",
     "statsOverride": { "strength": 24, "ki": 9999, "speed": 17, "vitality": 100 },
-    "attackLabels": { "Normal": "Basic Attack", "KiEnergy": "Laser Shot" }
+    "attackLabels": { "Normal": "Basic Attack", "KiEnergy": "Laser Shot", "Special": "Energy Leech" }
   },
   {
     "id": "c18",
@@ -37,6 +37,6 @@
     "name": "C-18",
     "description": "Powerful android",
     "statsOverride": { "strength": 24, "ki": 9999, "speed": 17, "vitality": 100 },
-    "attackLabels": { "Normal": "Basic Attack", "KiEnergy": "Laser Shot" }
+    "attackLabels": { "Normal": "Basic Attack", "KiEnergy": "Laser Shot", "Special": "Energy Leech" }
   }
 ]

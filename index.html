@@ -4,12 +4,12 @@
   <meta charset="utf-8" />
   <title>DBZ Game</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <link rel="stylesheet" href="/src/styles/main.css" />
+  <link rel="stylesheet" href="./src/styles/main.css" />
 </head>
 <body>
   <h1>DBZ Game</h1>
 
-  <!-- ── 1) CRÉATION DU PERSO ───────────────────────────────── -->
+  <!-- 1) CREATE -->
   <section id="create-section" class="panel">
     <h2>Create your warrior</h2>
 
@@ -46,12 +46,12 @@
     <div id="create-error" class="error" aria-live="polite"></div>
   </section>
 
-  <!-- ── 2) ROSTER + CHOIX P1/P2 ───────────────────────────── -->
+  <!-- 2) ROSTER + P1/P2 -->
   <section id="roster-section" class="panel" hidden>
     <h2>Your character</h2>
     <div id="created-card"></div>
 
-    <h3 style="margin-top:16px;">Choose fighters</h3>
+    <h3 class="mt-16">Choose fighters</h3>
     <div class="form-grid">
       <label>
         <span>Player 1</span>
@@ -68,7 +68,7 @@
     </div>
   </section>
 
-  <!-- ── 3) BATTLE UI ───────────────────────────────────────── -->
+  <!-- 3) BATTLE -->
   <section id="battle-section" hidden>
     <div class="layout">
       <div class="board">
@@ -82,6 +82,7 @@
         <div class="actions">
           <button id="btn-basic" disabled>Basic Attack</button>
           <button id="btn-ki" disabled>Ki Energy</button>
+          <button id="btn-special" disabled>Special</button>
         </div>
       </div>
 
@@ -92,6 +93,6 @@
     </div>
   </section>
 
-  <script type="module" src="/src/main.ts"></script>
+  <script type="module" src="./src/main.ts"></script>
 </body>
 </html>
