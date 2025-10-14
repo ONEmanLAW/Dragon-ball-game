@@ -9,7 +9,8 @@
     "strict": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
-    "outDir": "dist"
+
+    "noEmit": true
   },
-  "include": ["src", "electron"]
+  "include": ["src"]
 }

@@ -1,0 +1,17 @@
+{
+  "extends": "../tsconfig.json",
+  "compilerOptions": {
+    "noEmit": false,
+    "outDir": "../dist/electron",
+
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "target": "ES2020",
+
+    "types": ["node"],
+    "resolveJsonModule": true,
+    "esModuleInterop": true,
+    "sourceMap": true
+  },
+  "include": ["./**/*.ts"]
+}
