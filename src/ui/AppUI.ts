@@ -6,12 +6,14 @@ import presetsJson from "../data/warriors.json";
 import { CreateView } from "./views/CreateView";
 import { RosterView } from "./views/RosterView";
 import { BattleView } from "./views/BattleView";
+import { MainMenuView } from "./views/MainMenuView";
 
-type Screen = "create" | "roster" | "battle";
+type Screen = "menu" | "create" | "roster" | "battle";
 
 export class AppUI {
   private gm = GameManager.getInstance();
 
+  private menuView!: MainMenuView;
   private createView!: CreateView;
   private rosterView!: RosterView;
   private battleView!: BattleView;
@@ -22,6 +24,10 @@ export class AppUI {
     for (const p of presetsJson as WarriorPreset[]) this.gm.spawnPreset(p.id);
 
     // 2) instancier les vues
+    this.menuView = new MainMenuView({
+      onPlay: () => this.showOnly("create"),
+    });
+
     this.createView = new CreateView({
       onCreated: (w: Warrior) => {
         this.gm.registerWarrior(w);
@@ -45,20 +51,22 @@ export class AppUI {
       },
     });
 
-    // 3) monter les vues (listeners + cache DOM)
+    // 3) monter les vues
+    this.menuView.mount();
     this.createView.mount();
     this.rosterView.mount();
     this.battleView.mount();
 
-    // 4) écran initial
-    this.showOnly("create");
+    // 4) écran initial -> Main Menu
+    this.showOnly("menu");
     this.rosterView.refreshRoster();
   }
 
   private showOnly(which: Screen): void {
+    (document.getElementById("menu-section") as HTMLElement).hidden   = which !== "menu";
     (document.getElementById("create-section") as HTMLElement).hidden = which !== "create";
     (document.getElementById("roster-section") as HTMLElement).hidden = which !== "roster";
     (document.getElementById("battle-section") as HTMLElement).hidden = which !== "battle";
-    if (which !== "battle") this.battleView.stop(); // nettoie subs/logique combat
+    if (which !== "battle") this.battleView.stop();
   }
 }

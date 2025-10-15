@@ -1,59 +1,193 @@
-/* src/styles/main.css
-   UI minimale, propre, sans variables. */
-
-/* Reset léger */
+/* =========
+   RESET
+   ========= */
 *, *::before, *::after { box-sizing: border-box; }
 html, body { height: 100%; }
 body {
   margin: 0;
   font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
   color: #1f2937;
-  background: #f6f7fb;
+  background: #0b1020; /* fond général sombre pour mieux "poser" le stage */
   line-height: 1.5;
 }
+[hidden] { display: none !important; }
 
-/* Titres */
-h1 { font-size: 28px; margin: 24px 0; letter-spacing: .2px; }
-h3 { margin: 0 0 8px; font-size: 16px; font-weight: 600; color: #334155; }
-
-/* Utils */
-.mt-16 { margin-top: 16px; }
-
-/* Layout principal */
-.layout {
-  display: grid;
-  grid-template-columns: 1fr 320px;
-  gap: 20px;
-  align-items: start;
-  max-width: 1100px;
-  padding: 20px;
-  margin: 0 auto;
+/* =========
+   STAGE CONFIG (modifiable)
+   ========= */
+:root{
+  --stage-w: 1200px; /* largeur du stage (toutes vues) */
+  --stage-h: 720px;  /* hauteur du stage (toutes vues) */
+  --stage-pad: 20px; /* padding interne */
+  --panel-radius: 14px;
+  --panel-border: 1px solid #20253a;
+  --panel-shadow: 0 18px 48px rgba(0,0,0,.35);
+  --panel-bg: #0f162e;     /* panneau "console" */
+  --panel-accent: #1f2a4a;  /* légèrement plus clair pour les cartes internes */
+  --text-weak: #9aa4c0;
 }
 
-/* Plateau */
+/* =========
+   VUES PLEIN ÉCRAN
+   ========= */
+.view {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  overflow: auto;
+}
+
+/* Le "stage" (même taille partout) */
+.view > .view__card,
+.view > .view__content,
+.view.view--menu > .menu-center {
+  width: var(--stage-w);
+  height: var(--stage-h);
+  max-width: 96vw;
+  max-height: 92vh;
+  border: var(--panel-border);
+  border-radius: var(--panel-radius);
+  background: var(--panel-bg);
+  box-shadow: var(--panel-shadow);
+  padding: var(--stage-pad);
+  display: block;
+}
+
+/* ===== Main Menu ===== */
+.view--menu { background: #0b1020; }
+.menu-center {
+  display: grid;
+  place-items: center;
+}
+.play-img {
+  width: clamp(160px, 20vw, 260px);
+  height: auto;
+  cursor: pointer;
+  user-select: none;
+  transition: transform .12s ease, filter .2s ease, box-shadow .2s ease;
+  border-radius: 16px;
+  box-shadow: 0 10px 28px rgba(0,0,0,.45);
+  display: flex;
+}
+.play-img:hover { transform: translateY(-2px) scale(1.02); filter: brightness(1.05); }
+.play-img:active { transform: translateY(0); }
+.play-img:focus { outline: 3px solid rgba(59,130,246,.6); outline-offset: 4px; }
+
+/* ===== Titres / textes ===== */
+h2 { margin: 0 0 14px; font-size: 22px; letter-spacing: .2px; color: #e6ebff; }
+h3 { margin: 0 0 10px; font-size: 16px; font-weight: 700; color: #c5d0f5; }
+.mt-16 { margin-top: 16px; }
+.error { margin-top: 10px; color: #ff6b6b; font-weight: 700; font-size: 14px; }
+
+/* =========
+   CREATE & ROSTER
+   ========= */
+.view__card {
+  /* Le stage “formulaire” scrolle à l’intérieur si besoin */
+  overflow: auto;
+}
+
+/* Form */
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+.form-grid label { display: grid; gap: 6px; font-size: 14px; color: #c5d0f5; }
+.form-grid input, .form-grid select {
+  border: 1px solid #2a3352;
+  border-radius: 10px;
+  padding: 12px 14px;
+  font-size: 14px;
+  background: #0c1328;
+  color: #e6ebff;
+}
+.form-grid input::placeholder { color: #7380a9; }
+.row-buttons { margin-top: 12px; display: flex; gap: 10px; }
+button {
+  appearance: none;
+  border: 1px solid #2a3352;
+  background: #101a36;
+  color: #e6ebff;
+  border-radius: 10px;
+  padding: 12px 14px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform .04s ease, box-shadow .2s ease, border-color .2s ease, background-color .2s ease;
+}
+button:hover { border-color: #3a4570; box-shadow: 0 6px 18px rgba(0,0,0,.35); }
+button:active { transform: translateY(1px); }
+button:focus { outline: 3px solid rgba(37,99,235,.45); outline-offset: 2px; }
+button:disabled { opacity: .55; cursor: not-allowed; box-shadow: none; }
+
+/* Carte “created” */
+#created-card .card { background: var(--panel-accent); border: 1px solid #2a3352; }
+#created-card .card-body { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+@media (max-width: 900px) {
+  #created-card .card-body { grid-template-columns: 1fr; }
+}
+
+/* =========
+   BATTLE (le stage remplit la hauteur)
+   ========= */
+.view__content {
+  overflow: hidden; /* on gère les scrolls à l’intérieur */
+}
+
+/* Mise en page interne du stage Battle */
+.layout {
+  height: 100%;
+  display: grid;
+  grid-template-columns: 1fr 380px; /* panneau droit plus large */
+  grid-auto-rows: 1fr;
+  gap: 22px;
+  align-items: stretch;
+}
+
+/* Colonne droite (log) prend toute la hauteur du stage */
+.layout > div:not(.board) {
+  display: flex;
+  flex-direction: column;
+  min-height: 0; /* autorise le flex child (#log) à rétrécir */
+}
+
+/* Plateau de combat occupe toute la hauteur du stage */
 .board {
-  background: #fff;
-  border: 1px solid #e5e7eb;
+  background: var(--panel-accent);
+  border: 1px solid #2a3352;
   border-radius: 12px;
   padding: 16px;
-  box-shadow: 0 6px 18px rgba(17,24,39,.06);
-}
-#turn { font-weight: 700; font-size: 18px; margin-bottom: 12px; color: #0f172a; }
+  box-shadow: 0 6px 18px rgba(0,0,0,.25);
 
+  display: grid;
+  grid-template-rows: auto 1fr auto; /* entête / cartes / actions */
+  gap: 12px;
+}
+#turn { font-weight: 800; font-size: 20px; margin-bottom: 2px; color: #e6ebff; }
+
+/* Zone cartes prend l’espace restant */
 .row {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 12px;
-  margin-bottom: 12px;
+  min-height: 0;
+}
+@media (max-width: 900px) {
+  .row { grid-template-columns: 1fr; }
 }
 
 /* Cartes perso */
 .card {
-  background: #fff;
-  border: 1px solid #e5e7eb;
+  background: #101a36;
+  border: 1px solid #2a3352;
   border-radius: 12px;
   padding: 12px;
   transition: box-shadow .2s ease, border-color .2s ease;
+  color: #e6ebff;
+  min-height: 220px;
 }
 .card.active {
   border-color: #2563eb;
@@ -65,118 +199,34 @@ h3 { margin: 0 0 8px; font-size: 16px; font-weight: 600; color: #334155; }
   justify-content: space-between;
   margin-bottom: 6px;
 }
-.card-header .name { font-weight: 700; font-size: 16px; color: #0f172a; }
-.card-header .type { font-size: 13px; color: #6b7280; }
-.card-body { display: grid; gap: 6px; font-size: 14px; color: #111827; }
+.card-header .name { font-weight: 800; font-size: 16px; color: #e6ebff; }
+.card-header .type { font-size: 13px; color: var(--text-weak); }
+.card-body { display: grid; gap: 6px; font-size: 14px; color: #d7defa; }
 
+/* Actions */
 .actions {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 10px;
 }
-button {
-  appearance: none;
-  border: 1px solid #d1d5db;
-  background: #ffffff;
-  color: #111827;
-  border-radius: 10px;
-  padding: 10px 12px;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  transition:
-    transform .04s ease,
-    box-shadow .2s ease,
-    border-color .2s ease,
-    background-color .2s ease;
-}
-button:hover { border-color: #9ca3af; box-shadow: 0 4px 14px rgba(17,24,39,.08); }
-button:active { transform: translateY(1px); }
-button:focus { outline: 3px solid rgba(37,99,235,.35); outline-offset: 2px; }
-button:disabled { opacity: .55; cursor: not-allowed; box-shadow: none; }
 
+/* Log colonne droite : prend toute la hauteur, scroll */
 #log {
-  height: 260px;
+  flex: 1;
+  min-height: 0;
   overflow: auto;
-  background: #ffffff;
-  border: 1px solid #e5e7eb;
+  background: #101a36;
+  border: 1px solid #2a3352;
   border-radius: 12px;
   padding: 10px;
-  box-shadow: inset 0 1px 0 rgba(0,0,0,.02);
-}
-#log p {
-  margin: 0 0 6px;
+  box-shadow: inset 0 1px 0 rgba(0,0,0,.06);
+  color: #cbd7ff;
   font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
   font-size: 13px;
-  color: #334155;
 }
+#log p { margin: 0 0 6px; }
 
-@media (max-width: 900px) {
-  .layout { grid-template-columns: 1fr; padding: 16px; }
-  .row { grid-template-columns: 1fr; }
-  .actions { grid-template-columns: 1fr; }
-  #log { height: 200px; }
-  h1 { font-size: 22px; margin: 16px 0; }
-}
-
-.setup {
-  display: grid;
-  grid-template-columns: 1fr 1fr auto;
-  gap: 10px;
-  margin-bottom: 14px;
-  align-items: end;
-  cursor: pointer;
-}
-.setup label {
-  display: grid;
-  gap: 6px;
-  font-size: 13px;
-  color: #334155;
-  cursor: pointer;
-}
-.setup select {
-  appearance: none;
-  border: 1px solid #d1d5db;
-  background: #fff;
-  border-radius: 10px;
-  padding: 10px 12px;
-  font-size: 14px;
-  cursor: pointer;
-}
-
-.panel {
-  background: #fff;
-  border: 1px solid #e5e7eb;
-  border-radius: 12px;
-  padding: 16px;
-  margin: 0 auto 16px;
-  max-width: 1100px;
-  box-shadow: 0 6px 18px rgba(17,24,39,.06);
-}
-
-.form-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 12px;
-}
-.form-grid label { display: grid; gap: 6px; font-size: 14px; color: #374151; }
-.form-grid input, .form-grid select {
-  border: 1px solid #d1d5db;
-  border-radius: 10px;
-  padding: 10px 12px;
-  font-size: 14px;
-  background: #fff;
-}
-
-.row-buttons { margin-top: 12px; display: flex; gap: 10px; }
-
-.error { margin-top: 10px; color: #b91c1c; font-weight: 600; font-size: 14px; }
-
-#created-card .card-body { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-@media (max-width: 900px) {
-  #created-card .card-body { grid-template-columns: 1fr; }
-}
-
+/* Badges d’effets */
 .effects {
   display: flex;
   gap: 6px;
@@ -187,9 +237,9 @@ button:disabled { opacity: .55; cursor: not-allowed; box-shadow: none; }
   display: inline-block;
   padding: 2px 8px;
   border-radius: 999px;
-  border: 1px solid #d1d5db;
+  border: 1px solid #2a3352;
   font-size: 12px;
-  font-weight: 600;
-  background: #f8fafc;
-  color: #111827;
+  font-weight: 700;
+  background: #0c1328;
+  color: #e6ebff;
 }

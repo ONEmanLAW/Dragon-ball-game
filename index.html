@@ -7,88 +7,107 @@
   <link rel="stylesheet" href="./src/styles/main.css" />
 </head>
 <body>
-  <h1>DBZ Game</h1>
 
-  <!-- 1) CREATE -->
-  <section id="create-section" class="panel">
-    <h2>Create your warrior</h2>
-
-    <div class="form-grid">
-      <label>
-        <span>Name</span>
-        <input id="input-name" type="text" placeholder="Your warrior name" />
-      </label>
-
-      <label>
-        <span>Description</span>
-        <input id="input-description" type="text" placeholder="Short flavor text" />
-      </label>
-
-      <label>
-        <span>Race</span>
-        <select id="select-race">
-          <option value="Saiyan" selected>Saiyan</option>
-          <option value="Namekian">Namekian</option>
-          <option value="Android">Android</option>
-        </select>
-      </label>
-
-      <label>
-        <span>KI Technique</span>
-        <select id="select-ki"></select>
-      </label>
-    </div>
-
-    <div class="row-buttons">
-      <button id="btn-create">Create character</button>
-    </div>
-
-    <div id="create-error" class="error" aria-live="polite"></div>
-  </section>
-
-  <!-- 2) ROSTER + P1/P2 -->
-  <section id="roster-section" class="panel" hidden>
-    <h2>Your character</h2>
-    <div id="created-card"></div>
-
-    <h3 class="mt-16">Choose fighters</h3>
-    <div class="form-grid">
-      <label>
-        <span>Player 1</span>
-        <select id="select-p1"></select>
-      </label>
-      <label>
-        <span>Player 2</span>
-        <select id="select-p2"></select>
-      </label>
-    </div>
-
-    <div class="row-buttons">
-      <button id="btn-start-battle">Start Battle</button>
+  <!-- 0) MAIN MENU — plein écran, juste un bouton image centré -->
+  <section id="menu-section" class="view view--menu">
+    <div class="menu-center">
+      <img
+        id="btn-play"
+        src="../play.png"
+        alt="Play"
+        class="play-img"
+        role="button"
+        tabindex="0"
+      />
     </div>
   </section>
 
-  <!-- 3) BATTLE -->
-  <section id="battle-section" hidden>
-    <div class="layout">
-      <div class="board">
-        <div id="turn">Turn 1 — Active: ?</div>
+  <!-- 1) CREATE (plein écran) -->
+  <section id="create-section" class="view" hidden>
+    <div class="view__card">
+      <h2>Create your warrior</h2>
 
-        <div class="row">
-          <div id="card-1"></div>
-          <div id="card-2"></div>
-        </div>
+      <div class="form-grid">
+        <label>
+          <span>Name</span>
+          <input id="input-name" type="text" placeholder="Your warrior name" />
+        </label>
 
-        <div class="actions">
-          <button id="btn-basic" disabled>Basic Attack</button>
-          <button id="btn-ki" disabled>Ki Energy</button>
-          <button id="btn-special" disabled>Special</button>
-        </div>
+        <label>
+          <span>Description</span>
+          <input id="input-description" type="text" placeholder="Short flavor text" />
+        </label>
+
+        <label>
+          <span>Race</span>
+          <select id="select-race">
+            <option value="Saiyan" selected>Saiyan</option>
+            <option value="Namekian">Namekian</option>
+            <option value="Android">Android</option>
+          </select>
+        </label>
+
+        <label>
+          <span>KI Technique</span>
+          <select id="select-ki"></select>
+        </label>
       </div>
 
-      <div>
-        <h3>Log</h3>
-        <div id="log"></div>
+      <div class="row-buttons">
+        <button id="btn-create">Create character</button>
+      </div>
+
+      <div id="create-error" class="error" aria-live="polite"></div>
+    </div>
+  </section>
+
+  <!-- 2) ROSTER + P1/P2 (plein écran) -->
+  <section id="roster-section" class="view" hidden>
+    <div class="view__card">
+      <h2>Your character</h2>
+      <div id="created-card"></div>
+
+      <h3 class="mt-16">Choose fighters</h3>
+      <div class="form-grid">
+        <label>
+          <span>Player 1</span>
+          <select id="select-p1"></select>
+        </label>
+        <label>
+          <span>Player 2</span>
+          <select id="select-p2"></select>
+        </label>
+      </div>
+
+      <div class="row-buttons">
+        <button id="btn-start-battle">Start Battle</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3) BATTLE (plein écran) -->
+  <section id="battle-section" class="view" hidden>
+    <div class="view__content">
+      <div class="layout">
+        <div class="board">
+          <div id="turn">Turn 1 — Active: ?</div>
+
+          <div class="row">
+            <div id="card-1"></div>
+            <div id="card-2"></div>
+          </div>
+
+          <div class="actions">
+            <button id="btn-basic" disabled>Basic Attack</button>
+            <button id="btn-ki" disabled>Ki Energy</button>
+            <button id="btn-special" disabled>Special</button>
+          </div>
+        </div>
+
+        <div>
+          <h3>Log</h3>
+          <div id="log"></div>
+        </div>
       </div>
     </div>
   </section>
