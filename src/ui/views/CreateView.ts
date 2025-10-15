@@ -9,12 +9,11 @@ const el = <T extends HTMLElement>(id: string) => {
   return n as T;
 };
 
-const IMG_BASE = "../../../";
 const DEFAULT_IMAGES: Record<WarriorType, string> = {
-  Saiyan:   `${IMG_BASE}goku_idle.png`,
-  Namekian: `${IMG_BASE}picolo_idle.png`,
-  Android:  `${IMG_BASE}android17_idle.png`,
-} as const;
+  Saiyan:   new URL("../../assets/characters/goku_idle.png", import.meta.url).href,
+  Namekian: new URL("../../assets/characters/picolo_idle.png", import.meta.url).href,
+  Android:  new URL("../../assets/characters/android17_idle.png", import.meta.url).href,
+};
 
 export class CreateView {
   private readonly gm = GameManager.getInstance();
