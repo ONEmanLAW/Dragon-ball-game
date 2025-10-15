@@ -8,11 +8,11 @@ export const EFFECT_DEFAULT_ROUNDS = 2 as const; // Durée standard des effets
 //#endregion
 
 //#region Attaques
-export const NORMAL_ATTACK_KI_COST       = 30 as const;
-export const NORMAL_STRENGTH_MULTIPLIER  = 1.0 as const;
-export const NORMAL_ATTACK_NAME          = "Basic Attack" as const;
+export const NORMAL_ATTACK_KI_COST        = 30 as const;
+export const NORMAL_STRENGTH_MULTIPLIER   = 1.0 as const;
+export const NORMAL_ATTACK_NAME           = "Basic Attack" as const;
 
-export const KI_ENERGY_ATTACK_KI_COST    = 50 as const;
+export const KI_ENERGY_ATTACK_KI_COST     = 50 as const;
 export const KI_ENERGY_STRENGTH_MULTIPLIER = 1.5 as const;
 
 // Label UI par race pour l'attaque Ki/Energy (affichage only)
@@ -29,6 +29,9 @@ export const SPECIAL_LABEL_BY_RACE: Record<WarriorType, string> = {
   Namekian: "Regeneration",
   Android:  "Energy Leech",
 };
+
+export const SPECIAL_REQUIRED_KI       = 60 as const;   // Ki minimal pour transformer
+export const SPECIAL_LOW_HEALTH_RATIO  = 0.25 as const; // ou PV ≤ 25% autorise aussi
 //#endregion
 
 export const KI_CHOICES_BY_RACE: Record<WarriorType, string[]> = {
@@ -47,14 +50,14 @@ export const LEECH_KI_PER_TICK  = 15 as const; // -KI sur la cible par action
 //#endregion
 
 //#region State principal
-export const STATE_NORMAL_DAMAGE_MULT    = 1.0 as const;
-export const STATE_NORMAL_KI_COST_MULT   = 1.0 as const;
+export const STATE_NORMAL_DAMAGE_MULT     = 1.0 as const;
+export const STATE_NORMAL_KI_COST_MULT    = 1.0 as const;
 
-export const STATE_INJURED_DAMAGE_MULT   = 0.8 as const; // -20% dmg
-export const STATE_INJURED_KI_COST_MULT  = 1.0 as const;
+export const STATE_INJURED_DAMAGE_MULT    = 0.8 as const; // -20% dmg
+export const STATE_INJURED_KI_COST_MULT   = 1.0 as const;
 
-export const STATE_EXHAUSTED_DAMAGE_MULT = 0.9 as const; // -10% dmg
-export const STATE_EXHAUSTED_KI_COST_MULT= 1.2 as const; // +20% cost
+export const STATE_EXHAUSTED_DAMAGE_MULT  = 0.9 as const; // -10% dmg
+export const STATE_EXHAUSTED_KI_COST_MULT = 1.2 as const; // +20% cost
 //#endregion
 
 //#region Stats de base par race

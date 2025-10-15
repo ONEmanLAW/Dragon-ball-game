@@ -3,7 +3,11 @@ import { GameManager } from "../../app/GameManager";
 import type { Warrior } from "../../domain/Warrior";
 import type { AttackKind } from "../../domain/Attacks";
 import { hasUsedSpecialInCurrentBattle } from "../../domain/Attacks";
-import { SPECIAL_UNLOCK_TURN } from "../../domain/Balance";
+import {
+  SPECIAL_UNLOCK_TURN,
+  SPECIAL_REQUIRED_KI,
+  SPECIAL_LOW_HEALTH_RATIO,
+} from "../../domain/Balance";
 import { eventBus } from "../../events/EventBus";
 import type {
   GameEvent,
@@ -37,13 +41,13 @@ export class BattleView {
   constructor(private readonly cb: { onExit: () => void }) {}
 
   public mount(): void {
-    this.section = document.getElementById("battle-section") as HTMLElement;
-    this.elTurn = document.getElementById("turn") as HTMLDivElement;
-    this.elLog = document.getElementById("log") as HTMLDivElement;
-    this.elP1 = document.getElementById("card-1") as HTMLDivElement;
-    this.elP2 = document.getElementById("card-2") as HTMLDivElement;
+    this.section  = document.getElementById("battle-section") as HTMLElement;
+    this.elTurn   = document.getElementById("turn") as HTMLDivElement;
+    this.elLog    = document.getElementById("log") as HTMLDivElement;
+    this.elP1     = document.getElementById("card-1") as HTMLDivElement;
+    this.elP2     = document.getElementById("card-2") as HTMLDivElement;
     this.btnBasic = document.getElementById("btn-basic") as HTMLButtonElement;
-    this.btnKi = document.getElementById("btn-ki") as HTMLButtonElement;
+    this.btnKi    = document.getElementById("btn-ki") as HTMLButtonElement;
     this.btnSpecial = document.getElementById("btn-special") as HTMLButtonElement;
 
     this.btnBasic.addEventListener("click", () => this.handleAttack("Normal"));
@@ -82,7 +86,6 @@ export class BattleView {
     }
   }
 
-  // -------- EventBus
   private ensureSubscribed(): void {
     if (this.subscribed) return;
     eventBus.subscribe(this.observer);
@@ -94,9 +97,7 @@ export class BattleView {
     this.subscribed = false;
   }
 
-  private observer = {
-    update: (event: GameEvent) => this.onGameEvent(event),
-  };
+  private observer = { update: (event: GameEvent) => this.onGameEvent(event) };
 
   private onGameEvent(event: GameEvent): void {
     switch (event.kind) {
@@ -153,10 +154,9 @@ export class BattleView {
     return "Energy Leech";
   }
 
-  // -------- Render
   private renderAll(): void {
     if (!this.turn) return;
-    const active = this.turn.getActive();
+    const active   = this.turn.getActive();
     const opponent = this.turn.getOpponent();
 
     this.elTurn.textContent = `Turn ${this.turn.getTurnNumber()} — Active: ${active.name}`;
@@ -165,19 +165,28 @@ export class BattleView {
 
     const ongoing = !this.battleOver && active.isAlive() && opponent.isAlive();
 
-    this.btnBasic.textContent  = active.getAttackLabel?.("Normal")   ?? "Basic Attack";
-    this.btnKi.textContent     = active.getAttackLabel?.("KiEnergy") ?? "Ki Energy";
-    this.btnSpecial.textContent= active.getAttackLabel?.("Special")  ?? "Special";
+    this.btnBasic.textContent   = active.getAttackLabel?.("Normal")   ?? "Basic Attack";
+    this.btnKi.textContent      = active.getAttackLabel?.("KiEnergy") ?? "Ki Energy";
+    this.btnSpecial.textContent = active.getAttackLabel?.("Special")  ?? "Special";
+
+    // Règles UI d'activation
+    const turnOK = this.turn.getTurnNumber() >= SPECIAL_UNLOCK_TURN;
+    const used   = hasUsedSpecialInCurrentBattle(active.name);
+    const gateOK = active.getKi() >= SPECIAL_REQUIRED_KI
+      || (active.getVitality() / active.stats.vitality) <= SPECIAL_LOW_HEALTH_RATIO;
 
     this.btnBasic.disabled  = !ongoing;
     this.btnKi.disabled     = !ongoing;
+    this.btnSpecial.disabled = !ongoing || !turnOK || used || !gateOK;
 
-    const turnOK = this.turn.getTurnNumber() >= SPECIAL_UNLOCK_TURN;
-    const used = hasUsedSpecialInCurrentBattle(active.name);
-    this.btnSpecial.disabled = !ongoing || !turnOK || used;
-    this.btnSpecial.title = !ongoing ? "" : (!turnOK
-      ? `Available from turn ${SPECIAL_UNLOCK_TURN}.`
-      : (used ? "Already used this battle." : ""));
+    this.btnSpecial.title = !ongoing ? "" :
+      (!turnOK
+        ? `Available from turn ${SPECIAL_UNLOCK_TURN}.`
+        : used
+          ? "Already used this battle."
+          : (!gateOK
+              ? `Requires ≥ ${SPECIAL_REQUIRED_KI} Ki or low HP.`
+              : ""));
   }
 
   private renderWarriorCard(root: HTMLDivElement, w: Warrior, active: boolean): void {

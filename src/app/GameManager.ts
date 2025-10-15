@@ -2,7 +2,8 @@
 // Centralise : warriors instanciés, constructeurs d’attaques et presets.
 
 import type { Warrior } from "../domain/Warrior";
-import { Attack, type AttackKind, NormalAttack, KiEnergyAttack, SpecialAttack } from "../domain/Attacks";
+import { Attack, type AttackKind, NormalAttack, KiEnergyAttack } from "../domain/Attacks";
+import { SpecialAttackProxy } from "../domain/AttackProxies";
 import { WarriorFactory } from "./WarriorFactory";
 import type { WarriorPreset } from "../data/WarriorPreset";
 
@@ -19,9 +20,10 @@ export class GameManager {
 
   //#region Singleton
   private constructor() {
-    this.registerAttack("Normal", NormalAttack);
+    this.registerAttack("Normal",   NormalAttack);
     this.registerAttack("KiEnergy", KiEnergyAttack);
-    this.registerAttack("Special", SpecialAttack);
+    // Proxy sur la spéciale attaque
+    this.registerAttack("Special",  SpecialAttackProxy);
   }
   public static getInstance(): GameManager {
     if (!GameManager.instance) GameManager.instance = new GameManager();
