@@ -38,5 +38,29 @@
     "description": "Powerful android",
     "statsOverride": { "strength": 24, "ki": 9999, "speed": 17, "vitality": 100 },
     "attackLabels": { "Normal": "Basic Attack", "KiEnergy": "Laser Shot", "Special": "Energy Leech" }
+  },
+  {
+  "id": "trunks",
+  "type": "Saiyan",
+  "name": "Trunks",
+  "description": "Time-traveling half-Saiyan swordsman",
+  "statsOverride": { "strength": 22, "ki": 100, "speed": 19, "vitality": 100 },
+  "attackLabels": { "Normal": "Basic Attack", "KiEnergy": "Final Flash", "Special": "Super Saiyan (Trunks SSJ1)" }
+  },
+  {
+    "id": "gohan",
+    "type": "Saiyan",
+    "name": "Gohan",
+    "description": "Scholar with hidden power",
+    "statsOverride": { "strength": 21, "ki": 100, "speed": 20, "vitality": 100 },
+    "attackLabels": { "Normal": "Basic Attack", "KiEnergy": "Kamehameha", "Special": "Super Saiyan (Gohan SSJ1)" }
+  },
+  {
+    "id": "c16",
+    "type": "Android",
+    "name": "C-16",
+    "description": "Gentle giant android",
+    "statsOverride": { "strength": 26, "ki": 9999, "speed": 15, "vitality": 100 },
+    "attackLabels": { "Normal": "Basic Attack", "KiEnergy": "Laser Shot", "Special": "Energy Leech" }
   }
 ]
