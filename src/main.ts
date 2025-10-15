@@ -1,5 +1,3 @@
-// Entry — bootstrap UI
+import { AppUI } from "./ui/AppUI";
 
-import { bootGameUI } from "./ui/GameUi";
-
-window.addEventListener("DOMContentLoaded", bootGameUI);
+new AppUI().boot();
