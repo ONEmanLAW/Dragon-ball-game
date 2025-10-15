@@ -1,0 +1,73 @@
+.view#battle-section > .view__content {
+  overflow: hidden;
+}
+
+.layout {
+  height: 100%;
+  display: grid;
+  grid-template-columns: 1fr 380px;
+  grid-auto-rows: 1fr;
+  gap: 22px;
+  align-items: stretch;
+}
+
+.layout > div:not(.board) {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.board {
+  background: var(--bg-accent);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: 0 6px 18px rgba(0,0,0,.25);
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  gap: 12px;
+}
+
+#turn {
+  font-weight: 800;
+  font-size: 20px;
+  margin-bottom: 2px;
+  color: #e6ebff;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  min-height: 0;
+}
+
+@media (max-width: 900px) {
+  .row {
+    grid-template-columns: 1fr;
+  }
+}
+
+.actions {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+#log {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  background: var(--bg-sub);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 10px;
+  box-shadow: inset 0 1px 0 rgba(0,0,0,.06);
+  color: #cbd7ff;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+  font-size: 13px;
+}
+
+#log p {
+  margin: 0 0 6px;
+}

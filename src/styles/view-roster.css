@@ -1,0 +1,3 @@
+.view#roster-section > .view__card {
+  overflow: auto;
+}

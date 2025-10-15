@@ -1,0 +1,32 @@
+.view--menu {
+  background: #0b1020;
+}
+
+.menu-center {
+  display: grid;
+  place-items: center;
+}
+
+.play-img {
+  width: clamp(160px, 20vw, 260px);
+  height: auto;
+  cursor: pointer;
+  user-select: none;
+  transition: transform .12s ease, filter .2s ease, box-shadow .2s ease;
+  border-radius: 16px;
+  box-shadow: 0 10px 28px rgba(0,0,0,.45);
+}
+
+.play-img:hover {
+  transform: translateY(-2px) scale(1.02);
+  filter: brightness(1.05);
+}
+
+.play-img:active {
+  transform: translateY(0);
+}
+
+.play-img:focus {
+  outline: 3px solid rgba(59,130,246,.6);
+  outline-offset: 4px;
+}
