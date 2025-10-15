@@ -10,7 +10,7 @@ import type {
   EffectEndedEvent,
   EffectKind,
 } from "../events/GameEvents";
-import type { Warrior } from "./Warrior";
+import { Warrior, WarriorType } from "./Warrior";
 
 import {
   EFFECT_DEFAULT_ROUNDS,
@@ -166,10 +166,13 @@ export class EnergyLeechEffect extends WarriorEffect {
 }
 //#endregion
 
-// Aliases de compat si l'ancien nom Decorator est encore importé
-export { SuperSaiyanEffect as SuperSaiyanDecorator };
-export { RegenerationEffect as RegenerationDecorator };
-export { EnergyLeechEffect as EnergyLeechDecorator };
+export type EffectFactory = (owner: Warrior, target: Warrior) =>  WarriorEffect;
+
+export const SPECIAL_EFFECT_BY_RACE: Record<WarriorType, EffectFactory> = {
+  Saiyan:   (o, _t) => new SuperSaiyanEffect(o, EFFECT_DEFAULT_ROUNDS),
+  Namekian: (o, _t) => new RegenerationEffect(o, EFFECT_DEFAULT_ROUNDS),
+  Android:  (o,  t) => new EnergyLeechEffect(o, t, EFFECT_DEFAULT_ROUNDS),
+};
 
 // Export base si besoin de typer
 export { WarriorEffect };

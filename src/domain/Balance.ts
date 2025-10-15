@@ -31,6 +31,12 @@ export const SPECIAL_LABEL_BY_RACE: Record<WarriorType, string> = {
 };
 //#endregion
 
+export const KI_CHOICES_BY_RACE: Record<WarriorType, string[]> = {
+  Saiyan:   ["Kamehameha", "Final Flash"],
+  Namekian: ["Makankōsappō"],
+  Android:  ["Laser Shot"],
+};
+
 //#region Effets spéciaux
 export const SSJ_STR_SPD_MULTIPLIER = 1.2 as const; // +20% STR/SPD
 

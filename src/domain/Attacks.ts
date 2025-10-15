@@ -24,9 +24,7 @@ import {
 } from "./Balance";
 
 import {
-  SuperSaiyanEffect,
-  RegenerationEffect,
-  EnergyLeechEffect,
+  SPECIAL_EFFECT_BY_RACE
 } from "./Effects";
 
 //#region Combat state
@@ -171,34 +169,24 @@ export class SpecialAttack extends Attack {
     if (currentTurn < SPECIAL_UNLOCK_TURN) {
       throw new Error(`Special is available from turn ${SPECIAL_UNLOCK_TURN}.`);
     }
-    if (!attacker.isAlive()) 
-      throw new Error(`${attacker.name} cannot act (down).`);
-    if (!defender.isAlive())
-      throw new Error(`${defender.name} is already down.`);
+    if (!attacker.isAlive()) throw new Error(`${attacker.name} cannot act (down).`);
+    if (!defender.isAlive()) throw new Error(`${defender.name} is already down.`);
     if (specialUsedThisBattle.has(attacker.name)) {
       throw new Error(`${attacker.name} has already used their Special this battle.`);
     }
 
-    // Coût (garde le pipeline uniforme)
+    // coût (0) gardé pour pipeline cohérent
     const adjustedCost = attacker.adjustKiCost(this.kiCost);
     const kiBefore = attacker.getKi();
     attacker.spendKi(adjustedCost);
     const kiAfter = attacker.getKi();
     const kiSpent = Math.max(0, kiBefore - kiAfter);
 
-    // Appliquer l’effet (durée standard configurable)
-    const rounds = EFFECT_DEFAULT_ROUNDS;
-    switch (attacker.type) {
-      case "Saiyan":
-        new SuperSaiyanEffect(attacker, rounds).apply(); // buff STR/SPD
-        break;
-      case "Namekian":
-        new RegenerationEffect(attacker, rounds).apply(); // +KI/+VIT par action
-        break;
-      case "Android":
-        new EnergyLeechEffect(attacker, defender, rounds).apply(); // −KI sur la cible
-        break;
-    }
+    // ✅ plus de switch(race) : on récupère la fabrique et on applique
+    const factory = SPECIAL_EFFECT_BY_RACE[attacker.type];
+    if (!factory) throw new Error(`No special effect registered for race: ${attacker.type}`);
+    const effect = factory(attacker, defender);
+    effect.apply();
 
     specialUsedThisBattle.add(attacker.name);
 

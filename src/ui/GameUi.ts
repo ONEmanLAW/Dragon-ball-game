@@ -22,7 +22,7 @@ import presetsJson from "../data/warriors.json";
 
 import { WarriorBuilder } from "../build/WarriorBuilder";
 import { hasUsedSpecialInCurrentBattle, type AttackKind } from "../domain/Attacks";
-import { SPECIAL_UNLOCK_TURN } from "../domain/Balance";
+import { SPECIAL_UNLOCK_TURN, KI_CHOICES_BY_RACE } from "../domain/Balance";
 
 //#region Types DOM
 type El<T extends HTMLElement> = T;
@@ -151,7 +151,7 @@ export class GameUI {
   }
 
   private populateKiChoices(race: WarriorType): void {
-    const choices = KI_CHOICES[race] ?? KI_CHOICES.Saiyan;
+    const choices = KI_CHOICES_BY_RACE[race];
     this.selectKi.innerHTML = choices.map(c => `<option value="${c}">${c}</option>`).join("");
   }
 
