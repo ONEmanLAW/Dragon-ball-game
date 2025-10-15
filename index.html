@@ -12,7 +12,7 @@
 </head>
 <body>
 
-  <!-- 0) MAIN MENU — plein écran, juste un bouton image centré -->
+  <!-- 0) MAIN MENU -->
   <section id="menu-section" class="view view--menu">
     <div class="menu-center">
       <img
@@ -26,23 +26,23 @@
     </div>
   </section>
 
-  <!-- 1) CREATE (plein écran) -->
+  <!-- 1) Creation perso -->
   <section id="create-section" class="view" hidden>
-    <div class="view__card">
-      <h2>Create your warrior</h2>
+    <div class="create-page">
+      <header class="create-topbar">
+        <div class="create-stats">
+          <div class="create-stat"><span>Level</span><strong id="stat-level">1</strong></div>
+          <div class="create-stat"><span>Strength</span><strong id="stat-str">—</strong></div>
+          <div class="create-stat"><span>Speed</span><strong id="stat-spd">—</strong></div>
+          <div class="create-stat"><span>Ki</span><strong id="stat-ki">—</strong></div>
+          <div class="create-stat"><span>Vitality</span><strong id="stat-vit">—</strong></div>
+        </div>
 
-      <div class="form-grid">
-        <label>
-          <span>Name</span>
-          <input id="input-name" type="text" placeholder="Your warrior name" />
-        </label>
+        <div class="create-name">
+          <input id="input-name" type="text" placeholder="Warrior name" />
+        </div>
 
-        <label>
-          <span>Description</span>
-          <input id="input-description" type="text" placeholder="Short flavor text" />
-        </label>
-
-        <label>
+        <label class="create-race">
           <span>Race</span>
           <select id="select-race">
             <option value="Saiyan" selected>Saiyan</option>
@@ -50,22 +50,36 @@
             <option value="Android">Android</option>
           </select>
         </label>
+      </header>
 
-        <label>
-          <span>KI Technique</span>
-          <select id="select-ki"></select>
-        </label>
-      </div>
+      <main class="create-stage">
+        <img id="sprite-img" alt="Warrior preview" />
+      </main>
 
-      <div class="row-buttons">
-        <button id="btn-create">Create character</button>
-      </div>
+      <footer class="create-dock">
+        <div class="create-fields">
+          <label>
+            <span>KI Technique</span>
+            <select id="select-ki"></select>
+          </label>
+          <label>
+            <span>Description</span>
+            <input id="input-description" type="text" placeholder="Short flavor text" />
+          </label>
+        </div>
 
-      <div id="create-error" class="error" aria-live="polite"></div>
+        <div class="create-actions">
+          <button id="btn-create">Create character</button>
+          <div id="create-error" class="error" aria-live="polite"></div>
+        </div>
+      </footer>
     </div>
   </section>
 
-  <!-- 2) ROSTER + P1/P2 (plein écran) -->
+
+
+
+  <!-- 2) ROSTER + P1/P2  -->
   <section id="roster-section" class="view" hidden>
     <div class="view__card">
       <h2>Your character</h2>
