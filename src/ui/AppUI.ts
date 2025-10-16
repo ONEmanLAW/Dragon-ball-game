@@ -8,8 +8,9 @@ import { CreateView } from "./views/CreateView";
 import { ModeMenuView } from "./views/ModeMenuView";
 import { RosterView } from "./views/RosterView";
 import { BattleView } from "./views/BattleView";
+import { TournamentView } from "./views/TournamentView";
 
-type Screen = "menu" | "create" | "mode" | "roster" | "battle";
+type Screen = "menu" | "create" | "mode" | "tournament" | "roster" | "battle";
 
 export class AppUI {
   private gm = GameManager.getInstance();
@@ -17,6 +18,7 @@ export class AppUI {
   private menuView!: MainMenuView;
   private createView!: CreateView;
   private modeMenuView!: ModeMenuView;
+  private tournamentView!: TournamentView;
   private rosterView!: RosterView;
   private battleView!: BattleView;
 
@@ -31,9 +33,19 @@ export class AppUI {
     this.createView = new CreateView({
       onCreated: (w: Warrior) => {
         this.gm.registerWarrior(w);
-        this.rosterView.setCreatedWarrior(w);
+        this.rosterView.setCreatedWarrior?.(w);
         this.rosterView.refreshRoster();
         this.showOnly("mode");
+      },
+    });
+
+    this.tournamentView = new TournamentView({
+      onPlayMatch: (p1, p2, onEnded) => {
+        this.showOnly("battle");
+        this.battleView.startBattle(p1, p2, (winnerName) => {
+          this.showOnly("tournament");
+          onEnded(winnerName);
+        });
       },
     });
 
@@ -43,10 +55,11 @@ export class AppUI {
         this.showOnly("roster");
       },
       onSecondOption: () => {
-        alert("Mode 2 arrive bientôt 👀");
+        this.tournamentView.refreshRoster();
+        this.showOnly("tournament");
       },
       onThirdOption: () => {
-        alert("Mode 3 arrive bientôt 👀");
+        alert("Mode 3 bientôt");
       },
     });
 
@@ -67,6 +80,7 @@ export class AppUI {
     this.menuView.mount();
     this.createView.mount();
     this.modeMenuView.mount();
+    this.tournamentView.mount();
     this.rosterView.mount();
     this.battleView.mount();
 
@@ -75,11 +89,12 @@ export class AppUI {
   }
 
   private showOnly(which: Screen): void {
-    (document.getElementById("menu-section")  as HTMLElement).hidden  = which !== "menu";
-    (document.getElementById("create-section")as HTMLElement).hidden  = which !== "create";
-    (document.getElementById("mode-section")  as HTMLElement).hidden  = which !== "mode";
-    (document.getElementById("roster-section")as HTMLElement).hidden  = which !== "roster";
-    (document.getElementById("battle-section")as HTMLElement).hidden  = which !== "battle";
+    (document.getElementById("menu-section")        as HTMLElement).hidden = which !== "menu";
+    (document.getElementById("create-section")      as HTMLElement).hidden = which !== "create";
+    (document.getElementById("mode-section")        as HTMLElement).hidden = which !== "mode";
+    (document.getElementById("tournament-section")  as HTMLElement).hidden = which !== "tournament";
+    (document.getElementById("roster-section")      as HTMLElement).hidden = which !== "roster";
+    (document.getElementById("battle-section")      as HTMLElement).hidden = which !== "battle";
     if (which !== "battle") this.battleView.stop();
   }
 }

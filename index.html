@@ -80,14 +80,26 @@
   <section id="mode-section" class="view" hidden>
     <div class="mode-page">
       <h2 class="mode-title">Select a mode</h2>
-
       <div class="mode-buttons">
         <button id="btn-mode-1v1" class="mode-btn">1 vs 1</button>
-        <button id="btn-mode-2"   class="mode-btn mode-btn--ghost">Mode 2</button>
-        <button id="btn-mode-3"   class="mode-btn mode-btn--ghost">Mode 3</button>
+        <button id="btn-mode-2" class="mode-btn">Tournament</button>
+        <button id="btn-mode-3" class="mode-btn mode-btn--ghost">Mode 3</button>
       </div>
     </div>
   </section>
+
+  <section id="tournament-section" class="view" hidden>
+    <div class="tournament-page">
+      <div class="tournament-toolbar">
+        <select id="tournament-select"></select>
+        <button id="tournament-seed">Seed</button>
+        <button id="tournament-play" disabled>Play</button>
+        <div id="tournament-status"></div>
+      </div>
+      <div id="tournament-bracket"></div>
+    </div>
+  </section>
+
 
 
 

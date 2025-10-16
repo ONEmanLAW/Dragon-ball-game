@@ -19,6 +19,7 @@ import type {
   EffectTickEvent,
   EffectEndedEvent,
 } from "../../events/GameEvents";
+import { CommandBus, CommandContext, AttackCommand, EndTurnCommand, logMiddleware } from "../../domain/commands";
 
 type El<T extends HTMLElement> = T;
 
@@ -37,6 +38,10 @@ export class BattleView {
   private turn?: TurnManager;
   private battleOver = false;
   private subscribed = false;
+  private onEnded?: (winnerName: string) => void;
+
+  private cmdCtx = new CommandContext(GameManager.getInstance());
+  private cmdBus = new CommandBus(this.cmdCtx, [logMiddleware]);
 
   constructor(private readonly cb: { onExit: () => void }) {}
 
@@ -55,10 +60,12 @@ export class BattleView {
     this.btnSpecial.addEventListener("click", () => this.handleAttack("Special"));
   }
 
-  public startBattle(p1: Warrior, p2: Warrior): void {
+  public startBattle(p1: Warrior, p2: Warrior, onEnded?: (winnerName: string) => void): void {
     this.elLog.innerHTML = "";
     this.battleOver = false;
+    this.onEnded = onEnded;
     this.turn = new TurnManager(p1, p2);
+    this.cmdCtx.setTurn(this.turn);
     this.ensureSubscribed();
     this.renderAll();
     this.log(`Battle started! ${this.turn.getActive().name} begins.`);
@@ -67,6 +74,7 @@ export class BattleView {
   public stop(): void {
     this.battleOver = true;
     this.turn = undefined;
+    this.cmdCtx.setTurn(undefined);
     this.ensureUnsubscribed();
     this.disableButtons();
   }
@@ -76,13 +84,13 @@ export class BattleView {
 
     const attacker = this.turn.getActive();
     const defender = this.turn.getOpponent();
-    const attack = this.gm.createAttack(kind);
 
-    try {
-      attack.execute(attacker, defender);
-      if (!this.battleOver) this.turn.nextTurn();
-    } catch (e: any) {
-      this.log(`⛔ ${e?.message ?? "Action not allowed."}`);
+    const r1 = this.cmdBus.dispatch(new AttackCommand(kind, attacker, defender));
+    if (!r1.ok) { this.log(`⛔ ${r1.error}`); return; }
+
+    if (!this.battleOver) {
+      const r2 = this.cmdBus.dispatch(new EndTurnCommand());
+      if (!r2.ok) this.log(`⛔ ${r2.error}`);
     }
   }
 
@@ -143,6 +151,11 @@ export class BattleView {
         this.log(`🏁 ${e.loser} is down. ${e.winner} wins!`);
         this.disableButtons();
         this.renderAll();
+        if (this.onEnded) {
+          const cb = this.onEnded;
+          this.onEnded = undefined;
+          cb(e.winner);
+        }
         break;
       }
     }
@@ -169,7 +182,6 @@ export class BattleView {
     this.btnKi.textContent      = active.getAttackLabel?.("KiEnergy") ?? "Ki Energy";
     this.btnSpecial.textContent = active.getAttackLabel?.("Special")  ?? "Special";
 
-    // Règles UI d'activation
     const turnOK = this.turn.getTurnNumber() >= SPECIAL_UNLOCK_TURN;
     const used   = hasUsedSpecialInCurrentBattle(active.name);
     const gateOK = active.getKi() >= SPECIAL_REQUIRED_KI

@@ -1,0 +1,168 @@
+/* plein écran, fond arcade */
+#tournament-section { display: block; padding: 0; }
+
+.tournament-page {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  grid-template-rows: auto 1fr;
+  gap: 16px;
+  padding: 20px;
+  color: rgb(230, 235, 255);
+}
+
+/* barre du haut */
+.tournament-toolbar {
+  display: grid;
+  grid-template-columns: 1fr auto auto 1fr;
+  gap: 12px;
+  align-items: center;
+}
+.tournament-toolbar select {
+  border: 1px solid rgb(42, 51, 82);
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-size: 14px;
+  background: rgb(12, 19, 40);
+  color: rgb(230, 235, 255);
+}
+.tournament-toolbar button {
+  border: 1px solid rgb(42, 51, 82);
+  color: rgb(230, 235, 255);
+  border-radius: 12px;
+  padding: 10px 14px;
+  font-size: 14px;
+  font-weight: 800;
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+}
+
+/* grille du bracket */
+#tournament-bracket {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(260px, 1fr));
+  gap: 18px;
+  align-items: start;
+}
+
+/* col de round */
+.t-col {
+  background: rgba(16, 26, 54, 0.45);
+  border: 1px solid rgba(42, 51, 82, 0.7);
+  border-radius: 14px;
+  padding: 12px;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.02), 0 10px 24px rgba(0, 0, 0, 0.35);
+}
+.t-col h3 {
+  margin: 0 0 10px;
+  font-size: 16px;
+  font-weight: 800;
+  letter-spacing: 0.4px;
+  color: rgb(197, 208, 245);
+  text-transform: uppercase;
+}
+.t-list { display: grid; gap: 14px; }
+
+/* carte “match vs” */
+.t-match {
+  position: relative;
+  border-radius: 14px;
+  padding: 14px 16px;
+  background:
+    radial-gradient(70% 140% at 0% 0%, rgba(59, 130, 246, 0.12), rgba(0, 0, 0, 0) 60%),
+    radial-gradient(70% 140% at 100% 100%, rgba(168, 85, 247, 0.10), rgba(0, 0, 0, 0) 60%),
+    rgb(12, 19, 40);
+  border: 1px solid rgb(42, 51, 82);
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.35);
+  display: grid;
+  gap: 10px;
+  overflow: hidden;
+}
+.t-match::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(90deg, rgba(59, 130, 246, 0.25), rgba(168, 85, 247, 0.25)) ;
+  opacity: 0.15;
+  mix-blend-mode: screen;
+}
+.t-match::after {
+  content: "VS";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  translate: -50% -50%;
+  font-weight: 900;
+  letter-spacing: 1px;
+  font-size: 13px;
+  padding: 4px 8px;
+  border-radius: 999px;
+  color: rgb(230, 235, 255);
+  background: rgba(59, 130, 246, 0.2);
+  border: 1px solid rgba(42, 51, 82, 0.9);
+  text-shadow: 0 0 10px rgba(59, 130, 246, 0.7);
+}
+
+/* état visuel */
+.t-match.pending {
+  animation: t-pulse 1.2s ease-in-out infinite;
+}
+.t-match.done {
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(36, 120, 64, 0.15) inset;
+}
+@keyframes t-pulse {
+  0%,100% { box-shadow: 0 0 0 rgba(59, 130, 246, 0); }
+  50%     { box-shadow: 0 0 18px rgba(59, 130, 246, 0.35); }
+}
+
+/* ligne combattant */
+.t-slot {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: rgb(15, 22, 46);
+  border: 1px solid rgb(42, 51, 82);
+  position: relative;
+  isolation: isolate;
+}
+.t-slot::before {
+  content: "";
+  width: 6px;
+  height: 70%;
+  border-radius: 4px;
+  background: linear-gradient(180deg, rgb(59, 130, 246), rgb(168, 85, 247));
+  position: absolute;
+  left: 6px;
+  top: 50%;
+  translate: 0 -50%;
+  opacity: 0.6;
+}
+.t-slot.win {
+  background: rgba(22, 88, 44, 0.25);
+  border-color: rgb(36, 120, 64);
+  color: rgb(230, 255, 230);
+  box-shadow: 0 0 0 1px rgba(36, 120, 64, 0.25) inset, 0 12px 26px rgba(36, 120, 64, 0.25);
+}
+.t-match.done .t-slot:not(.win) {
+  opacity: 0.6;
+  filter: saturate(0.75);
+}
+
+/* hover */
+.t-match:hover {
+  border-color: rgb(58, 74, 134);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.45);
+}
+.t-slot:hover {
+  border-color: rgb(58, 74, 134);
+}
+
+/* responsive */
+@media (max-width: 900px) {
+  #tournament-bracket { grid-template-columns: 1fr; }
+  .tournament-toolbar { grid-template-columns: 1fr; }
+}

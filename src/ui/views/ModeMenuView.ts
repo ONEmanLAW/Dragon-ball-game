@@ -1,5 +1,3 @@
-// ModeMenuView.ts — menu des modes de jeu
-
 type El<T extends HTMLElement> = T;
 
 export class ModeMenuView {
