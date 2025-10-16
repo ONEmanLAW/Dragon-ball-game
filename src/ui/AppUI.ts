@@ -10,6 +10,8 @@ import { RosterView } from "./views/RosterView";
 import { BattleView } from "./views/BattleView";
 import { TournamentView } from "./views/TournamentView";
 
+import { AudioManager } from "../app/AudioManager";
+
 type Screen = "menu" | "create" | "mode" | "tournament" | "roster" | "battle";
 
 export class AppUI {
@@ -86,6 +88,9 @@ export class AppUI {
 
     this.showOnly("menu");
     this.rosterView.refreshRoster();
+
+    // Audios : 
+    AudioManager.getInstance().preload();
   }
 
   private showOnly(which: Screen): void {

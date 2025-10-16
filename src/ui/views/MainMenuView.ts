@@ -1,32 +1,22 @@
-// MainMenuView.ts — Vue du menu principal (image-bouton PLAY)
-// - Indépendante (montage/démontage DOM minimal)
-// - Communication via callbacks (pas d'EventBus ici, juste du UI flow)
-
+import { AudioManager } from "../../app/AudioManager";
 type El<T extends HTMLElement> = T;
 
 export class MainMenuView {
   private section!: El<HTMLElement>;
-  private playBtn!: El<HTMLImageElement>;
+  private btnPlay!: HTMLButtonElement;
+  private audio = AudioManager.getInstance();
 
   constructor(private readonly cb: { onPlay: () => void }) {}
 
   public mount(): void {
     this.section = document.getElementById("menu-section") as HTMLElement;
-    this.playBtn = document.getElementById("btn-play") as HTMLImageElement;
+    this.btnPlay = document.getElementById("btn-play") as HTMLButtonElement;
 
-    // Sécurité si l’HTML n’est pas en place
-    if (!this.section || !this.playBtn) {
-      console.warn("[MainMenuView] DOM elements not found.");
-      return;
-    }
+    this.audio.attachGlobalClickSfx();
 
-    // Accessibilité : Enter/Space déclenchent le "click"
-    this.playBtn.addEventListener("click", () => this.cb.onPlay());
-    this.playBtn.addEventListener("keydown", (e: KeyboardEvent) => {
-      if (e.key === "Enter" || e.key === " ") {
-        e.preventDefault();
-        this.cb.onPlay();
-      }
+    this.btnPlay.addEventListener("click", () => {
+      this.audio.playMainTheme();
+      this.cb.onPlay();
     });
   }
 }
