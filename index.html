@@ -26,54 +26,63 @@
 
 
   <!-- 1) Creation perso -->
-  <section id="create-section" class="view" hidden>
-    <div class="create-page">
-      <header class="create-topbar">
-        <div class="create-stats">
-          <div class="create-stat"><span>Level</span><strong id="stat-level">1</strong></div>
-          <div class="create-stat"><span>Strength</span><strong id="stat-str">—</strong></div>
-          <div class="create-stat"><span>Speed</span><strong id="stat-spd">—</strong></div>
-          <div class="create-stat"><span>Ki</span><strong id="stat-ki">—</strong></div>
-          <div class="create-stat"><span>Vitality</span><strong id="stat-vit">—</strong></div>
-        </div>
+  <section id="create-section" class="view create-view" hidden>
+    <div class="create">
+      <img class="create-bg" src="src/assets/kameHouse_background.png" alt="">
+      <div class="create-wrap">
+        <header class="create-top">
+          <div class="panel create-stats">
+            <div class="create-stat"><span>Level</span><strong id="stat-level">1</strong></div>
+            <div class="create-stat"><span>Strength</span><strong id="stat-str">—</strong></div>
+            <div class="create-stat"><span>Speed</span><strong id="stat-spd">—</strong></div>
+            <div class="create-stat"><span>Ki</span><strong id="stat-ki">—</strong></div>
+            <div class="create-stat"><span>Vitality</span><strong id="stat-vit">—</strong></div>
+          </div>
 
-        <div class="create-name">
-          <input id="input-name" type="text" placeholder="Warrior name" />
-        </div>
+          <div class="create-name">
+            <input id="input-name" class="input" type="text" placeholder="Warrior name">
+          </div>
 
-        <label class="create-race">
-          <span>Race</span>
-          <select id="select-race">
-            <option value="Saiyan" selected>Saiyan</option>
-            <option value="Namekian">Namekian</option>
-            <option value="Android">Android</option>
-          </select>
-        </label>
-      </header>
-
-      <main class="create-stage">
-        <img id="sprite-img" alt="Warrior preview" />
-      </main>
-
-      <footer class="create-dock">
-        <div class="create-fields">
-          <label>
-            <span>KI Technique</span>
-            <select id="select-ki"></select>
+          <label class="panel create-race">
+            <span>Race</span>
+            <select id="select-race" class="select">
+              <option value="Saiyan" selected>Saiyan</option>
+              <option value="Namekian">Namekian</option>
+              <option value="Android">Android</option>
+            </select>
           </label>
-          <label>
-            <span>Description</span>
-            <input id="input-description" type="text" placeholder="Short flavor text" />
-          </label>
-        </div>
+        </header>
 
-        <div class="create-actions">
-          <button id="btn-create">Create character</button>
-          <div id="create-error" class="error" aria-live="polite"></div>
-        </div>
-      </footer>
+        <main class="create-stage">
+          <img id="sprite-img" class="create-sprite" alt="Warrior preview">
+        </main>
+
+        <footer class="create-bottom">
+          <div class="create-fields">
+            <label class="panel field">
+              <span>KI Technique</span>
+              <select id="select-ki" class="select"></select>
+            </label>
+            <label class="panel field">
+              <span>Description</span>
+              <input id="input-description" class="input" type="text" placeholder="Short flavor text">
+            </label>
+          </div>
+
+          <div class="create-actions">
+            <div class="panel field field-button">
+              <span>&nbsp;</span>
+              <button id="btn-create" class="btn">Create character</button>
+            </div>
+            <div id="create-error" class="create-error" aria-live="polite"></div>
+          </div>
+        </footer>
+      </div>
     </div>
   </section>
+
+
+
 
   <!-- MODE MENU -->
   <section id="mode-section" class="view" hidden>
