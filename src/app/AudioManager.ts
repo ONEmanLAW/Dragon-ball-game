@@ -1,3 +1,4 @@
+// src/app/AudioManager.ts
 export class AudioManager {
   private static instance: AudioManager;
   static getInstance(): AudioManager {
@@ -6,13 +7,15 @@ export class AudioManager {
   }
 
   private bgm?: HTMLAudioElement;
+  private currentSrc?: string;
   private sfx = new Map<string, HTMLAudioElement>();
   private globalBound = false;
   private lastTick = 0;
 
   private readonly URLS = {
-    bgm:   new URL("../assets/audios/music.mp3",      import.meta.url).toString(),
-    click: new URL("../assets/audios/clickSound.wav", import.meta.url).toString(),
+    menu:   new URL("../assets/audios/music.mp3",      import.meta.url).toString(),
+    battle: new URL("../assets/audios/music.mp3",      import.meta.url).toString(),
+    click:  new URL("../assets/audios/clickSound.wav", import.meta.url).toString(),
   };
 
   preload(): void {
@@ -24,12 +27,21 @@ export class AudioManager {
     }
   }
 
-  playMainTheme(): void {
+  playMenu(): void  { this.playBgm(this.URLS.menu,   0.05); }
+  playBattle(): void{ this.playBgm(this.URLS.battle, 0.5); }
+
+  private playBgm(src: string, volume: number): void {
+    if (this.bgm && this.currentSrc === src) {
+      this.bgm.volume = volume;
+      if (this.bgm.paused) this.bgm.play().catch(() => {});
+      return;
+    }
     this.stopBgm();
-    this.bgm = new Audio(this.URLS.bgm);
+    this.bgm = new Audio(src);
+    this.currentSrc = src;
     this.bgm.loop = true;
     this.bgm.preload = "auto";
-    this.bgm.volume = 0.05;
+    this.bgm.volume = volume;
     this.bgm.play().catch(() => {});
   }
 
@@ -38,6 +50,7 @@ export class AudioManager {
     try { this.bgm.pause(); } catch {}
     this.bgm.currentTime = 0;
     this.bgm = undefined;
+    this.currentSrc = undefined;
   }
 
   playSfx(name: "click"): void {

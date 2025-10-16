@@ -24,12 +24,19 @@ export class AppUI {
   private rosterView!: RosterView;
   private battleView!: BattleView;
 
+  private audioUnlocked = false;
+  private audio = AudioManager.getInstance();
+
   public boot(): void {
     this.gm.loadPresets(presetsJson as WarriorPreset[]);
     for (const p of presetsJson as WarriorPreset[]) this.gm.spawnPreset(p.id);
 
     this.menuView = new MainMenuView({
-      onPlay: () => this.showOnly("create"),
+      onPlay: () => {
+        this.audioUnlocked = true;
+        this.audio.playMenu();
+        this.showOnly("create");
+      },
     });
 
     this.createView = new CreateView({
@@ -89,8 +96,8 @@ export class AppUI {
     this.showOnly("menu");
     this.rosterView.refreshRoster();
 
-    // Audios : 
-    AudioManager.getInstance().preload();
+    this.audio.preload();
+    this.audio.attachGlobalClickSfx();
   }
 
   private showOnly(which: Screen): void {
@@ -100,6 +107,15 @@ export class AppUI {
     (document.getElementById("tournament-section")  as HTMLElement).hidden = which !== "tournament";
     (document.getElementById("roster-section")      as HTMLElement).hidden = which !== "roster";
     (document.getElementById("battle-section")      as HTMLElement).hidden = which !== "battle";
+
     if (which !== "battle") this.battleView.stop();
+
+    if (which === "create") this.createView.onShow();
+    else this.createView.onHide();
+
+    if (this.audioUnlocked) {
+      if (which === "battle") this.audio.playBattle();
+      else this.audio.playMenu();
+    }
   }
 }

@@ -1,10 +1,11 @@
-import { AudioManager } from "../../app/AudioManager";
+// src/ui/views/MainMenuView.ts
+import { AudioSystem } from "../../app/AudioSystem";
+
 type El<T extends HTMLElement> = T;
 
 export class MainMenuView {
   private section!: El<HTMLElement>;
   private btnPlay!: HTMLButtonElement;
-  private audio = AudioManager.getInstance();
 
   constructor(private readonly cb: { onPlay: () => void }) {}
 
@@ -12,10 +13,9 @@ export class MainMenuView {
     this.section = document.getElementById("menu-section") as HTMLElement;
     this.btnPlay = document.getElementById("btn-play") as HTMLButtonElement;
 
-    this.audio.attachGlobalClickSfx();
-
     this.btnPlay.addEventListener("click", () => {
-      this.audio.playMainTheme();
+      // geste utilisateur → on peut lancer la BGM
+      AudioSystem.getInstance().enterMenu();
       this.cb.onPlay();
     });
   }
