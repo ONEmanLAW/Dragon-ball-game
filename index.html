@@ -6,9 +6,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <link rel="stylesheet" href="./src/styles/main.css"/>
   <link rel="stylesheet" href="./src/styles/view-menu.css" />
+  <link rel="stylesheet" href="./src/styles/view-hub.css" />
   <link rel="stylesheet" href="./src/styles/view-create.css" />
   <link rel="stylesheet" href="./src/styles/view-roster.css" />
   <link rel="stylesheet" href="./src/styles/view-battle.css" />
+  <link rel="stylesheet" href="./src/styles/view-tournament.css" />
   
 </head>
 <body>
@@ -86,16 +88,31 @@
 
 
   <!-- MODE MENU -->
-  <section id="mode-section" class="view" hidden>
-    <div class="mode-page">
-      <h2 class="mode-title">Select a mode</h2>
-      <div class="mode-buttons">
-        <button id="btn-mode-1v1" class="mode-btn">1 vs 1</button>
-        <button id="btn-mode-2" class="mode-btn">Tournament</button>
-        <button id="btn-mode-3" class="mode-btn mode-btn--ghost">Mode 3</button>
+  <section id="mode-section" class="view hub-view" hidden>
+    <div class="hub">
+      <img class="hub-bg" src="src/assets/kameHouse_background.png" alt="">
+      <div class="hub-wrap">
+        <h2 class="hub-title">Choose your mode</h2>
+        <div class="hub-grid">
+          <button id="btn-mode-1v1" class="hub-btn hub-btn--primary">
+            <span class="hub-btn-title">1 vs 1</span>
+            <span class="hub-btn-sub">Pick fighters & battle</span>
+          </button>
+          <button id="btn-mode-2" class="hub-btn hub-btn--secondary">
+            <span class="hub-btn-title">Tournament</span>
+            <span class="hub-btn-sub">8 fighters bracket</span>
+          </button>
+          <button id="btn-mode-3" class="hub-btn hub-btn--ghost">
+            <span class="hub-btn-title">Coming soon</span>
+            <span class="hub-btn-sub">Surprise mode</span>
+          </button>
+        </div>
       </div>
     </div>
   </section>
+
+
+
 
   <section id="tournament-section" class="view" hidden>
     <div class="tournament-page">
