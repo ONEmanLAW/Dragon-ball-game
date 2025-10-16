@@ -1,27 +1,10 @@
+// ui/views/CreateView.ts
 import type { Warrior, WarriorType } from "../../domain/Warrior";
 import { WarriorBuilder } from "../../build/WarriorBuilder";
 import { GameManager } from "../../app/GameManager";
 import { KI_CHOICES_BY_RACE, DEFAULT_STATS_BY_RACE } from "../../domain/Balance";
 
 type El<T extends HTMLElement> = T;
-
-const SPRITE_FRAMES: Record<WarriorType, string[]> = {
-  Saiyan: [
-    new URL("../../assets/characters/goku_idle_01.png", import.meta.url).toString(),
-    new URL("../../assets/characters/goku_idle_02.png", import.meta.url).toString(),
-    new URL("../../assets/characters/goku_idle_03.png", import.meta.url).toString(),
-  ],
-  Namekian: [
-    new URL("../../assets/characters/picolo_idle_01.png", import.meta.url).toString(),
-    new URL("../../assets/characters/picolo_idle_02.png", import.meta.url).toString(),
-    new URL("../../assets/characters/picolo_idle_03.png", import.meta.url).toString(),
-  ],
-  Android: [
-    new URL("../../assets/characters/android17_idle_01.png", import.meta.url).toString(),
-    new URL("../../assets/characters/android17_idle_02.png", import.meta.url).toString(),
-    new URL("../../assets/characters/android17_idle_03.png", import.meta.url).toString(),
-  ],
-};
 
 export class CreateView {
   private gm = GameManager.getInstance();
@@ -45,7 +28,7 @@ export class CreateView {
   private frames: string[] = [];
   private frameIndex = 0;
   private animTimer: number | undefined;
-  private readonly fps = 5;
+  private readonly fps = 6;
 
   constructor(private readonly cb: { onCreated: (w: Warrior) => void }) {}
 
@@ -71,7 +54,7 @@ export class CreateView {
       const race = this.getSelectedRace();
       this.populateKiChoices(race);
       this.renderStats(race);
-      this.setFrames(race);
+      this.setFramesFromJson(race);
     });
 
     this.btnCreate.addEventListener("click", () => this.handleCreate());
@@ -79,16 +62,11 @@ export class CreateView {
     const initialRace = this.getSelectedRace();
     this.populateKiChoices(initialRace);
     this.renderStats(initialRace);
-    this.setFrames(initialRace);
+    this.setFramesFromJson(initialRace);
   }
 
-  // Appelés par AppUI lors du changement d’écran
-  public onShow(): void {
-    this.startAnim();
-  }
-  public onHide(): void {
-    this.stopAnim();
-  }
+  public onShow(): void { this.startAnim(); }
+  public onHide(): void { this.stopAnim(); }
 
   private getSelectedRace(): WarriorType {
     return (this.selectRace.value as WarriorType) || "Saiyan";
@@ -108,14 +86,17 @@ export class CreateView {
     this.statVit.textContent = String(s.vitality);
   }
 
-  private setFrames(race: WarriorType): void {
-    this.frames = SPRITE_FRAMES[race] ?? [];
+  private setFramesFromJson(race: WarriorType): void {
+    // récupère les chemins from JSON via GameManager
+    const raw = this.gm.getSpriteFramesForRace(race) ?? [];
+    this.frames = raw.map(p => new URL(p, import.meta.url).toString());
     this.frameIndex = 0;
+
     if (this.frames.length > 0) {
       this.img.src = this.frames[0];
       this.img.alt = `${race} preview`;
     }
-    // relance proprement si on est visible
+
     if (!this.section.hidden) {
       this.stopAnim();
       this.startAnim();

@@ -5,7 +5,12 @@
     "name": "Goku",
     "description": "Proud Saiyan warrior",
     "statsOverride": { "strength": 20, "ki": 100, "speed": 18, "vitality": 100 },
-    "attackLabels": { "Normal": "Basic Attack", "KiEnergy": "Kamehameha", "Special": "Super Saiyan (Goku SSJ1)" }
+    "attackLabels": { "Normal": "Basic Attack", "KiEnergy": "Kamehameha", "Special": "Super Saiyan (Goku SSJ1)" },
+    "spriteFrames": [
+      "../../assets/characters/goku_idle_01.png",
+      "../../assets/characters/goku_idle_02.png",
+      "../../assets/characters/goku_idle_03.png"
+    ]
   },
   {
     "id": "vegeta",
@@ -15,13 +20,18 @@
     "statsOverride": { "strength": 23, "ki": 100, "speed": 19, "vitality": 100 },
     "attackLabels": { "Normal": "Basic Attack", "KiEnergy": "Final Flash", "Special": "Super Saiyan (Vegeta SSJ1)" }
   },
-  {
+   {
     "id": "piccolo",
     "type": "Namekian",
     "name": "Piccolo",
     "description": "Wise Namekian strategist",
     "statsOverride": { "strength": 18, "ki": 1000, "speed": 16, "vitality": 100 },
-    "attackLabels": { "Normal": "Basic Attack", "KiEnergy": "Makankōsappō", "Special": "Regeneration" }
+    "attackLabels": { "Normal": "Basic Attack", "KiEnergy": "Makankōsappō", "Special": "Regeneration" },
+    "spriteFrames": [
+      "../../assets/characters/picolo_idle_01.png",
+      "../../assets/characters/picolo_idle_02.png",
+      "../../assets/characters/picolo_idle_03.png"
+    ]
   },
   {
     "id": "c17",
@@ -29,7 +39,12 @@
     "name": "C-17",
     "description": "Relentless android",
     "statsOverride": { "strength": 24, "ki": 9999, "speed": 17, "vitality": 100 },
-    "attackLabels": { "Normal": "Basic Attack", "KiEnergy": "Laser Shot", "Special": "Energy Leech" }
+    "attackLabels": { "Normal": "Basic Attack", "KiEnergy": "Laser Shot", "Special": "Energy Leech" },
+    "spriteFrames": [
+      "../../assets/characters/android17_idle_01.png",
+      "../../assets/characters/android17_idle_02.png",
+      "../../assets/characters/android17_idle_03.png"
+    ]
   },
   {
     "id": "c18",

@@ -1,9 +1,8 @@
+// app/GameManager.ts
 // GameManager - Singleton
-// Centralise : warriors instanciés, constructeurs d’attaques et presets.
 
-import type { Warrior } from "../domain/Warrior";
-import { Attack, type AttackKind, NormalAttack, KiEnergyAttack } from "../domain/Attacks";
-import { SpecialAttackProxy } from "../domain/AttackProxies";
+import type { Warrior, WarriorType } from "../domain/Warrior";
+import { Attack, type AttackKind, NormalAttack, KiEnergyAttack, SpecialAttack } from "../domain/Attacks";
 import { WarriorFactory } from "./WarriorFactory";
 import type { WarriorPreset } from "../data/WarriorPreset";
 
@@ -20,10 +19,9 @@ export class GameManager {
 
   //#region Singleton
   private constructor() {
-    this.registerAttack("Normal",   NormalAttack);
+    this.registerAttack("Normal", NormalAttack);
     this.registerAttack("KiEnergy", KiEnergyAttack);
-    // Proxy sur la spéciale attaque
-    this.registerAttack("Special",  SpecialAttackProxy);
+    this.registerAttack("Special", SpecialAttack);
   }
   public static getInstance(): GameManager {
     if (!GameManager.instance) GameManager.instance = new GameManager();
@@ -46,6 +44,15 @@ export class GameManager {
 
     this.registerWarrior(w);
     return w;
+  }
+
+  public getSpriteFramesForRace(race: WarriorType): string[] | undefined {
+    for (const p of this.presetsById.values()) {
+      if (p.type === race && p.spriteFrames && p.spriteFrames.length > 0) {
+        return p.spriteFrames;
+      }
+    }
+    return undefined;
   }
   //#endregion
 
