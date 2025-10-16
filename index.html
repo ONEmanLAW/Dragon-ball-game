@@ -28,7 +28,7 @@
 
 
 
-  <!-- 1) Creation perso -->
+  <!-- Creation perso -->
   <section id="create-section" class="view create-view" hidden>
     <div class="create">
       <img class="create-bg" src="src/assets/kameHouse_background.png" alt="">
@@ -112,8 +112,6 @@
   </section>
 
 
-
-
   <section id="tournament-section" class="view" hidden>
     <div class="tournament-page">
       <div class="tournament-toolbar">
@@ -129,31 +127,50 @@
 
 
 
+  <!-- ROSTER + P1/P2  -->
+  <section id="roster-section" class="view roster-view" hidden>
+    <div class="roster">
+      <img class="roster-bg" src="src/assets/kameHouse_background.png" alt="">
+      <div class="roster-wrap">
 
+        <header class="roster-top">
+          <div class="panel roster-picks">
+            <div class="pick pick--left">
+              <span class="pick-badge pick-badge--p1">P1</span>
+              <strong id="pick-p1">—</strong>
+            </div>
 
-  <!-- 2) ROSTER + P1/P2  -->
-  <section id="roster-section" class="view" hidden>
-    <div class="view__card">
-      <h2>Your character</h2>
-      <div id="created-card"></div>
+            <button id="btn-start-battle" class="btn" disabled>Start Battle</button>
 
-      <h3 class="mt-16">Choose fighters</h3>
-      <div class="form-grid">
-        <label>
-          <span>Player 1</span>
-          <select id="select-p1"></select>
-        </label>
-        <label>
-          <span>Player 2</span>
-          <select id="select-p2"></select>
-        </label>
-      </div>
+            <div class="pick pick--right">
+              <strong id="pick-p2">—</strong>
+              <span class="pick-badge pick-badge--p2">P2</span>
+            </div>
+          </div>
+        </header>
 
-      <div class="row-buttons">
-        <button id="btn-start-battle">Start Battle</button>
+        <main class="roster-stage">
+          <div class="side side--left">
+            <button class="nav-btn" id="btn-p1-prev" aria-label="Previous fighter">&lt;</button>
+            <div class="card panel" id="p1-card"></div>
+            <button class="nav-btn" id="btn-p1-next" aria-label="Next fighter">&gt;</button>
+          </div>
+
+          <div class="vs">VS</div>
+
+          <div class="side side--right">
+            <button class="nav-btn" id="btn-p2-prev" aria-label="Previous fighter">&lt;</button>
+            <div class="card panel" id="p2-card"></div>
+            <button class="nav-btn" id="btn-p2-next" aria-label="Next fighter">&gt;</button>
+          </div>
+        </main>
+
       </div>
     </div>
   </section>
+
+
+
 
   <!-- 3) BATTLE -->
   <section id="battle-section" hidden>

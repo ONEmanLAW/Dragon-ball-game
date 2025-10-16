@@ -18,7 +18,12 @@
     "name": "Vegeta",
     "description": "Prince of all Saiyans",
     "statsOverride": { "strength": 23, "ki": 100, "speed": 19, "vitality": 100 },
-    "attackLabels": { "Normal": "Basic Attack", "KiEnergy": "Final Flash", "Special": "Super Saiyan (Vegeta SSJ1)" }
+    "attackLabels": { "Normal": "Basic Attack", "KiEnergy": "Final Flash", "Special": "Super Saiyan (Vegeta SSJ1)" },
+    "spriteFrames": [
+      "../../assets/characters/vegeta_idle_01.png",
+      "../../assets/characters/vegeta_idle_02.png",
+      "../../assets/characters/vegeta_idle_03.png"
+    ]
   },
    {
     "id": "piccolo",
