@@ -135,6 +135,9 @@ export class RosterView {
     (img as any)._index  = 0;
     img.src = frames[0] ?? "";
 
+    if (slot === "p2") img.classList.add("char-sprite--flip");
+    else               img.classList.remove("char-sprite--flip");
+
     if (slot === "p1") this.p1Img = img; else this.p2Img = img;
   }
 

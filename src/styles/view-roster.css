@@ -164,6 +164,12 @@
   align-self: end;
 }
 
+.char-sprite--flip {
+  transform: scaleX(-1);
+  transform-origin: bottom center;
+}
+
+
 @media (max-width: 980px) {
   .roster-stage { grid-template-columns: 1fr; }
   .vs { display: none; }
