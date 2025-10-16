@@ -129,32 +129,35 @@
     </div>
   </section>
 
-  <!-- 3) BATTLE (plein écran) -->
-  <section id="battle-section" class="view" hidden>
-    <div class="view__content">
-      <div class="layout">
-        <div class="board">
-          <div id="turn">Turn 1 — Active: ?</div>
+  <!-- 3) BATTLE -->
+  <section id="battle-section" hidden>
+    <div class="layout">
+      <div class="board">
+        <div id="turn">Turn 1 — Active: ?</div>
 
-          <div class="row">
-            <div id="card-1"></div>
-            <div id="card-2"></div>
-          </div>
-
-          <div class="actions">
-            <button id="btn-basic" disabled>Basic Attack</button>
-            <button id="btn-ki" disabled>Ki Energy</button>
-            <button id="btn-special" disabled>Special</button>
-          </div>
+        <div class="row">
+          <div id="card-1"></div>
+          <div id="card-2"></div>
         </div>
 
-        <div>
-          <h3>Log</h3>
-          <div id="log"></div>
+        <div class="actions">
+          <button id="btn-basic" disabled>Basic Attack</button>
+          <button id="btn-ki" disabled>Ki Energy</button>
+          <button id="btn-special" disabled>Special</button>
         </div>
+
+        <div class="post-battle">
+          <button id="btn-next-fight" hidden>Next fight</button>
+        </div>
+      </div>
+
+      <div>
+        <h3>Log</h3>
+        <div id="log"></div>
       </div>
     </div>
   </section>
+
 
   <script type="module" src="./src/main.ts"></script>
 </body>

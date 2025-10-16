@@ -71,3 +71,9 @@
 #log p {
   margin: 0 0 6px;
 }
+
+.post-battle {
+  margin-top: 10px;
+  display: flex;
+  justify-content: flex-end;
+}

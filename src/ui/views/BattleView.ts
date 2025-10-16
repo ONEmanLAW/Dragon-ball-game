@@ -19,7 +19,13 @@ import type {
   EffectTickEvent,
   EffectEndedEvent,
 } from "../../events/GameEvents";
-import { CommandBus, CommandContext, AttackCommand, EndTurnCommand, logMiddleware } from "../../domain/commands";
+import {
+  CommandBus,
+  CommandContext,
+  AttackCommand,
+  EndTurnCommand,
+  logMiddleware,
+} from "../../domain/commands";
 
 type El<T extends HTMLElement> = T;
 
@@ -34,11 +40,13 @@ export class BattleView {
   private btnBasic!: El<HTMLButtonElement>;
   private btnKi!: El<HTMLButtonElement>;
   private btnSpecial!: El<HTMLButtonElement>;
+  private btnNext!: El<HTMLButtonElement>;
 
   private turn?: TurnManager;
   private battleOver = false;
   private subscribed = false;
   private onEnded?: (winnerName: string) => void;
+  private pendingWinner?: string;
 
   private cmdCtx = new CommandContext(GameManager.getInstance());
   private cmdBus = new CommandBus(this.cmdCtx, [logMiddleware]);
@@ -51,23 +59,28 @@ export class BattleView {
     this.elLog    = document.getElementById("log") as HTMLDivElement;
     this.elP1     = document.getElementById("card-1") as HTMLDivElement;
     this.elP2     = document.getElementById("card-2") as HTMLDivElement;
-    this.btnBasic = document.getElementById("btn-basic") as HTMLButtonElement;
-    this.btnKi    = document.getElementById("btn-ki") as HTMLButtonElement;
+
+    this.btnBasic   = document.getElementById("btn-basic") as HTMLButtonElement;
+    this.btnKi      = document.getElementById("btn-ki") as HTMLButtonElement;
     this.btnSpecial = document.getElementById("btn-special") as HTMLButtonElement;
+    this.btnNext    = document.getElementById("btn-next-fight") as HTMLButtonElement;
 
     this.btnBasic.addEventListener("click", () => this.handleAttack("Normal"));
     this.btnKi.addEventListener("click", () => this.handleAttack("KiEnergy"));
     this.btnSpecial.addEventListener("click", () => this.handleAttack("Special"));
+    this.btnNext.addEventListener("click", () => this.handleNext());
   }
 
   public startBattle(p1: Warrior, p2: Warrior, onEnded?: (winnerName: string) => void): void {
     this.elLog.innerHTML = "";
     this.battleOver = false;
     this.onEnded = onEnded;
+    this.pendingWinner = undefined;
     this.turn = new TurnManager(p1, p2);
     this.cmdCtx.setTurn(this.turn);
     this.ensureSubscribed();
     this.renderAll();
+    this.btnNext.hidden = true;
     this.log(`Battle started! ${this.turn.getActive().name} begins.`);
   }
 
@@ -77,11 +90,12 @@ export class BattleView {
     this.cmdCtx.setTurn(undefined);
     this.ensureUnsubscribed();
     this.disableButtons();
+    this.btnNext.hidden = true;
+    this.pendingWinner = undefined;
   }
 
   private handleAttack(kind: AttackKind): void {
     if (this.battleOver || !this.turn) return;
-
     const attacker = this.turn.getActive();
     const defender = this.turn.getOpponent();
 
@@ -92,6 +106,20 @@ export class BattleView {
       const r2 = this.cmdBus.dispatch(new EndTurnCommand());
       if (!r2.ok) this.log(`⛔ ${r2.error}`);
     }
+  }
+
+  private handleNext(): void {
+    this.btnNext.hidden = true;
+    const w = this.pendingWinner;
+    this.pendingWinner = undefined;
+
+    if (this.onEnded && w) {
+      const cb = this.onEnded;
+      this.onEnded = undefined;
+      cb(w);
+      return;
+    }
+    this.cb.onExit();
   }
 
   private ensureSubscribed(): void {
@@ -148,14 +176,14 @@ export class BattleView {
       case "BattleEnded": {
         const e = event as BattleEndedEvent;
         this.battleOver = true;
+        this.pendingWinner = e.winner;
+
         this.log(`🏁 ${e.loser} is down. ${e.winner} wins!`);
         this.disableButtons();
         this.renderAll();
-        if (this.onEnded) {
-          const cb = this.onEnded;
-          this.onEnded = undefined;
-          cb(e.winner);
-        }
+
+        this.btnNext.textContent = this.onEnded ? "Next fight" : "Back";
+        this.btnNext.hidden = false;
         break;
       }
     }
