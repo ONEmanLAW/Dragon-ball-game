@@ -33,20 +33,9 @@
   display: grid;
   gap: 8px;
   justify-items: center;
-  z-index: 2;
+  z-index: 3; 
 }
-.battle-view .btn-exit {
-  border: 1px solid rgb(70,70,70);
-  background: rgb(40,40,40);
-  color: rgb(255,255,255);
-  border-radius: 999px;
-  padding: 6px 12px;
-  font-size: 12px;
-  font-weight: 800;
-  text-transform: uppercase;
-  cursor: pointer;
-}
-.battle-view .btn-exit:hover { background: rgb(52,52,52); }
+.battle-view .btn-exit,
 .battle-view .btn-next {
   border: 1px solid rgb(70,70,70);
   background: rgb(40,40,40);
@@ -58,17 +47,15 @@
   text-transform: uppercase;
   cursor: pointer;
 }
+.battle-view .btn-exit:hover,
 .battle-view .btn-next:hover { background: rgb(52,52,52); }
-.battle-view .btn-next.is-pulse {
-  animation: pulse-blink 0.9s ease-in-out infinite;
-}
+.battle-view .btn-next.is-pulse { animation: pulse-blink 0.9s ease-in-out infinite; }
 @keyframes pulse-blink {
   0%   { transform: translateY(0) scale(1);   box-shadow: 0 0 0 rgba(255,255,255,0); opacity: 0.85; }
   50%  { transform: translateY(-1px) scale(1.04); box-shadow: 0 0 10px rgba(255,255,255,0.35); opacity: 1; }
   100% { transform: translateY(0) scale(1);   box-shadow: 0 0 0 rgba(255,255,255,0); opacity: 0.85; }
 }
 
-/* HUD top */
 .battle-view .battle-hud {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -105,7 +92,6 @@
   background: linear-gradient(90deg, rgb(37,99,235), rgb(24,69,165));
 }
 
-/* Stage */
 .battle-view .battle-stage {
   position: relative;
   display: grid;
@@ -113,6 +99,7 @@
   align-items: end;
   gap: 16px;
   min-height: 420px;
+  z-index: 1;
 }
 .battle-view .actions { display: grid; gap: 8px; }
 .battle-view .actions--left  { justify-items: start; }
@@ -132,7 +119,7 @@
 .battle-view .act-btn:disabled { opacity: .6; cursor: not-allowed; }
 .battle-view .act-btn:hover:not(:disabled) { background: rgb(52,52,52); }
 
-/* Fighters */
+
 .battle-view .fighters {
   display: flex;
   justify-content: space-between;
@@ -140,13 +127,20 @@
   gap: clamp(40px, 10vw, 180px);
   min-height: 300px;
 }
-.battle-view .fighter { position: relative; display: grid; place-items: end center; }
+.battle-view .fighter {
+  position: relative;
+  display: grid;
+  place-items: end center;
+  z-index: 1;
+}
 .battle-view .char-sprite {
-  width: 200px;
+  width: 210px;
   height: auto;
   image-rendering: pixelated;
   display: block;
   align-self: end;
+  z-index: 1;           
+  position: relative;
 }
 .battle-view .fighter--right .char-sprite { transform: scaleX(-1); }
 
@@ -161,36 +155,38 @@
   color: rgb(255,255,255);
   font-weight: 900;
   font-size: 12px;
+  z-index: 2;        
 }
 
-/* FX center */
+
 .battle-view .feed {
   position: absolute;
   bottom: 60px;
   left: 50%;
   transform: translateX(-50%);
   display: grid;
-  gap: 8px;
+  gap: 10px;
   justify-items: center;
   pointer-events: none;
+  z-index: 2; 
 }
 .battle-view .toast {
   background: rgba(0,0,0,.65);
   color: rgb(255,255,255);
   border: 1px solid rgba(255,255,255,.15);
   border-radius: 10px;
-  padding: 10px 14px;
-  font-size: 20px;
+  padding: 12px 16px;
+  font-size: 24px;     
   font-weight: 900;
   letter-spacing: 1px;
   opacity: 0;
   transform: translateY(10px);
-  animation: toast-in 140ms ease forwards, toast-out 300ms ease 1600ms forwards;
+  animation: toast-in 160ms ease forwards, toast-out 500ms ease 3600ms forwards;
 }
 @keyframes toast-in { to { opacity: 1; transform: translateY(0); } }
 @keyframes toast-out { to { opacity: 0; transform: translateY(-6px); } }
 
-/* Modal */
+
 .battle-view .modal {
   position: absolute;
   inset: 0;

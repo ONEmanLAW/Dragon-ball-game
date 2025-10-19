@@ -66,6 +66,9 @@ export class BattleView {
 
   private sub = { update: (e: any) => this.onEvent(e) };
 
+  private effectText = new Map<string, string>();
+  private stateText  = new Map<string, string>();
+
   constructor(private readonly cb: Callbacks) {}
 
   public mount(): void {
@@ -146,8 +149,11 @@ export class BattleView {
 
     this.refreshButtons();
     this.hideNextFight();
-    this.hideBadge(this.p1.name);
-    this.hideBadge(this.p2.name);
+
+    this.effectText.clear();
+    this.stateText.clear();
+    this.renderBadge(this.p1.name);
+    this.renderBadge(this.p2.name);
     this.clearFeed();
     this.closeModal(true);
   }
@@ -162,8 +168,12 @@ export class BattleView {
     eventBus.unsubscribe(this.sub);
     this.clearFeed();
     this.hideNextFight();
-    this.hideBadge(this.p1?.name);
-    this.hideBadge(this.p2?.name);
+
+    this.effectText.clear();
+    this.stateText.clear();
+    this.renderBadge(this.p1?.name);
+    this.renderBadge(this.p2?.name);
+
     this.closeModal(true);
   }
 
@@ -253,8 +263,14 @@ export class BattleView {
         break;
 
       case "StateChanged": {
-        const msg = e.to === "Dead" ? `${e.warrior} est K.O.` : `${e.warrior} → ${this.stateLabel(e.to)}`;
-        this.fx(msg);
+        const label =
+          e.to === "Injured"   ? "Blessé"   :
+          e.to === "Exhausted" ? "Épuisé"   :
+          e.to === "Dead"      ? "K.O."     :
+          "";
+        if (label) this.fx(`${e.warrior} est ${label} !`);
+        this.stateText.set(e.warrior, label);
+        this.renderBadge(e.warrior);
         break;
       }
 
@@ -263,16 +279,19 @@ export class BattleView {
         break;
 
       case "EffectStarted":
-        this.showBadge(e.who, `${this.effectShort(e.effect)} ${e.totalRounds}`);
+        this.effectText.set(e.who, `${this.effectShort(e.effect)} ${e.totalRounds}`);
+        this.renderBadge(e.who);
         break;
 
       case "EffectTick":
         this.updateBars();
-        this.showBadge(e.who, `${this.effectShort(e.effect)} ${e.remainingRounds}`);
+        this.effectText.set(e.who, `${this.effectShort(e.effect)} ${e.remainingRounds}`);
+        this.renderBadge(e.who);
         break;
 
       case "EffectEnded":
-        this.hideBadge(e.who);
+        this.effectText.delete(e.who);
+        this.renderBadge(e.who);
         break;
 
       case "BattleEnded":
@@ -284,7 +303,19 @@ export class BattleView {
     }
   }
 
-  // Next Fight visibility/pulse
+  private renderBadge(who?: string): void {
+    if (!who) return;
+    const el = who === this.p1?.name ? this.effP1 : who === this.p2?.name ? this.effP2 : undefined;
+    if (!el) return;
+    const parts: string[] = [];
+    const eff = this.effectText.get(who);
+    const st  = this.stateText.get(who);
+    if (eff) parts.push(eff);
+    if (st && st !== "K.O.") parts.push(st);
+    el.textContent = parts.join(" • ");
+    el.hidden = parts.length === 0;
+  }
+
   private showNextFightPulse(): void {
     this.btnNextFight.hidden = false;
     this.btnNextFight.classList.add("is-pulse");
@@ -294,21 +325,12 @@ export class BattleView {
     this.btnNextFight.classList.remove("is-pulse");
   }
 
-  // Labels helpers
   private effectShort(k: "SuperSaiyan" | "Regeneration" | "EnergyLeech"): string {
     if (k === "SuperSaiyan") return "SSJ";
     if (k === "Regeneration") return "REGEN";
     return "LEECH";
   }
-  private stateLabel(name: string): string {
-    if (name === "Normal") return "Normal";
-    if (name === "Injured") return "Blessé";
-    if (name === "Exhausted") return "Épuisé";
-    if (name === "Dead") return "K.O.";
-    return name;
-  }
 
-  // HUD
   private updateBars(): void {
     const p1Hp = Math.max(0, Math.min(1, this.p1.getVitality() / this.p1.stats.vitality));
     const p2Hp = Math.max(0, Math.min(1, this.p2.getVitality() / this.p2.stats.vitality));
@@ -324,7 +346,6 @@ export class BattleView {
     w.gainKi(w.stats.ki * 2);
   }
 
-  // Sprites
   private setFrames(img: HTMLImageElement, frames: string[]): void {
     (img as any)._frames = frames;
     (img as any)._index = 0;
@@ -354,24 +375,12 @@ export class BattleView {
     return raw.map(p => new URL(p, import.meta.url).toString());
   }
 
-  // Effect badges
-  private showBadge(who: string, text: string): void {
-    const el = who === this.p1.name ? this.effP1 : who === this.p2.name ? this.effP2 : undefined;
-    if (!el) return; el.textContent = text; el.hidden = false;
-  }
-  private hideBadge(who?: string): void {
-    if (!who) return;
-    const el = who === this.p1.name ? this.effP1 : who === this.p2.name ? this.effP2 : undefined;
-    if (!el) return; el.hidden = true;
-  }
-
-  // FX
   private fx(text: string): void {
     const item = document.createElement("div");
     item.className = "toast";
     item.textContent = text;
     this.feed.appendChild(item);
-    window.setTimeout(() => item.remove(), 1800);
+    window.setTimeout(() => item.remove(), 4200);
   }
   private clearFeed(): void { this.feed.innerHTML = ""; }
 
