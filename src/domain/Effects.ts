@@ -14,7 +14,8 @@ import { Warrior, WarriorType } from "./Warrior";
 
 import {
   EFFECT_DEFAULT_ROUNDS,
-  SSJ_STR_SPD_MULTIPLIER,
+  SSJ_STR_MULTIPLIER,
+  SSJ_SPD_MULTIPLIER,
   REGEN_KI_PER_TICK,
   REGEN_VIT_PER_TICK,
   LEECH_KI_PER_TICK,
@@ -128,8 +129,8 @@ export class SuperSaiyanEffect extends WarriorEffect {
     const s = this.owner.stats;
     this.baseStr = s.strength;
     this.baseSpd = s.speed;
-    s.strength = Math.floor(s.strength * SSJ_STR_SPD_MULTIPLIER);
-    s.speed = Math.floor(s.speed * SSJ_STR_SPD_MULTIPLIER);
+    s.strength = Math.floor(s.strength * SSJ_STR_MULTIPLIER);
+    s.speed = Math.floor(s.speed * SSJ_SPD_MULTIPLIER);
   }
 
   protected onCleanup(): void {

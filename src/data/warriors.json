@@ -4,7 +4,7 @@
     "type": "Saiyan",
     "name": "Goku",
     "description": "Proud Saiyan warrior",
-    "statsOverride": { "strength": 20, "ki": 100, "speed": 18, "vitality": 100 },
+    "statsOverride": { "strength": 22, "ki": 110, "speed": 22, "vitality": 130 },
     "attackLabels": { "Normal": "Basic Attack", "KiEnergy": "Kamehameha", "Special": "Super Saiyan (Goku SSJ1)" },
     "spriteFrames": [
       "../../assets/characters/goku_idle_01.png",
@@ -17,7 +17,7 @@
     "type": "Saiyan",
     "name": "Vegeta",
     "description": "Prince of all Saiyans",
-    "statsOverride": { "strength": 23, "ki": 100, "speed": 19, "vitality": 100 },
+    "statsOverride": { "strength": 24, "ki": 100, "speed": 22, "vitality": 120 },
     "attackLabels": { "Normal": "Basic Attack", "KiEnergy": "Final Flash", "Special": "Super Saiyan (Vegeta SSJ1)" },
     "spriteFrames": [
       "../../assets/characters/vegeta_idle_01.png",
@@ -30,7 +30,7 @@
     "type": "Namekian",
     "name": "Piccolo",
     "description": "Wise Namekian strategist",
-    "statsOverride": { "strength": 18, "ki": 1000, "speed": 16, "vitality": 100 },
+    "statsOverride": { "strength": 17, "ki": 120, "speed": 16, "vitality": 140 },
     "attackLabels": { "Normal": "Basic Attack", "KiEnergy": "Makankōsappō", "Special": "Regeneration" },
     "spriteFrames": [
       "../../assets/characters/picolo_idle_01.png",
@@ -43,7 +43,7 @@
     "type": "Android",
     "name": "C-17",
     "description": "Relentless android",
-    "statsOverride": { "strength": 24, "ki": 9999, "speed": 17, "vitality": 100 },
+    "statsOverride": { "strength": 17, "ki": 9999, "speed": 15, "vitality": 120 },
     "attackLabels": { "Normal": "Basic Attack", "KiEnergy": "Laser Shot", "Special": "Energy Leech" },
     "spriteFrames": [
       "../../assets/characters/android17_idle_01.png",
@@ -56,7 +56,7 @@
     "type": "Android",
     "name": "C-18",
     "description": "Powerful android",
-    "statsOverride": { "strength": 24, "ki": 9999, "speed": 17, "vitality": 100 },
+    "statsOverride": { "strength": 15, "ki": 9999, "speed": 18, "vitality": 120 },
     "attackLabels": { "Normal": "Basic Attack", "KiEnergy": "Laser Shot", "Special": "Energy Leech" },
     "spriteFrames": [
       "../../assets/characters/android18_idle_01.png",
@@ -69,7 +69,7 @@
   "type": "Saiyan",
   "name": "Trunks",
   "description": "Time-traveling half-Saiyan swordsman",
-  "statsOverride": { "strength": 22, "ki": 100, "speed": 19, "vitality": 100 },
+  "statsOverride": { "strength": 21, "ki": 110, "speed": 19, "vitality": 110 },
   "attackLabels": { "Normal": "Basic Attack", "KiEnergy": "Final Flash", "Special": "Super Saiyan (Trunks SSJ1)" },
   "spriteFrames": [
       "../../assets/characters/trunks_idle_01.png",
@@ -82,7 +82,7 @@
     "type": "Saiyan",
     "name": "Gohan",
     "description": "Scholar with hidden power",
-    "statsOverride": { "strength": 21, "ki": 100, "speed": 20, "vitality": 100 },
+    "statsOverride": { "strength": 21, "ki": 105, "speed": 21, "vitality": 125 },
     "attackLabels": { "Normal": "Basic Attack", "KiEnergy": "Kamehameha", "Special": "Super Saiyan (Gohan SSJ1)" },
     "spriteFrames": [
       "../../assets/characters/gohan_idle_01.png",
@@ -95,7 +95,7 @@
     "type": "Android",
     "name": "C-16",
     "description": "Gentle giant android",
-    "statsOverride": { "strength": 26, "ki": 9999, "speed": 15, "vitality": 100 },
+    "statsOverride": { "strength": 9, "ki": 9999, "speed": 11, "vitality": 160 },
     "attackLabels": { "Normal": "Basic Attack", "KiEnergy": "Laser Shot", "Special": "Energy Leech" },
     "spriteFrames": [
       "../../assets/characters/android16_idle_01.png",
