@@ -14,7 +14,7 @@ export class AudioManager {
 
   private readonly URLS = {
     menu:   new URL("../assets/audios/music.mp3",      import.meta.url).toString(),
-    battle: new URL("../assets/audios/music.mp3",      import.meta.url).toString(),
+    battle: new URL("../assets/audios/secondMusic.mp3",      import.meta.url).toString(),
     click:  new URL("../assets/audios/clickSound.wav", import.meta.url).toString(),
   };
 

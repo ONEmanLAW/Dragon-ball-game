@@ -1,6 +1,8 @@
-// src/ui/views/TournamentView.ts
 import { GameManager } from "../../app/GameManager";
-import { CommandBus, CommandContext, SeedTournamentCommand, SimulateAIMatchCommand, PlayPlayerMatchCommand, logMiddleware } from "../../domain/commands";
+import {
+  CommandBus, CommandContext,
+  SeedTournamentCommand, SimulateAIMatchCommand, PlayPlayerMatchCommand, logMiddleware
+} from "../../domain/commands";
 import type { Warrior } from "../../domain/Warrior";
 
 type El<T extends HTMLElement> = T;
@@ -11,72 +13,94 @@ export class TournamentView {
   private cmdBus = new CommandBus(this.cmdCtx, [logMiddleware]);
 
   private section!: El<HTMLElement>;
-  private selectFighter!: HTMLSelectElement;
-  private btnSeed!: HTMLButtonElement;
   private btnPlay!: HTMLButtonElement;
+  private btnExit!: HTMLButtonElement;
+  private btnCancel!: HTMLButtonElement;
   private bracket!: HTMLDivElement;
   private status!: HTMLDivElement;
 
+  private playerName: string | null = null;
+
   constructor(private readonly cb: {
-    onPlayMatch: (p1: Warrior, p2: Warrior, onEnded: (winner: string) => void) => void
+    onPlayMatch: (p1: Warrior, p2: Warrior, onEnded: (winner: string) => void) => void,
+    onExit: () => void,
+    onCancel: () => void
   }) {}
 
   public mount(): void {
-    this.section = document.getElementById("tournament-section") as HTMLElement;
-    this.selectFighter = document.getElementById("tournament-select") as HTMLSelectElement;
-    this.btnSeed = document.getElementById("tournament-seed") as HTMLButtonElement;
-    this.btnPlay = document.getElementById("tournament-play") as HTMLButtonElement;
-    this.bracket = document.getElementById("tournament-bracket") as HTMLDivElement;
-    this.status = document.getElementById("tournament-status") as HTMLDivElement;
+    this.section   = document.getElementById("tournament-section") as HTMLElement;
+    this.btnPlay   = document.getElementById("tournament-play")   as HTMLButtonElement;
+    this.btnExit   = document.getElementById("tournament-exit")   as HTMLButtonElement;
+    this.btnCancel = document.getElementById("tournament-cancel") as HTMLButtonElement;
+    this.bracket   = document.getElementById("tournament-bracket") as HTMLDivElement;
+    this.status    = document.getElementById("tournament-status")  as HTMLDivElement;
 
-    this.btnSeed.addEventListener("click", () => this.seed());
-    this.btnPlay.addEventListener("click", () => this.playStep());
+    this.btnPlay.addEventListener("click",  () => this.playStep());
+    this.btnExit.addEventListener("click",  () => this.cb.onExit());
+    this.btnCancel.addEventListener("click",() => { this.reset(); this.cb.onCancel(); });
 
-    // état initial
-    this.btnPlay.disabled = true;
-    this.status.textContent = "Seed a bracket to start.";
+    this.status.textContent = "Play to start the tournament.";
+    this.btnCancel.hidden = true;
   }
 
-  public refreshRoster(): void {
-    const list = this.gm.getAllWarriors();
-    this.selectFighter.innerHTML = list
-      .map(w => `<option value="${w.name}">${w.name} [${w.type}]</option>`)
-      .join("");
+  public onShow(): void {
+    if (this.cmdCtx.tour) {
+      this.renderBracket();
+      this.status.textContent = this.cmdCtx.tour.isFinished()
+        ? `🏆 ${this.cmdCtx.tour.getWinner()} wins!`
+        : "Bracket ready. Play to advance.";
+      this.btnCancel.hidden = false;
+    } else {
+      this.bracket.innerHTML = "";
+      this.status.textContent = "Play to start the tournament.";
+      this.btnCancel.hidden = true;
+    }
   }
 
   public reset(): void {
-    this.cmdCtx.tour = undefined;       
+    this.cmdCtx.tour = undefined;
     this.bracket.innerHTML = "";
     this.status.textContent = "Tournament cancelled.";
-    this.btnPlay.disabled = true;
+    this.btnCancel.hidden = true;
   }
 
-  private seed(): void {
+  public startWithPlayer(name: string): void {
+    this.playerName = name;
+    this.cmdCtx.tour = undefined;
+
+    const ok = this.seedWithCurrentPlayer();
+    if (!ok) return;
+
+    this.renderBracket();
+    this.status.textContent = "Bracket ready. Play to advance.";
+    this.btnCancel.hidden = false;
+  }
+
+  private ensureSeed(): boolean {
+    if (this.cmdCtx.tour) return true;
+    return this.seedWithCurrentPlayer();
+  }
+
+  private seedWithCurrentPlayer(): boolean {
     const all = this.gm.getAllWarriors().map(w => w.name);
     if (all.length < 8) {
       this.status.textContent = "Need at least 8 warriors.";
-      return;
+      return false;
     }
-    const player = this.selectFighter.value || all[0];
-
+    const player = this.playerName || all[0];
     const res = this.cmdBus.dispatch(new SeedTournamentCommand(player, all));
     if (!res.ok) {
       this.status.textContent = res.error;
-      return;
+      return false;
     }
-
-    this.renderBracket();
-    this.status.textContent = "Seeded. Click Play.";
-    this.btnPlay.disabled = false;
+    this.btnCancel.hidden = false;
+    return true;
   }
 
   private playStep(): void {
-    if (!this.cmdCtx.tour) {
-      this.status.textContent = "Seed first.";
-      return;
-    }
+    if (!this.ensureSeed()) return;
 
-    for (const { r, i, m } of this.cmdCtx.tour.pendingNonPlayer()) {
+    for (const { r, i, m } of this.cmdCtx.tour!.pendingNonPlayer()) {
       const a = this.gm.getWarrior(m.a)!;
       const b = this.gm.getWarrior(m.b)!;
       this.cmdBus.dispatch(new SimulateAIMatchCommand(r, i, a, b));
@@ -88,9 +112,8 @@ export class TournamentView {
         this.renderBracket();
         if (this.cmdCtx.tour!.isFinished()) {
           this.status.textContent = `🏆 ${this.cmdCtx.tour!.getWinner()} wins!`;
-          this.btnPlay.disabled = true;
         } else {
-          this.status.textContent = "Round updated. Click Play to continue.";
+          this.status.textContent = "Round updated. Play to continue.";
         }
       });
     }));
@@ -99,16 +122,14 @@ export class TournamentView {
       this.renderBracket();
       if (this.cmdCtx.tour!.isFinished()) {
         this.status.textContent = `🏆 ${this.cmdCtx.tour!.getWinner()} wins!`;
-        this.btnPlay.disabled = true;
       }
     }
   }
 
   private renderBracket(): void {
-    if (!this.cmdCtx.tour) {
-      this.bracket.innerHTML = "";
-      return;
-    }
+    if (!this.cmdCtx.tour) { this.bracket.innerHTML = ""; return; }
+
+    const you = this.playerName;
 
     const col = (title: string, ms: any[]) => `
       <div class="t-col">
@@ -116,8 +137,8 @@ export class TournamentView {
         <div class="t-list">
           ${ms.map((m: any) => `
             <div class="t-match ${m.done ? "done" : "pending"}">
-              <div class="t-slot ${m.winner===m.a ? "win":""}">${m.a}</div>
-              <div class="t-slot ${m.winner===m.b ? "win":""}">${m.b}</div>
+              <div class="t-slot ${m.winner===m.a ? "win":""} ${you===m.a ? "player":""}">${m.a}</div>
+              <div class="t-slot ${m.winner===m.b ? "win":""} ${you===m.b ? "player":""}">${m.b}</div>
             </div>
           `).join("")}
         </div>

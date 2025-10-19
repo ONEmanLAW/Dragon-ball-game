@@ -27,7 +27,6 @@ export class RosterView {
   private p1Index = 0;
   private p2Index = 1;
 
-  // anim 3 frames partagée
   private animTimer: number | undefined;
   private fps = 6;
   private p1Img?: HTMLImageElement;
@@ -70,7 +69,6 @@ export class RosterView {
     this.list = this.gm.getAllWarriors();
     if (this.list.length === 0) return;
 
-    // init indices (différents)
     this.p1Index = 0;
     this.p2Index = this.list.length > 1 ? 1 : 0;
     if (this.p2Index === this.p1Index) this.p2Index = (this.p1Index + 1) % this.list.length;

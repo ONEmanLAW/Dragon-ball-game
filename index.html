@@ -11,6 +11,8 @@
   <link rel="stylesheet" href="./src/styles/view-roster.css" />
   <link rel="stylesheet" href="./src/styles/view-battle.css" />
   <link rel="stylesheet" href="./src/styles/view-tournament.css" />
+  <link rel="stylesheet" href="./src/styles/view-tournament-select.css" />
+  
 
   <link rel="icon" type="image/svg+xml" href="src/assets/dragonBall_logoPetit.png">
   
@@ -114,17 +116,75 @@
   </section>
 
 
-  <section id="tournament-section" class="view" hidden>
-    <div class="tournament-page">
-      <div class="tournament-toolbar">
-        <select id="tournament-select"></select>
-        <button id="tournament-seed">Seed</button>
-        <button id="tournament-play" disabled>Play</button>
-        <div id="tournament-status"></div>
-      </div>
-      <div id="tournament-bracket"></div>
+<section id="tournament-select-section" class="view tournament-select-view" hidden>
+  <div class="tselect">
+    <img class="tselect-bg" src="src/assets/kameHouse_background.png" alt="">
+    <div class="tselect-wrap">
+
+      <header class="tselect-topbar">
+        <button id="tselect-back" class="tselect-btn">Back</button>
+        <h2 class="tselect-title">Choose your fighter</h2>
+        <div></div>
+      </header>
+
+      <main class="tselect-stage">
+        <button id="tselect-prev" class="tselect-nav tselect-nav--left" aria-label="Previous">&lt;</button>
+
+        <div class="tselect-card">
+          <div class="tselect-name" id="tselect-name">—</div>
+          <div class="tselect-sub"  id="tselect-type">—</div>
+
+          <div class="tselect-sprite">
+            <img id="tselect-sprite" class="tselect-img" alt="Fighter preview">
+          </div>
+
+          <div class="tselect-stats">
+            <div class="tselect-stat"><span>Strength</span><strong id="tselect-str">—</strong></div>
+            <div class="tselect-stat"><span>Speed</span><strong id="tselect-spd">—</strong></div>
+            <div class="tselect-stat"><span>Ki</span><strong id="tselect-ki">—</strong></div>
+            <div class="tselect-stat"><span>Vitality</span><strong id="tselect-vit">—</strong></div>
+          </div>
+
+          <button id="tselect-choose" class="tselect-choose">Choose</button>
+        </div>
+
+        <button id="tselect-next" class="tselect-nav tselect-nav--right" aria-label="Next">&gt;</button>
+      </main>
+
     </div>
-  </section>
+  </div>
+</section>
+
+
+
+
+<section id="tournament-section" class="view tournament-view" hidden>
+  <div class="tournament">
+    <img class="tournament-bg" src="src/assets/kameHouse_background.png" alt="">
+    <div class="tournament-wrap">
+
+      <header class="t-topbar">
+        <div class="t-left">
+          <button id="tournament-exit"   class="t-btn">Exit Tournament</button>
+          <button id="tournament-cancel" class="t-btn t-btn-danger" hidden>Cancel Tournament</button>
+        </div>
+        <div class="t-right">
+          <button id="tournament-play" class="t-btn t-btn-primary">Play Round</button>
+        </div>
+      </header>
+
+      <div id="tournament-status" class="t-status">Play to start the tournament.</div>
+
+      <main class="t-bracket-area">
+        <div id="tournament-bracket" class="t-bracket"></div>
+      </main>
+
+    </div>
+  </div>
+</section>
+
+
+
 
 
 
