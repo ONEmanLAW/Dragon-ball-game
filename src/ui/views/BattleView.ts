@@ -1,269 +1,355 @@
-import { TurnManager } from "../../app/TurnManager";
-import { GameManager } from "../../app/GameManager";
 import type { Warrior } from "../../domain/Warrior";
-import type { AttackKind } from "../../domain/Attacks";
-import { hasUsedSpecialInCurrentBattle } from "../../domain/Attacks";
+import { GameManager } from "../../app/GameManager";
+import { TurnManager } from "../../app/TurnManager";
+import { hasUsedSpecialInCurrentBattle, type AttackKind } from "../../domain/Attacks";
 import {
   SPECIAL_UNLOCK_TURN,
-  SPECIAL_REQUIRED_KI,
-  SPECIAL_LOW_HEALTH_RATIO,
+  NORMAL_ATTACK_KI_COST,
+  KI_ENERGY_ATTACK_KI_COST,
+  SPECIAL_ATTACK_KI_COST,
 } from "../../domain/Balance";
 import { eventBus } from "../../events/EventBus";
-import type {
-  GameEvent,
-  AttackExecutedEvent,
-  StateChangedEvent,
-  TurnChangedEvent,
-  BattleEndedEvent,
-  EffectStartedEvent,
-  EffectTickEvent,
-  EffectEndedEvent,
-} from "../../events/GameEvents";
-import {
-  CommandBus,
-  CommandContext,
-  AttackCommand,
-  EndTurnCommand,
-  logMiddleware,
-} from "../../domain/commands";
+
+import type { WarriorPreset } from "../../data/WarriorPreset";
+import presetsJson from "../../data/warriors.json";
 
 type El<T extends HTMLElement> = T;
 
 export class BattleView {
   private gm = GameManager.getInstance();
 
-  private section!: El<HTMLElement>;
-  private elTurn!: El<HTMLDivElement>;
-  private elLog!: El<HTMLDivElement>;
-  private elP1!: El<HTMLDivElement>;
-  private elP2!: El<HTMLDivElement>;
-  private btnBasic!: El<HTMLButtonElement>;
-  private btnKi!: El<HTMLButtonElement>;
-  private btnSpecial!: El<HTMLButtonElement>;
-  private btnNext!: El<HTMLButtonElement>;
+  private hudP1Name!: El<HTMLDivElement>;
+  private hudP2Name!: El<HTMLDivElement>;
+  private hpP1!: El<HTMLDivElement>;
+  private hpP2!: El<HTMLDivElement>;
+  private kiP1!: El<HTMLDivElement>;
+  private kiP2!: El<HTMLDivElement>;
 
-  private turn?: TurnManager;
-  private battleOver = false;
-  private subscribed = false;
+  private btnNextFight!: HTMLButtonElement;
+
+  private btnP1Basic!: HTMLButtonElement;
+  private btnP1Ki!: HTMLButtonElement;
+  private btnP1Special!: HTMLButtonElement;
+
+  private btnP2Basic!: HTMLButtonElement;
+  private btnP2Ki!: HTMLButtonElement;
+  private btnP2Special!: HTMLButtonElement;
+
+  private imgP1!: HTMLImageElement;
+  private imgP2!: HTMLImageElement;
+
+  private effP1!: HTMLDivElement;
+  private effP2!: HTMLDivElement;
+
+  private feed!: HTMLDivElement;
+
+  private p1!: Warrior; // gauche
+  private p2!: Warrior; // droite
+  private turn!: TurnManager;
   private onEnded?: (winnerName: string) => void;
-  private pendingWinner?: string;
 
-  private cmdCtx = new CommandContext(GameManager.getInstance());
-  private cmdBus = new CommandBus(this.cmdCtx, [logMiddleware]);
+  private animTimer: number | undefined;
+  private fps = 6;
 
-  constructor(private readonly cb: { onExit: () => void }) {}
+  private sub = { update: (e: any) => this.onEvent(e) };
 
   public mount(): void {
-    this.section  = document.getElementById("battle-section") as HTMLElement;
-    this.elTurn   = document.getElementById("turn") as HTMLDivElement;
-    this.elLog    = document.getElementById("log") as HTMLDivElement;
-    this.elP1     = document.getElementById("card-1") as HTMLDivElement;
-    this.elP2     = document.getElementById("card-2") as HTMLDivElement;
+    this.hudP1Name = document.getElementById("hud-p1-name") as HTMLDivElement;
+    this.hudP2Name = document.getElementById("hud-p2-name") as HTMLDivElement;
+    this.hpP1 = document.getElementById("hp-p1") as HTMLDivElement;
+    this.hpP2 = document.getElementById("hp-p2") as HTMLDivElement;
+    this.kiP1 = document.getElementById("ki-p1") as HTMLDivElement;
+    this.kiP2 = document.getElementById("ki-p2") as HTMLDivElement;
 
-    this.btnBasic   = document.getElementById("btn-basic") as HTMLButtonElement;
-    this.btnKi      = document.getElementById("btn-ki") as HTMLButtonElement;
-    this.btnSpecial = document.getElementById("btn-special") as HTMLButtonElement;
-    this.btnNext    = document.getElementById("btn-next-fight") as HTMLButtonElement;
+    this.btnNextFight = document.getElementById("btn-next-fight") as HTMLButtonElement;
 
-    this.btnBasic.addEventListener("click", () => this.handleAttack("Normal"));
-    this.btnKi.addEventListener("click", () => this.handleAttack("KiEnergy"));
-    this.btnSpecial.addEventListener("click", () => this.handleAttack("Special"));
-    this.btnNext.addEventListener("click", () => this.handleNext());
+    this.btnP1Basic = document.getElementById("p1-basic") as HTMLButtonElement;
+    this.btnP1Ki = document.getElementById("p1-ki") as HTMLButtonElement;
+    this.btnP1Special = document.getElementById("p1-special") as HTMLButtonElement;
+
+    this.btnP2Basic = document.getElementById("p2-basic") as HTMLButtonElement;
+    this.btnP2Ki = document.getElementById("p2-ki") as HTMLButtonElement;
+    this.btnP2Special = document.getElementById("p2-special") as HTMLButtonElement;
+
+    this.imgP1 = document.getElementById("sprite-p1") as HTMLImageElement;
+    this.imgP2 = document.getElementById("sprite-p2") as HTMLImageElement;
+
+    this.effP1 = document.getElementById("eff-p1") as HTMLDivElement;
+    this.effP2 = document.getElementById("eff-p2") as HTMLDivElement;
+
+    this.feed = document.getElementById("floating-feed") as HTMLDivElement;
+
+    this.btnNextFight.addEventListener("click", () => {
+      if (!this.onEnded) return;
+      const winner = !this.p1.isAlive() ? this.p2.name : this.p1.name;
+      const cb = this.onEnded;
+      this.onEnded = undefined;
+      this.btnNextFight.hidden = true;
+      cb(winner);
+    });
+
+    this.btnP1Basic.addEventListener("click", () => this.onClick("p1", "Normal"));
+    this.btnP1Ki.addEventListener("click", () => this.onClick("p1", "KiEnergy"));
+    this.btnP1Special.addEventListener("click", () => this.onClick("p1", "Special"));
+
+    this.btnP2Basic.addEventListener("click", () => this.onClick("p2", "Normal"));
+    this.btnP2Ki.addEventListener("click", () => this.onClick("p2", "KiEnergy"));
+    this.btnP2Special.addEventListener("click", () => this.onClick("p2", "Special"));
   }
 
   public startBattle(p1: Warrior, p2: Warrior, onEnded?: (winnerName: string) => void): void {
-    this.elLog.innerHTML = "";
-    this.battleOver = false;
+    this.p1 = p1;
+    this.p2 = p2;
     this.onEnded = onEnded;
-    this.pendingWinner = undefined;
-    this.turn = new TurnManager(p1, p2);
-    this.cmdCtx.setTurn(this.turn);
-    this.ensureSubscribed();
-    this.renderAll();
-    this.btnNext.hidden = true;
-    this.log(`Battle started! ${this.turn.getActive().name} begins.`);
+
+    // reset PV/KI
+    this.restoreFull(this.p1);
+    this.restoreFull(this.p2);
+
+    this.hudP1Name.textContent = `${this.p1.name} [${this.p1.type}]`;
+    this.hudP2Name.textContent = `${this.p2.name} [${this.p2.type}]`;
+
+    this.setLabels();
+    this.setFrames(this.imgP1, this.framesFor(this.p1));
+    this.setFrames(this.imgP2, this.framesFor(this.p2));
+    this.updateBars();
+
+    this.turn = new TurnManager(this.p1, this.p2);
+    eventBus.subscribe(this.sub);
+
+    this.stopAnim();
+    this.startAnim();
+
+    this.refreshButtons();
+    this.btnNextFight.hidden = true;
+
+    this.hideBadge(this.p1.name);
+    this.hideBadge(this.p2.name);
+    this.clearFeed();
   }
 
   public stop(): void {
-    this.battleOver = true;
-    this.turn = undefined;
-    this.cmdCtx.setTurn(undefined);
-    this.ensureUnsubscribed();
-    this.disableButtons();
-    this.btnNext.hidden = true;
-    this.pendingWinner = undefined;
+    if (this.p1 && this.p2) {
+      this.restoreFull(this.p1);
+      this.restoreFull(this.p2);
+      this.updateBars();
+    }
+    this.stopAnim();
+    eventBus.unsubscribe(this.sub);
+    this.clearFeed();
+    this.btnNextFight.hidden = true;
+    this.hideBadge(this.p1?.name);
+    this.hideBadge(this.p2?.name);
   }
 
-  private handleAttack(kind: AttackKind): void {
-    if (this.battleOver || !this.turn) return;
-    const attacker = this.turn.getActive();
-    const defender = this.turn.getOpponent();
+  // -------- UI clicks → validations lisibles --------
+  private onClick(side: "p1" | "p2", kind: AttackKind): void {
+    const isP1Turn = this.turn.getActive().name === this.p1.name;
+    const me  = side === "p1" ? this.p1 : this.p2;
+    const opp = side === "p1" ? this.p2 : this.p1;
 
-    const r1 = this.cmdBus.dispatch(new AttackCommand(kind, attacker, defender));
-    if (!r1.ok) { this.log(`⛔ ${r1.error}`); return; }
+    if ((side === "p1" && !isP1Turn) || (side === "p2" && isP1Turn)) return;
 
-    if (!this.battleOver) {
-      const r2 = this.cmdBus.dispatch(new EndTurnCommand());
-      if (!r2.ok) this.log(`⛔ ${r2.error}`);
+    if (!me.isAlive()) { this.fx(`${me.name} est K.O.`); return; }
+    if (!opp.isAlive()) { this.fx(`${opp.name} est K.O.`); return; }
+
+    if (kind === "Special") {
+      if (this.turn.getTurnNumber() < SPECIAL_UNLOCK_TURN) {
+        this.fx(`Spéciale dispo tour ${SPECIAL_UNLOCK_TURN}`);
+        return;
+      }
+      if (hasUsedSpecialInCurrentBattle(me.name)) {
+        this.fx("Spéciale déjà utilisée");
+        return;
+      }
+      const cost = me.adjustKiCost(SPECIAL_ATTACK_KI_COST);
+      if (!me.canSpendKi(cost)) { this.fx("Ki insuffisant"); return; }
+    } else {
+      const base = kind === "Normal" ? NORMAL_ATTACK_KI_COST : KI_ENERGY_ATTACK_KI_COST;
+      const cost = me.adjustKiCost(base);
+      if (!me.canSpendKi(cost)) { this.fx("Ki insuffisant"); return; }
+    }
+
+    // Exécution → FX “BAM/ZAP/SHING” via Observer (AttackExecuted)
+    try {
+      const attack = this.gm.createAttack(kind);
+      attack.execute(me, opp);
+      if (me.isAlive() && opp.isAlive()) this.turn.nextTurn();
+    } catch {
+      this.fx("Action impossible");
     }
   }
 
-  private handleNext(): void {
-    this.btnNext.hidden = true;
-    const w = this.pendingWinner;
-    this.pendingWinner = undefined;
-
-    if (this.onEnded && w) {
-      const cb = this.onEnded;
-      this.onEnded = undefined;
-      cb(w);
-      return;
-    }
-    this.cb.onExit();
+  private setLabels(): void {
+    this.btnP1Basic.textContent   = this.p1.getAttackLabel?.("Normal")   ?? "Basic";
+    this.btnP1Ki.textContent      = this.p1.getAttackLabel?.("KiEnergy") ?? "Ki";
+    this.btnP1Special.textContent = this.p1.getAttackLabel?.("Special")  ?? "Special";
+    this.btnP2Basic.textContent   = this.p2.getAttackLabel?.("Normal")   ?? "Basic";
+    this.btnP2Ki.textContent      = this.p2.getAttackLabel?.("KiEnergy") ?? "Ki";
+    this.btnP2Special.textContent = this.p2.getAttackLabel?.("Special")  ?? "Special";
   }
 
-  private ensureSubscribed(): void {
-    if (this.subscribed) return;
-    eventBus.subscribe(this.observer);
-    this.subscribed = true;
-  }
-  private ensureUnsubscribed(): void {
-    if (!this.subscribed) return;
-    eventBus.unsubscribe(this.observer);
-    this.subscribed = false;
-  }
-
-  private observer = { update: (event: GameEvent) => this.onGameEvent(event) };
-
-  private onGameEvent(event: GameEvent): void {
-    switch (event.kind) {
-      case "AttackExecuted": {
-        const e = event as AttackExecutedEvent;
-        this.log(`• ${e.attacker} → ${e.attackName} → ${e.defender} (Ki -${e.kiSpent}, Dmg ${e.damage}, ${e.defender} VIT ${e.defenderRemainingVitality})`);
-        this.renderAll();
-        break;
-      }
-      case "StateChanged": {
-        const e = event as StateChangedEvent;
-        this.log(`⚡ ${e.warrior} state: ${e.from} → ${e.to}`);
-        this.renderAll();
-        break;
-      }
-      case "TurnChanged": {
-        const e = event as TurnChangedEvent;
-        this.log(`▶️ Turn ${e.turnNumber} — ${e.active}'s turn.`);
-        this.renderAll();
-        break;
-      }
-      case "EffectStarted": {
-        const e = event as EffectStartedEvent;
-        this.log(`✨ ${e.who} activates ${this.effectLabel(e.effect)} — ${e.totalRounds} round(s).`);
-        this.renderAll();
-        break;
-      }
-      case "EffectTick": {
-        const e = event as EffectTickEvent;
-        this.log(`⏳ ${e.who} ${this.effectLabel(e.effect)} — ${e.remainingRounds} round(s) left.`);
-        this.renderAll();
-        break;
-      }
-      case "EffectEnded": {
-        const e = event as EffectEndedEvent;
-        this.log(`🔚 ${e.who} ${this.effectLabel(e.effect)} ended.`);
-        this.renderAll();
-        break;
-      }
-      case "BattleEnded": {
-        const e = event as BattleEndedEvent;
-        this.battleOver = true;
-        this.pendingWinner = e.winner;
-
-        this.log(`🏁 ${e.loser} is down. ${e.winner} wins!`);
-        this.disableButtons();
-        this.renderAll();
-
-        this.btnNext.textContent = this.onEnded ? "Next fight" : "Back";
-        this.btnNext.hidden = false;
-        break;
-      }
-    }
+  private refreshButtons(): void {
+    const isP1Turn = this.turn.getActive().name === this.p1.name;
+    this.setEnabled(this.btnP1Basic, isP1Turn);
+    this.setEnabled(this.btnP1Ki, isP1Turn);
+    this.setEnabled(this.btnP1Special, isP1Turn && this.canUseSpecial(this.p1));
+    this.setEnabled(this.btnP2Basic, !isP1Turn);
+    this.setEnabled(this.btnP2Ki, !isP1Turn);
+    this.setEnabled(this.btnP2Special, !isP1Turn && this.canUseSpecial(this.p2));
   }
 
-  private effectLabel(kind: "SuperSaiyan" | "Regeneration" | "EnergyLeech"): string {
-    if (kind === "SuperSaiyan") return "Super Saiyan";
-    if (kind === "Regeneration") return "Regeneration";
-    return "Energy Leech";
-  }
-
-  private renderAll(): void {
-    if (!this.turn) return;
-    const active   = this.turn.getActive();
-    const opponent = this.turn.getOpponent();
-
-    this.elTurn.textContent = `Turn ${this.turn.getTurnNumber()} — Active: ${active.name}`;
-    this.renderWarriorCard(this.elP1, active, true);
-    this.renderWarriorCard(this.elP2, opponent, false);
-
-    const ongoing = !this.battleOver && active.isAlive() && opponent.isAlive();
-
-    this.btnBasic.textContent   = active.getAttackLabel?.("Normal")   ?? "Basic Attack";
-    this.btnKi.textContent      = active.getAttackLabel?.("KiEnergy") ?? "Ki Energy";
-    this.btnSpecial.textContent = active.getAttackLabel?.("Special")  ?? "Special";
-
+  private canUseSpecial(w: Warrior): boolean {
     const turnOK = this.turn.getTurnNumber() >= SPECIAL_UNLOCK_TURN;
-    const used   = hasUsedSpecialInCurrentBattle(active.name);
-    const gateOK = active.getKi() >= SPECIAL_REQUIRED_KI
-      || (active.getVitality() / active.stats.vitality) <= SPECIAL_LOW_HEALTH_RATIO;
-
-    this.btnBasic.disabled  = !ongoing;
-    this.btnKi.disabled     = !ongoing;
-    this.btnSpecial.disabled = !ongoing || !turnOK || used || !gateOK;
-
-    this.btnSpecial.title = !ongoing ? "" :
-      (!turnOK
-        ? `Available from turn ${SPECIAL_UNLOCK_TURN}.`
-        : used
-          ? "Already used this battle."
-          : (!gateOK
-              ? `Requires ≥ ${SPECIAL_REQUIRED_KI} Ki or low HP.`
-              : ""));
+    const used = hasUsedSpecialInCurrentBattle(w.name);
+    return turnOK && !used && w.isAlive();
   }
 
-  private renderWarriorCard(root: HTMLDivElement, w: Warrior, active: boolean): void {
-    const s = w.stats;
-    const effects = w.getStatusTags();
-    const effectsHtml = effects.length
-      ? `<div class="effects">${effects.map(t => `<span class="badge">${t}</span>`).join(" ")}</div>`
-      : "";
+  private setEnabled(btn: HTMLButtonElement, en: boolean): void { btn.disabled = !en; }
 
-    root.innerHTML = `
-      <div class="card ${active ? "active" : ""}">
-        <div class="card-header">
-          <span class="name">${w.name}</span>
-          <span class="type">[${w.type}]</span>
-        </div>
-        <div class="card-body">
-          <div>Level: <strong>${w.getLevel()}</strong></div>
-          <div>State: <strong>${w.getStateName()}</strong></div>
-          ${effectsHtml}
-          <div>STR: <strong>${s.strength}</strong></div>
-          <div>SPD: <strong>${s.speed}</strong></div>
-          <div>KI: <strong>${w.getKi()}</strong></div>
-          <div>VIT: <strong>${w.getVitality()}</strong></div>
-        </div>
-      </div>`;
+  // -------- Observer
+  private onEvent(e: any): void {
+    switch (e.kind) {
+      case "AttackExecuted":
+        // FX d'attaque = Observer only
+        this.updateBars();
+        this.fx(this.fxFor(this.kindFrom(e.attackName), e.damage, e.kiSpent));
+        break;
+
+      case "StateChanged": {
+        // message clair selon l'état atteint
+        const msg =
+          e.to === "Dead"
+            ? `${e.warrior} est K.O.`
+            : `${e.warrior} → ${this.stateLabel(e.to)}`;
+        this.fx(msg);
+        break;
+      }
+
+      case "TurnChanged":
+        this.refreshButtons();
+        break;
+
+      case "EffectStarted":
+        this.showBadge(e.who, `${this.effectShort(e.effect)} ${e.totalRounds}`);
+        break;
+
+      case "EffectTick":
+        this.updateBars();
+        this.showBadge(e.who, `${this.effectShort(e.effect)} ${e.remainingRounds}`);
+        break;
+
+      case "EffectEnded":
+        this.hideBadge(e.who);
+        break;
+
+      case "BattleEnded":
+        this.updateBars();
+        this.fx("KO!");
+        this.disableAll();
+        this.btnNextFight.hidden = !this.onEnded;
+        break;
+    }
   }
 
-  private log(line: string): void {
-    const p = document.createElement("p");
-    p.textContent = line;
-    this.elLog.appendChild(p);
-    this.elLog.scrollTop = this.elLog.scrollHeight;
+  private effectShort(k: "SuperSaiyan" | "Regeneration" | "EnergyLeech"): string {
+    if (k === "SuperSaiyan") return "SSJ";
+    if (k === "Regeneration") return "REGEN";
+    return "LEECH";
   }
 
-  private disableButtons(): void {
-    this.btnBasic.disabled = true;
-    this.btnKi.disabled = true;
-    this.btnSpecial.disabled = true;
+  private stateLabel(name: string): string {
+    if (name === "Normal") return "Normal";
+    if (name === "Injured") return "Blessé";
+    if (name === "Exhausted") return "Épuisé";
+    if (name === "Dead") return "K.O.";
+    return name;
+  }
+
+  // -------- HUD / Bars --------
+  private updateBars(): void {
+    const p1Hp = Math.max(0, Math.min(1, this.p1.getVitality() / this.p1.stats.vitality));
+    const p2Hp = Math.max(0, Math.min(1, this.p2.getVitality() / this.p2.stats.vitality));
+    const p1Ki = Math.max(0, Math.min(1, this.p1.getKi() / this.p1.stats.ki));
+    const p2Ki = Math.max(0, Math.min(1, this.p2.getKi() / this.p2.stats.ki));
+    this.hpP1.style.width = `${Math.floor(p1Hp * 100)}%`;
+    this.hpP2.style.width = `${Math.floor(p2Hp * 100)}%`;
+    this.kiP1.style.width = `${Math.floor(p1Ki * 100)}%`;
+    this.kiP2.style.width = `${Math.floor(p2Ki * 100)}%`;
+  }
+
+  private restoreFull(w: Warrior): void {
+    w.heal(w.stats.vitality * 2);
+    w.gainKi(w.stats.ki * 2);
+  }
+
+  // -------- Sprites (3 frames) --------
+  private setFrames(img: HTMLImageElement, frames: string[]): void {
+    (img as any)._frames = frames;
+    (img as any)._index = 0;
+    img.src = frames[0] ?? "";
+  }
+  private startAnim(): void {
+    if (this.animTimer) return;
+    const delay = Math.max(30, Math.floor(1000 / this.fps));
+    this.animTimer = window.setInterval(() => {
+      for (const img of [this.imgP1, this.imgP2]) {
+        const frames: string[] = (img as any)._frames || [];
+        if (!frames.length) continue;
+        let index: number = (img as any)._index ?? 0;
+        index = (index + 1) % frames.length;
+        (img as any)._index = index;
+        img.src = frames[index];
+      }
+    }, delay) as unknown as number;
+  }
+  private stopAnim(): void {
+    if (this.animTimer) { clearInterval(this.animTimer); this.animTimer = undefined; }
+  }
+  private framesFor(w: Warrior): string[] {
+    const presets = presetsJson as WarriorPreset[];
+    const preset = presets.find(p => p.name === w.name && Array.isArray(p.spriteFrames) && p.spriteFrames.length > 0);
+    const raw = preset?.spriteFrames ?? this.gm.getSpriteFramesForRace(w.type) ?? [];
+    return raw.map(p => new URL(p, import.meta.url).toString());
+  }
+
+  // -------- Effect badges --------
+  private showBadge(who: string, text: string): void {
+    const el = who === this.p1.name ? this.effP1 : who === this.p2.name ? this.effP2 : undefined;
+    if (!el) return; el.textContent = text; el.hidden = false;
+  }
+  private hideBadge(who?: string): void {
+    if (!who) return;
+    const el = who === this.p1.name ? this.effP1 : who === this.p2.name ? this.effP2 : undefined;
+    if (!el) return; el.hidden = true;
+  }
+
+  // -------- FX (center feed) --------
+  private fx(text: string): void {
+    const item = document.createElement("div");
+    item.className = "toast";
+    item.textContent = text;
+    this.feed.appendChild(item);
+    window.setTimeout(() => item.remove(), 1800);
+  }
+  private clearFeed(): void { this.feed.innerHTML = ""; }
+
+  // -------- Helpers --------
+  private disableAll(): void {
+    this.btnP1Basic.disabled = true; this.btnP1Ki.disabled = true; this.btnP1Special.disabled = true;
+    this.btnP2Basic.disabled = true; this.btnP2Ki.disabled = true; this.btnP2Special.disabled = true;
+  }
+  private kindFrom(name: string): AttackKind {
+    const n = (name || "").toLowerCase();
+    if (n.includes("kame") || n.includes("laser") || n.includes("makank") || n.includes("ki")) return "KiEnergy";
+    if (n.includes("super") || n.includes("regen") || n.includes("leech")) return "Special";
+    return "Normal";
+  }
+  private fxFor(kind: AttackKind, dmg: number, kiSpent: number): string {
+    const d = dmg > 0 ? ` (-${dmg})` : "";
+    const k = kiSpent > 0 ? ` [Ki -${kiSpent}]` : "";
+    if (kind === "KiEnergy") return `ZAP!${d}${k}`;
+    if (kind === "Special")  return `SHING!${d}${k}`;
+    return `BAM!${d}${k}`;
   }
 }

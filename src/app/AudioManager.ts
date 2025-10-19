@@ -28,7 +28,7 @@ export class AudioManager {
   }
 
   playMenu(): void  { this.playBgm(this.URLS.menu,   0.05); }
-  playBattle(): void{ this.playBgm(this.URLS.battle, 0.5); }
+  playBattle(): void{ this.playBgm(this.URLS.battle, 0.10); }
 
   private playBgm(src: string, volume: number): void {
     if (this.bgm && this.currentSrc === src) {

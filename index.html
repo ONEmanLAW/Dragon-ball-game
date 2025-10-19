@@ -173,35 +173,62 @@
 
 
 
+ <!-- Battle -->
+  <section id="battle-section" class="view battle-view" hidden>
+    <div class="battle">
+      <img class="battle-bg" src="src/assets/kameHouse_background.png" alt="">
+      <div class="battle-wrap">
+        <header class="battle-hud">
+          <div class="hud-panel hud-panel--left">
+            <div class="hud-name" id="hud-p1-name">—</div>
+            <div class="meter"><span class="meter-label">Vie</span><div class="bar"><div class="bar-fill" id="hp-p1"></div></div></div>
+            <div class="meter"><span class="meter-label">Ki</span><div class="bar"><div class="bar-fill bar-fill--ki" id="ki-p1"></div></div></div>
+          </div>
+          <div class="hud-panel hud-panel--right">
+            <div class="hud-name" id="hud-p2-name">—</div>
+            <div class="meter"><span class="meter-label">Vie</span><div class="bar"><div class="bar-fill" id="hp-p2"></div></div></div>
+            <div class="meter"><span class="meter-label">Ki</span><div class="bar"><div class="bar-fill bar-fill--ki" id="ki-p2"></div></div></div>
+          </div>
+        </header>
 
-  <!-- 3) BATTLE -->
-  <section id="battle-section" hidden>
-    <div class="layout">
-      <div class="board">
-        <div id="turn">Turn 1 — Active: ?</div>
+        <main class="battle-stage">
+          <div class="actions actions--left">
+            <button id="p1-basic"   class="act-btn">Basic</button>
+            <button id="p1-ki"      class="act-btn">Ki</button>
+            <button id="p1-special" class="act-btn">Special</button>
+          </div>
 
-        <div class="row">
-          <div id="card-1"></div>
-          <div id="card-2"></div>
-        </div>
+          <div class="fighters">
+            <div class="fighter fighter--left">
+              <div class="effect-badge" id="eff-p1" hidden>—</div>
+              <img id="sprite-p1" class="char-sprite" alt="P1">
+            </div>
+            <div class="fighter fighter--right">
+              <div class="effect-badge" id="eff-p2" hidden>—</div>
+              <img id="sprite-p2" class="char-sprite" alt="P2">
+            </div>
+          </div>
 
-        <div class="actions">
-          <button id="btn-basic" disabled>Basic Attack</button>
-          <button id="btn-ki" disabled>Ki Energy</button>
-          <button id="btn-special" disabled>Special</button>
-        </div>
+          <div class="actions actions--right">
+            <button id="p2-basic"   class="act-btn">Basic</button>
+            <button id="p2-ki"      class="act-btn">Ki</button>
+            <button id="p2-special" class="act-btn">Special</button>
+          </div>
 
-        <div class="post-battle">
-          <button id="btn-next-fight" hidden>Next fight</button>
-        </div>
-      </div>
+          <div id="floating-feed" class="feed"></div>
+        </main>
 
-      <div>
-        <h3>Log</h3>
-        <div id="log"></div>
+        <footer class="battle-footer">
+          <button id="btn-next-fight" class="btn" hidden>Next Fight</button>
+        </footer>
       </div>
     </div>
   </section>
+
+
+
+
+
 
 
   <script type="module" src="./src/main.ts"></script>
