@@ -57,7 +57,12 @@
     "name": "C-18",
     "description": "Powerful android",
     "statsOverride": { "strength": 24, "ki": 9999, "speed": 17, "vitality": 100 },
-    "attackLabels": { "Normal": "Basic Attack", "KiEnergy": "Laser Shot", "Special": "Energy Leech" }
+    "attackLabels": { "Normal": "Basic Attack", "KiEnergy": "Laser Shot", "Special": "Energy Leech" },
+    "spriteFrames": [
+      "../../assets/characters/android18_idle_01.png",
+      "../../assets/characters/android18_idle_02.png",
+      "../../assets/characters/android18_idle_03.png"
+    ]
   },
   {
   "id": "trunks",
@@ -65,7 +70,12 @@
   "name": "Trunks",
   "description": "Time-traveling half-Saiyan swordsman",
   "statsOverride": { "strength": 22, "ki": 100, "speed": 19, "vitality": 100 },
-  "attackLabels": { "Normal": "Basic Attack", "KiEnergy": "Final Flash", "Special": "Super Saiyan (Trunks SSJ1)" }
+  "attackLabels": { "Normal": "Basic Attack", "KiEnergy": "Final Flash", "Special": "Super Saiyan (Trunks SSJ1)" },
+  "spriteFrames": [
+      "../../assets/characters/trunks_idle_01.png",
+      "../../assets/characters/trunks_idle_02.png",
+      "../../assets/characters/trunks_idle_03.png"
+    ]
   },
   {
     "id": "gohan",
@@ -73,7 +83,12 @@
     "name": "Gohan",
     "description": "Scholar with hidden power",
     "statsOverride": { "strength": 21, "ki": 100, "speed": 20, "vitality": 100 },
-    "attackLabels": { "Normal": "Basic Attack", "KiEnergy": "Kamehameha", "Special": "Super Saiyan (Gohan SSJ1)" }
+    "attackLabels": { "Normal": "Basic Attack", "KiEnergy": "Kamehameha", "Special": "Super Saiyan (Gohan SSJ1)" },
+    "spriteFrames": [
+      "../../assets/characters/gohan_idle_01.png",
+      "../../assets/characters/gohan_idle_02.png",
+      "../../assets/characters/gohan_idle_03.png"
+    ]
   },
   {
     "id": "c16",
@@ -81,6 +96,11 @@
     "name": "C-16",
     "description": "Gentle giant android",
     "statsOverride": { "strength": 26, "ki": 9999, "speed": 15, "vitality": 100 },
-    "attackLabels": { "Normal": "Basic Attack", "KiEnergy": "Laser Shot", "Special": "Energy Leech" }
+    "attackLabels": { "Normal": "Basic Attack", "KiEnergy": "Laser Shot", "Special": "Energy Leech" },
+    "spriteFrames": [
+      "../../assets/characters/android16_idle_01.png",
+      "../../assets/characters/android16_idle_02.png",
+      "../../assets/characters/android16_idle_03.png"
+    ]
   }
 ]
