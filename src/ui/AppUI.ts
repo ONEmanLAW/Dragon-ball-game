@@ -1,3 +1,4 @@
+// src/ui/AppUI.ts
 import { GameManager } from "../app/GameManager";
 import type { Warrior } from "../domain/Warrior";
 import type { WarriorPreset } from "../data/WarriorPreset";
@@ -53,7 +54,7 @@ export class AppUI {
         this.battleView.startBattle(p1, p2, (winnerName) => {
           this.showOnly("tournament");
           onEnded(winnerName);
-        });
+        }, "tournament");
       },
     });
 
@@ -75,20 +76,20 @@ export class AppUI {
       onStartBattle: (p1Name, p2Name) => {
         const p1 = this.gm.getWarrior(p1Name);
         const p2 = this.gm.getWarrior(p2Name);
-        if (!p1 || !p2) {
-          alert("Invalid fighters.");
-          return;
-        }
+        if (!p1 || !p2) { alert("Invalid fighters."); return; }
         this.showOnly("battle");
         this.battleView.startBattle(p1, p2);
       },
     });
 
-
     this.battleView = new BattleView({
       onExit: () => {
         this.showOnly("roster");
         this.rosterView.refreshRoster();
+      },
+      onAbortTournament: () => {
+        this.showOnly("mode");
+        this.tournamentView.reset?.();
       },
     });
 
