@@ -25,6 +25,7 @@
   gap: 16px;
 }
 
+
 .battle-view .top-actions {
   position: absolute;
   top: 10px;
@@ -33,7 +34,7 @@
   display: grid;
   gap: 8px;
   justify-items: center;
-  z-index: 3; 
+  z-index: 3;
 }
 .battle-view .btn-exit,
 .battle-view .btn-next {
@@ -73,6 +74,8 @@
 .battle-view .hud-panel--left  { justify-self: start; }
 .battle-view .hud-panel--right { justify-self: end; }
 .battle-view .hud-name { font-size: 16px; font-weight: 900; color: rgb(255,255,255); }
+
+.battle-view .hud-panel--right .hud-name { text-align: right; justify-self: end; }
 .battle-view .meter { display: grid; gap: 6px; }
 .battle-view .meter-label { font-size: 12px; opacity: .9; }
 .battle-view .bar {
@@ -91,6 +94,7 @@
 .battle-view .bar-fill--ki {
   background: linear-gradient(90deg, rgb(37,99,235), rgb(24,69,165));
 }
+
 
 .battle-view .battle-stage {
   position: relative;
@@ -134,12 +138,12 @@
   z-index: 1;
 }
 .battle-view .char-sprite {
-  width: 210px;
+  width: 200px;
   height: auto;
   image-rendering: pixelated;
   display: block;
   align-self: end;
-  z-index: 1;           
+  z-index: 1;
   position: relative;
 }
 .battle-view .fighter--right .char-sprite { transform: scaleX(-1); }
@@ -155,8 +159,10 @@
   color: rgb(255,255,255);
   font-weight: 900;
   font-size: 12px;
-  z-index: 2;        
+  z-index: 2;
 }
+
+.battle-view .fighter--right .effect-badge { left: auto; right: 8px; }
 
 
 .battle-view .feed {
@@ -168,7 +174,7 @@
   gap: 10px;
   justify-items: center;
   pointer-events: none;
-  z-index: 2; 
+  z-index: 2;
 }
 .battle-view .toast {
   background: rgba(0,0,0,.65);
@@ -176,7 +182,7 @@
   border: 1px solid rgba(255,255,255,.15);
   border-radius: 10px;
   padding: 12px 16px;
-  font-size: 24px;     
+  font-size: 24px;
   font-weight: 900;
   letter-spacing: 1px;
   opacity: 0;
@@ -186,7 +192,7 @@
 @keyframes toast-in { to { opacity: 1; transform: translateY(0); } }
 @keyframes toast-out { to { opacity: 0; transform: translateY(-6px); } }
 
-
+/* Modal */
 .battle-view .modal {
   position: absolute;
   inset: 0;
