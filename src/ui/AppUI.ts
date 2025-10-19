@@ -37,11 +37,9 @@ export class AppUI {
   private audio = AudioManager.getInstance();
 
   public boot(): void {
-    // Presets
     this.gm.loadPresets(presetsJson as WarriorPreset[]);
     for (const p of presetsJson as WarriorPreset[]) this.gm.spawnPreset(p.id);
 
-    // Views
     this.menuView = new MainMenuView({
       onPlay: () => {
         this.audioUnlocked = true;
@@ -109,11 +107,9 @@ export class AppUI {
           onEnded(winnerName);
         }, "tournament");
       },
-      onExit: () => { this.showOnly("mode"); },
       onCancel: () => { this.showOnly("mode"); },
     });
 
-    // Mount
     this.menuView.mount();
     this.createView.mount();
     this.modeMenuView.mount();
@@ -122,11 +118,9 @@ export class AppUI {
     this.tournamentSelectView.mount();
     this.tournamentView.mount();
 
-    // Start
     this.showOnly("menu");
     this.rosterView.refreshRoster();
 
-    // Audio
     this.audio.preload();
     this.audio.attachGlobalClickSfx();
   }

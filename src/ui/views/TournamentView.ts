@@ -14,33 +14,52 @@ export class TournamentView {
 
   private section!: El<HTMLElement>;
   private btnPlay!: HTMLButtonElement;
-  private btnExit!: HTMLButtonElement;
   private btnCancel!: HTMLButtonElement;
   private bracket!: HTMLDivElement;
   private status!: HTMLDivElement;
+
+  private modal!: HTMLElement;
+  private modalYes!: HTMLButtonElement;
+  private modalNo!: HTMLButtonElement;
+  private modalBackdrop!: HTMLDivElement;
 
   private playerName: string | null = null;
 
   constructor(private readonly cb: {
     onPlayMatch: (p1: Warrior, p2: Warrior, onEnded: (winner: string) => void) => void,
-    onExit: () => void,
     onCancel: () => void
   }) {}
 
   public mount(): void {
     this.section   = document.getElementById("tournament-section") as HTMLElement;
     this.btnPlay   = document.getElementById("tournament-play")   as HTMLButtonElement;
-    this.btnExit   = document.getElementById("tournament-exit")   as HTMLButtonElement;
     this.btnCancel = document.getElementById("tournament-cancel") as HTMLButtonElement;
     this.bracket   = document.getElementById("tournament-bracket") as HTMLDivElement;
     this.status    = document.getElementById("tournament-status")  as HTMLDivElement;
 
+    this.modal         = document.getElementById("tournament-modal") as HTMLElement;
+    this.modalYes      = document.getElementById("tmodal-yes") as HTMLButtonElement;
+    this.modalNo       = document.getElementById("tmodal-no")  as HTMLButtonElement;
+    this.modalBackdrop = this.modal.querySelector(".t-modal-backdrop") as HTMLDivElement;
+
     this.btnPlay.addEventListener("click",  () => this.playStep());
-    this.btnExit.addEventListener("click",  () => this.cb.onExit());
-    this.btnCancel.addEventListener("click",() => { this.reset(); this.cb.onCancel(); });
+    this.btnCancel.addEventListener("click",() => this.openModal());
+
+    this.modalYes.addEventListener("click", () => this.confirmCancel());
+    this.modalNo.addEventListener("click",  () => this.closeModal());
+    this.modalBackdrop.addEventListener("click", () => this.closeModal());
+    window.addEventListener("keydown", (e) => {
+      if (this.section.hidden) return;
+      if (e.key === "Escape" && !this.modal.hidden) this.closeModal();
+    });
 
     this.status.textContent = "Play to start the tournament.";
     this.btnCancel.hidden = true;
+    this.hideModal();
+  }
+
+  public setPlayer(name: string): void {
+    this.playerName = name;
   }
 
   public onShow(): void {
@@ -54,6 +73,7 @@ export class TournamentView {
       this.bracket.innerHTML = "";
       this.status.textContent = "Play to start the tournament.";
       this.btnCancel.hidden = true;
+      this.hideModal();
     }
   }
 
@@ -62,6 +82,7 @@ export class TournamentView {
     this.bracket.innerHTML = "";
     this.status.textContent = "Tournament cancelled.";
     this.btnCancel.hidden = true;
+    this.hideModal();
   }
 
   public startWithPlayer(name: string): void {
@@ -146,5 +167,19 @@ export class TournamentView {
 
     const [qf, sf, fi] = this.cmdCtx.tour.rounds;
     this.bracket.innerHTML = `${col("Quarterfinals", qf)}${col("Semifinals", sf)}${col("Final", fi)}`;
+  }
+
+  private openModal(): void {
+    this.modal.hidden = false;
+  }
+  private closeModal(): void {
+    this.hideModal();
+  }
+  private hideModal(): void {
+    this.modal.hidden = true;
+  }
+  private confirmCancel(): void {
+    this.reset();
+    this.cb.onCancel();
   }
 }

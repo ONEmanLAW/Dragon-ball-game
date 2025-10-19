@@ -165,7 +165,6 @@
 
       <header class="t-topbar">
         <div class="t-left">
-          <button id="tournament-exit"   class="t-btn">Exit Tournament</button>
           <button id="tournament-cancel" class="t-btn t-btn-danger" hidden>Cancel Tournament</button>
         </div>
         <div class="t-right">
@@ -179,9 +178,23 @@
         <div id="tournament-bracket" class="t-bracket"></div>
       </main>
 
+      <!-- modal -->
+      <div id="tournament-modal" class="t-modal" hidden>
+        <div class="t-modal-backdrop"></div>
+        <div class="t-modal-dialog">
+          <div class="t-modal-title">Cancel the tournament?</div>
+          <p class="t-modal-text">Are you sure you want to stop the tournament? Your progress won’t be saved.</p>
+          <div class="t-modal-actions">
+            <button id="tmodal-no"  class="t-btn">No</button>
+            <button id="tmodal-yes" class="t-btn t-btn-danger">Yes, cancel</button>
+          </div>
+        </div>
+      </div>
+
     </div>
   </div>
 </section>
+
 
 
 
