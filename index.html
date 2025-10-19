@@ -175,70 +175,71 @@
 
  <!-- Battle -->
   <section id="battle-section" class="view battle-view" hidden>
-  <div class="battle">
-    <img class="battle-bg" src="src/assets/kameHouse_background.png" alt="">
-    <div class="battle-wrap">
-      <button id="btn-exit" class="btn-exit" title="Exit">Exit</button>
-
-      <header class="battle-hud">
-        <div class="hud-panel hud-panel--left">
-          <div class="hud-name" id="hud-p1-name">—</div>
-          <div class="meter"><span class="meter-label">Vie</span><div class="bar"><div class="bar-fill" id="hp-p1"></div></div></div>
-          <div class="meter"><span class="meter-label">Ki</span><div class="bar"><div class="bar-fill bar-fill--ki" id="ki-p1"></div></div></div>
-        </div>
-        <div class="hud-panel hud-panel--right">
-          <div class="hud-name" id="hud-p2-name">—</div>
-          <div class="meter"><span class="meter-label">Vie</span><div class="bar"><div class="bar-fill" id="hp-p2"></div></div></div>
-          <div class="meter"><span class="meter-label">Ki</span><div class="bar"><div class="bar-fill bar-fill--ki" id="ki-p2"></div></div></div>
-        </div>
-      </header>
-
-      <main class="battle-stage">
-        <div class="actions actions--left">
-          <button id="p1-basic"   class="act-btn">Basic</button>
-          <button id="p1-ki"      class="act-btn">Ki</button>
-          <button id="p1-special" class="act-btn">Special</button>
+    <div class="battle">
+      <img class="battle-bg" src="src/assets/kameHouse_background.png" alt="">
+      <div class="battle-wrap">
+        
+        <div class="top-actions">
+          <button id="btn-exit" class="btn-exit" title="Exit">Exit</button>
+          <button id="btn-next-fight" class="btn btn-next" hidden>Next Fight</button>
         </div>
 
-        <div class="fighters">
-          <div class="fighter fighter--left">
-            <div class="effect-badge" id="eff-p1" hidden>—</div>
-            <img id="sprite-p1" class="char-sprite" alt="P1">
+        <header class="battle-hud">
+          <div class="hud-panel hud-panel--left">
+            <div class="hud-name" id="hud-p1-name">—</div>
+            <div class="meter"><span class="meter-label">Vie</span><div class="bar"><div class="bar-fill" id="hp-p1"></div></div></div>
+            <div class="meter"><span class="meter-label">Ki</span><div class="bar"><div class="bar-fill bar-fill--ki" id="ki-p1"></div></div></div>
           </div>
-          <div class="fighter fighter--right">
-            <div class="effect-badge" id="eff-p2" hidden>—</div>
-            <img id="sprite-p2" class="char-sprite" alt="P2">
+          <div class="hud-panel hud-panel--right">
+            <div class="hud-name" id="hud-p2-name">—</div>
+            <div class="meter"><span class="meter-label">Vie</span><div class="bar"><div class="bar-fill" id="hp-p2"></div></div></div>
+            <div class="meter"><span class="meter-label">Ki</span><div class="bar"><div class="bar-fill bar-fill--ki" id="ki-p2"></div></div></div>
+          </div>
+        </header>
+
+        <main class="battle-stage">
+          <div class="actions actions--left">
+            <button id="p1-basic"   class="act-btn">Basic</button>
+            <button id="p1-ki"      class="act-btn">Ki</button>
+            <button id="p1-special" class="act-btn">Special</button>
+          </div>
+
+          <div class="fighters">
+            <div class="fighter fighter--left">
+              <div class="effect-badge" id="eff-p1" hidden>—</div>
+              <img id="sprite-p1" class="char-sprite" alt="P1">
+            </div>
+            <div class="fighter fighter--right">
+              <div class="effect-badge" id="eff-p2" hidden>—</div>
+              <img id="sprite-p2" class="char-sprite" alt="P2">
+            </div>
+          </div>
+
+          <div class="actions actions--right">
+            <button id="p2-basic"   class="act-btn">Basic</button>
+            <button id="p2-ki"      class="act-btn">Ki</button>
+            <button id="p2-special" class="act-btn">Special</button>
+          </div>
+
+          <div id="floating-feed" class="feed"></div>
+        </main>
+
+        <!-- Modal Exit -->
+        <div id="battle-modal" class="modal" hidden>
+          <div class="modal-box">
+            <p class="modal-text">Quitter le combat ?</p>
+            <div class="modal-actions">
+              <button id="btn-modal-resume" class="btn">Resume</button>
+              <button id="btn-modal-quit" class="btn btn-danger">Quit</button>
+            </div>
           </div>
         </div>
 
-        <div class="actions actions--right">
-          <button id="p2-basic"   class="act-btn">Basic</button>
-          <button id="p2-ki"      class="act-btn">Ki</button>
-          <button id="p2-special" class="act-btn">Special</button>
-        </div>
-
-        <div id="floating-feed" class="feed"></div>
-      </main>
-
-      <footer class="battle-footer">
-        <button id="btn-next-fight" class="btn" hidden>Next Fight</button>
-        <button id="btn-exit-after" class="btn" hidden>Exit</button>
-      </footer>
-
-      <!-- Modal de confirmation Exit -->
-      <div id="battle-modal" class="modal" hidden>
-        <div class="modal-box">
-          <p class="modal-text">Quitter le combat ?</p>
-          <div class="modal-actions">
-            <button id="btn-modal-resume" class="btn">Resume</button>
-            <button id="btn-modal-quit" class="btn btn-danger">Quit</button>
-          </div>
-        </div>
       </div>
-
     </div>
-  </div>
-</section>
+  </section>
+
+
 
 
 

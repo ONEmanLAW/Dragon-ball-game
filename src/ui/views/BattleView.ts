@@ -17,8 +17,8 @@ type El<T extends HTMLElement> = T;
 type BattleContext = "duel" | "tournament";
 
 type Callbacks = {
-  onExit: () => void;               
-  onAbortTournament?: () => void;  
+  onExit: () => void;
+  onAbortTournament?: () => void;
 };
 
 export class BattleView {
@@ -33,7 +33,6 @@ export class BattleView {
 
   private btnNextFight!: HTMLButtonElement;
   private btnExitSmall!: HTMLButtonElement;
-  private btnExitAfter!: HTMLButtonElement;
 
   private btnP1Basic!: HTMLButtonElement;
   private btnP1Ki!: HTMLButtonElement;
@@ -55,8 +54,8 @@ export class BattleView {
   private btnModalResume!: HTMLButtonElement;
   private btnModalQuit!: HTMLButtonElement;
 
-  private p1!: Warrior; // gauche
-  private p2!: Warrior; // droite
+  private p1!: Warrior;
+  private p2!: Warrior;
   private turn!: TurnManager;
 
   private onEnded?: (winnerName: string) => void;
@@ -79,7 +78,6 @@ export class BattleView {
 
     this.btnNextFight  = document.getElementById("btn-next-fight") as HTMLButtonElement;
     this.btnExitSmall  = document.getElementById("btn-exit") as HTMLButtonElement;
-    this.btnExitAfter  = document.getElementById("btn-exit-after") as HTMLButtonElement;
 
     this.btnP1Basic   = document.getElementById("p1-basic") as HTMLButtonElement;
     this.btnP1Ki      = document.getElementById("p1-ki") as HTMLButtonElement;
@@ -106,13 +104,11 @@ export class BattleView {
       const winner = !this.p1.isAlive() ? this.p2.name : this.p1.name;
       const cb = this.onEnded;
       this.onEnded = undefined;
-      this.btnNextFight.hidden = true;
+      this.hideNextFight();
       cb(winner);
     });
 
     this.btnExitSmall.addEventListener("click", () => this.openModal());
-    this.btnExitAfter.addEventListener("click", () => this.quitBattle());
-
     this.btnModalResume.addEventListener("click", () => this.closeModal());
     this.btnModalQuit.addEventListener("click", () => this.quitBattle());
 
@@ -125,7 +121,6 @@ export class BattleView {
     this.btnP2Special.addEventListener("click", () => this.onClick("p2", "Special"));
   }
 
-  // onEnded : s’il existe, on est en tournoi
   public startBattle(p1: Warrior, p2: Warrior, onEnded?: (winnerName: string) => void, context?: BattleContext): void {
     this.p1 = p1;
     this.p2 = p2;
@@ -150,9 +145,7 @@ export class BattleView {
     this.startAnim();
 
     this.refreshButtons();
-    this.btnNextFight.hidden = true;
-    this.btnExitAfter.hidden = true;
-
+    this.hideNextFight(); // reset
     this.hideBadge(this.p1.name);
     this.hideBadge(this.p2.name);
     this.clearFeed();
@@ -168,14 +161,13 @@ export class BattleView {
     this.stopAnim();
     eventBus.unsubscribe(this.sub);
     this.clearFeed();
-    this.btnNextFight.hidden = true;
-    this.btnExitAfter.hidden = true;
+    this.hideNextFight();
     this.hideBadge(this.p1?.name);
     this.hideBadge(this.p2?.name);
     this.closeModal(true);
   }
 
-  // ===== Exit / Modal =====
+  // Exit / Modal
   private openModal(): void {
     this.modal.hidden = false;
     this.disableAll();
@@ -185,16 +177,12 @@ export class BattleView {
     if (!silent) this.refreshButtons();
   }
   private quitBattle(): void {
-    // full reset comme s’il n’y avait pas eu de combat
     this.stop();
-    if (this.ctx === "tournament") {
-      this.cb.onAbortTournament?.();
-    } else {
-      this.cb.onExit();
-    }
+    if (this.ctx === "tournament") this.cb.onAbortTournament?.();
+    else this.cb.onExit();
   }
 
-  // ===== UI clicks → validations =====
+  // Clicks
   private onClick(side: "p1" | "p2", kind: AttackKind): void {
     const isP1Turn = this.turn.getActive().name === this.p1.name;
     const me  = side === "p1" ? this.p1 : this.p2;
@@ -218,7 +206,7 @@ export class BattleView {
 
     try {
       const attack = this.gm.createAttack(kind);
-      attack.execute(me, opp); // Observer => AttackExecuted / BattleEnded
+      attack.execute(me, opp);
       if (me.isAlive() && opp.isAlive()) this.turn.nextTurn();
     } catch {
       this.fx("Action impossible");
@@ -252,7 +240,7 @@ export class BattleView {
 
   private setEnabled(btn: HTMLButtonElement, en: boolean): void { btn.disabled = !en; }
 
-  // ===== Observer =====
+  // Observer
   private onEvent(e: any): void {
     switch (e.kind) {
       case "AttackExecuted":
@@ -261,10 +249,7 @@ export class BattleView {
         break;
 
       case "StateChanged": {
-        const msg =
-          e.to === "Dead"
-            ? `${e.warrior} est K.O.`
-            : `${e.warrior} → ${this.stateLabel(e.to)}`;
+        const msg = e.to === "Dead" ? `${e.warrior} est K.O.` : `${e.warrior} → ${this.stateLabel(e.to)}`;
         this.fx(msg);
         break;
       }
@@ -290,12 +275,22 @@ export class BattleView {
         this.updateBars();
         this.fx("KO!");
         this.disableAll();
-        this.btnNextFight.hidden = !this.onEnded;  
-        this.btnExitAfter.hidden = false;       
+        if (this.onEnded) this.showNextFightPulse();
         break;
     }
   }
 
+  // Next Fight visibility/pulse
+  private showNextFightPulse(): void {
+    this.btnNextFight.hidden = false;
+    this.btnNextFight.classList.add("is-pulse");
+  }
+  private hideNextFight(): void {
+    this.btnNextFight.hidden = true;
+    this.btnNextFight.classList.remove("is-pulse");
+  }
+
+  // Labels helpers
   private effectShort(k: "SuperSaiyan" | "Regeneration" | "EnergyLeech"): string {
     if (k === "SuperSaiyan") return "SSJ";
     if (k === "Regeneration") return "REGEN";
@@ -309,7 +304,7 @@ export class BattleView {
     return name;
   }
 
-  // ===== HUD / Bars =====
+  // HUD
   private updateBars(): void {
     const p1Hp = Math.max(0, Math.min(1, this.p1.getVitality() / this.p1.stats.vitality));
     const p2Hp = Math.max(0, Math.min(1, this.p2.getVitality() / this.p2.stats.vitality));
@@ -325,7 +320,7 @@ export class BattleView {
     w.gainKi(w.stats.ki * 2);
   }
 
-  // ===== Sprites =====
+  // Sprites
   private setFrames(img: HTMLImageElement, frames: string[]): void {
     (img as any)._frames = frames;
     (img as any)._index = 0;
@@ -355,7 +350,7 @@ export class BattleView {
     return raw.map(p => new URL(p, import.meta.url).toString());
   }
 
-  // ===== Effect badges =====
+  // Effect badges
   private showBadge(who: string, text: string): void {
     const el = who === this.p1.name ? this.effP1 : who === this.p2.name ? this.effP2 : undefined;
     if (!el) return; el.textContent = text; el.hidden = false;
@@ -366,7 +361,7 @@ export class BattleView {
     if (!el) return; el.hidden = true;
   }
 
-  // ===== FX (center feed) =====
+  // FX
   private fx(text: string): void {
     const item = document.createElement("div");
     item.className = "toast";
@@ -376,7 +371,6 @@ export class BattleView {
   }
   private clearFeed(): void { this.feed.innerHTML = ""; }
 
-  // ===== Helpers =====
   private disableAll(): void {
     this.btnP1Basic.disabled = true; this.btnP1Ki.disabled = true; this.btnP1Special.disabled = true;
     this.btnP2Basic.disabled = true; this.btnP2Ki.disabled = true; this.btnP2Special.disabled = true;
