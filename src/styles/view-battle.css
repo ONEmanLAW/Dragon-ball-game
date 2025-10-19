@@ -25,6 +25,25 @@
   gap: 16px;
 }
 
+/* petit bouton exit (en haut, centré) */
+.battle-view .btn-exit {
+  position: absolute;
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 1px solid rgb(70,70,70);
+  background: rgb(40,40,40);
+  color: rgb(255,255,255);
+  border-radius: 999px;
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: 800;
+  text-transform: uppercase;
+  cursor: pointer;
+  z-index: 2;
+}
+.battle-view .btn-exit:hover { background: rgb(52,52,52); }
+
 /* HUD top */
 .battle-view .battle-hud {
   display: grid;
@@ -71,10 +90,7 @@
   gap: 16px;
   min-height: 420px;
 }
-.battle-view .actions {
-  display: grid;
-  gap: 8px;
-}
+.battle-view .actions { display: grid; gap: 8px; }
 .battle-view .actions--left  { justify-items: start; }
 .battle-view .actions--right { justify-items: end; }
 .battle-view .act-btn {
@@ -92,7 +108,7 @@
 .battle-view .act-btn:disabled { opacity: .6; cursor: not-allowed; }
 .battle-view .act-btn:hover:not(:disabled) { background: rgb(52,52,52); }
 
-
+/* Fighters */
 .battle-view .fighters {
   display: flex;
   justify-content: space-between;
@@ -108,7 +124,6 @@
   display: block;
   align-self: end;
 }
-/* P2 mirrored to face P1 */
 .battle-view .fighter--right .char-sprite { transform: scaleX(-1); }
 
 .battle-view .effect-badge {
@@ -165,14 +180,33 @@
   cursor: pointer;
 }
 .battle-view .btn:hover { background: rgb(52,52,52); }
+.battle-view .btn-danger { border-color: rgb(120,40,40); background: rgb(90,22,22); }
+.battle-view .btn-danger:hover { background: rgb(110,26,26); }
+
+/* Modal */
+.battle-view .modal {
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,.5);
+  display: grid;
+  place-items: center;
+  z-index: 5;
+}
+.battle-view .modal[hidden] { display: none; }
+.battle-view .modal-box {
+  width: min(420px, 92vw);
+  background: rgb(22,22,22);
+  border: 1px solid rgba(255,255,255,.2);
+  border-radius: 12px;
+  padding: 16px;
+  display: grid;
+  gap: 12px;
+}
+.battle-view .modal-text { text-align: center; font-size: 16px; font-weight: 800; }
+.battle-view .modal-actions { display: flex; gap: 10px; justify-content: center; }
 
 @media (max-width: 980px) {
-  .battle-view .battle-stage {
-    grid-template-columns: 1fr;
-    gap: 12px;
-    min-height: 360px;
-  }
-  .battle-view .actions,
-  .battle-view .act-btn { width: 100%; }
+  .battle-view .battle-stage { grid-template-columns: 1fr; gap: 12px; min-height: 360px; }
+  .battle-view .actions, .battle-view .act-btn { width: 100%; }
   .battle-view .fighters { justify-content: center; gap: 24px; }
 }
