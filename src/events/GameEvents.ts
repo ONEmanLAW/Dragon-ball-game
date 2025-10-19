@@ -1,9 +1,9 @@
 // GameEvents : contrats d’événements (pub/sub)
 
-
 //#region Base
 export type EventKind =
   | "AttackExecuted"
+  | "AttackDodged"
   | "StateChanged"
   | "TurnChanged"
   | "BattleStarted"
@@ -17,7 +17,6 @@ export interface BaseEvent {
   timestamp: number; // Date.now() (ms)
 }
 //#endregion
-
 
 //#region Effets (Decorators)
 export type EffectKind = "SuperSaiyan" | "Regeneration" | "EnergyLeech";
@@ -43,7 +42,6 @@ export interface EffectEndedEvent extends BaseEvent {
 }
 //#endregion
 
-
 //#region Combat
 export interface AttackExecutedEvent extends BaseEvent {
   kind: "AttackExecuted";
@@ -54,6 +52,13 @@ export interface AttackExecutedEvent extends BaseEvent {
   damage: number;
   defenderRemainingVitality: number;
   attackerRemainingKi: number;
+}
+
+export interface AttackDodgedEvent extends BaseEvent {
+  kind: "AttackDodged";
+  attacker: string;
+  defender: string;
+  attackName: string;
 }
 
 export interface StateChangedEvent extends BaseEvent {
@@ -83,10 +88,10 @@ export interface BattleEndedEvent extends BaseEvent {
 }
 //#endregion
 
-
 //#region Union
 export type GameEvent =
   | AttackExecutedEvent
+  | AttackDodgedEvent
   | StateChangedEvent
   | TurnChangedEvent
   | BattleStartedEvent

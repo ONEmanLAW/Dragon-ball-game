@@ -145,7 +145,7 @@ export class BattleView {
     this.startAnim();
 
     this.refreshButtons();
-    this.hideNextFight(); // reset
+    this.hideNextFight();
     this.hideBadge(this.p1.name);
     this.hideBadge(this.p2.name);
     this.clearFeed();
@@ -246,6 +246,10 @@ export class BattleView {
       case "AttackExecuted":
         this.updateBars();
         this.fx(this.fxFor(this.kindFrom(e.attackName), e.damage, e.kiSpent));
+        break;
+
+      case "AttackDodged":
+        this.fx(`${e.defender} esquive !`);
         break;
 
       case "StateChanged": {

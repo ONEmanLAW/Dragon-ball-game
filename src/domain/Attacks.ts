@@ -4,6 +4,7 @@ import { eventBus } from "../events/EventBus";
 import type {
   GameEvent,
   AttackExecutedEvent,
+  AttackDodgedEvent,
   BattleEndedEvent,
   TurnChangedEvent,
   BattleStartedEvent,
@@ -23,9 +24,7 @@ import {
   EFFECT_DEFAULT_ROUNDS,
 } from "./Balance";
 
-import {
-  SPECIAL_EFFECT_BY_RACE
-} from "./Effects";
+import { SPECIAL_EFFECT_BY_RACE } from "./Effects";
 
 //#region Combat state
 let currentTurn = 1; // round partagé P1/P2
@@ -65,6 +64,25 @@ export class AttackResult {
 }
 //#endregion
 
+//#region Helpers (nouvelle échelle d’esquive)
+function dodgeChanceFromSpeed(speed: number): number {
+  // 0% à VIT ≤ 10 ; 70% à VIT ≥ 100 ; linéaire entre les deux
+  const MIN_SPD = 10;
+  const MAX_SPD = 100;
+  const MAX_CHANCE = 0.70;
+  const ratio = (speed - MIN_SPD) / (MAX_SPD - MIN_SPD);
+  const chance = ratio * MAX_CHANCE;
+  return Math.max(0, Math.min(MAX_CHANCE, chance));
+}
+
+function shouldDodge(defender: Warrior, kind: AttackKind): boolean {
+  // Esquive pour Normal et KiEnergy (les Specials ici ne font pas de dégâts directs)
+  if (kind === "Special") return false;
+  const chance = dodgeChanceFromSpeed(defender.stats.speed);
+  return Math.random() < chance;
+}
+//#endregion
+
 //#region Base Template
 export abstract class Attack {
   protected constructor(
@@ -72,13 +90,10 @@ export abstract class Attack {
     protected readonly kiCost: number
   ) {}
 
-  // Nom d'affichage par type si pas d’override via labels.
   public abstract getNameFor(attackerType: WarriorType): string;
-
-  // Multiplie la STR => dégâts de base (avant modulation par State)
   protected abstract getStrengthMultiplier(): number;
 
-  // Pipeline standard (coût KI => dégâts => event => KO)
+  // Pipeline : coût KI => (éventuelle esquive) => dégâts => events => KO
   public execute(attacker: Warrior, defender: Warrior): AttackResult {
     if (!attacker.isAlive()) throw new Error(`${attacker.name} cannot act (down).`);
     if (!defender.isAlive()) throw new Error(`${defender.name} is already down.`);
@@ -90,15 +105,38 @@ export abstract class Attack {
     const kiAfter = attacker.getKi();
     const kiSpent = Math.max(0, kiBefore - kiAfter);
 
-    // 2) Dégâts (STR × mult) modulés par l’état
+    const attackLabel = attacker.getAttackLabel?.(this.kind) ?? this.getNameFor(attacker.type);
+
+    // 2) Esquive potentielle
+    if (shouldDodge(defender, this.kind)) {
+      const dodgeEvt: AttackDodgedEvent = {
+        kind: "AttackDodged",
+        timestamp: Date.now(),
+        attacker: attacker.name,
+        defender: defender.name,
+        attackName: attackLabel,
+      };
+      eventBus.emit(dodgeEvt);
+
+      return new AttackResult(
+        attacker.name,
+        defender.name,
+        attackLabel,
+        kiSpent,
+        0,
+        defender.getVitality(),
+        attacker.getKi()
+      );
+    }
+
+    // 3) Dégâts (STR × mult) modulés par l’état
     const baseDamage = Math.floor(attacker.stats.strength * this.getStrengthMultiplier());
     const finalDamage = attacker.adjustOutgoingDamage(baseDamage);
 
-    // 3) Application
+    // 4) Application
     defender.receiveDamage(finalDamage);
 
-    // 4) Event
-    const attackLabel = attacker.getAttackLabel?.(this.kind) ?? this.getNameFor(attacker.type);
+    // 5) Event
     const evt: AttackExecutedEvent = {
       kind: "AttackExecuted",
       timestamp: Date.now(),
@@ -112,7 +150,7 @@ export abstract class Attack {
     };
     eventBus.emit(evt);
 
-    // 5) KO éventuel
+    // 6) KO éventuel
     if (!defender.isAlive()) {
       const endEvt: BattleEndedEvent = {
         kind: "BattleEnded",
@@ -151,19 +189,16 @@ export class KiEnergyAttack extends Attack {
   protected getStrengthMultiplier(): number { return KI_ENERGY_STRENGTH_MULTIPLIER; }
 }
 
-// Special : applique un Effect (Decorator). Dispo => SPECIAL_UNLOCK_TURN, 1×/combattant.
 export class SpecialAttack extends Attack {
   constructor() { super("Special", SPECIAL_ATTACK_KI_COST); }
 
   public getNameFor(type: WarriorType): string {
-    if (type === "Saiyan")
-      return "Super Saiyan";
-    if (type === "Namekian")
-      return "Regeneration";
+    if (type === "Saiyan")   return "Super Saiyan";
+    if (type === "Namekian") return "Regeneration";
     return "Energy Leech";
   }
 
-  protected getStrengthMultiplier(): number { return 0; } // pas de dégâts directs
+  protected getStrengthMultiplier(): number { return 0; } 
 
   public override execute(attacker: Warrior, defender: Warrior): AttackResult {
     if (currentTurn < SPECIAL_UNLOCK_TURN) {
@@ -175,14 +210,12 @@ export class SpecialAttack extends Attack {
       throw new Error(`${attacker.name} has already used their Special this battle.`);
     }
 
-    // coût (0) gardé pour pipeline cohérent
     const adjustedCost = attacker.adjustKiCost(this.kiCost);
     const kiBefore = attacker.getKi();
     attacker.spendKi(adjustedCost);
     const kiAfter = attacker.getKi();
     const kiSpent = Math.max(0, kiBefore - kiAfter);
 
-    // ✅ plus de switch(race) : on récupère la fabrique et on applique
     const factory = SPECIAL_EFFECT_BY_RACE[attacker.type];
     if (!factory) throw new Error(`No special effect registered for race: ${attacker.type}`);
     const effect = factory(attacker, defender);
