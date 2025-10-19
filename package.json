@@ -1,5 +1,5 @@
 {
-  "name": "dragon-ball-tactical-clash",
+  "name": "dragon-ball-warriors",
   "version": "1.0.0",
   "type": "module",
   "main": "dist/electron/main.js",
