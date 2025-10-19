@@ -15,7 +15,7 @@ export class TournamentSelectView {
   private btnChoose!: HTMLButtonElement;
 
   private nameEl!: HTMLDivElement;
-  private typeEl!: HTMLDivElement;
+  private typeEl!: HTMLSpanElement;
 
   private statStr!: HTMLDivElement;
   private statSpd!: HTMLDivElement;
@@ -27,7 +27,6 @@ export class TournamentSelectView {
   private list: Warrior[] = [];
   private index = 0;
 
-  // animation 3 frames
   private animTimer: number | undefined;
   private fps = 6;
 
@@ -38,20 +37,21 @@ export class TournamentSelectView {
 
   public mount(): void {
     this.section   = document.getElementById("tournament-select-section") as HTMLElement;
-    this.btnBack   = document.getElementById("tselect-back") as HTMLButtonElement;
-    this.btnPrev   = document.getElementById("tselect-prev") as HTMLButtonElement;
-    this.btnNext   = document.getElementById("tselect-next") as HTMLButtonElement;
-    this.btnChoose = document.getElementById("tselect-choose") as HTMLButtonElement;
 
-    this.nameEl = document.getElementById("tselect-name") as HTMLDivElement;
-    this.typeEl = document.getElementById("tselect-type") as HTMLDivElement;
+    this.btnBack   = document.getElementById("ts-back")   as HTMLButtonElement;
+    this.btnPrev   = document.getElementById("ts-prev")   as HTMLButtonElement;
+    this.btnNext   = document.getElementById("ts-next")   as HTMLButtonElement;
+    this.btnChoose = document.getElementById("ts-choose") as HTMLButtonElement;
 
-    this.statStr = document.getElementById("tselect-str") as HTMLDivElement;
-    this.statSpd = document.getElementById("tselect-spd") as HTMLDivElement;
-    this.statKi  = document.getElementById("tselect-ki")  as HTMLDivElement;
-    this.statVit = document.getElementById("tselect-vit") as HTMLDivElement;
+    this.nameEl = document.getElementById("ts-name") as HTMLDivElement;
+    this.typeEl = document.getElementById("ts-type") as HTMLSpanElement;
 
-    this.img = document.getElementById("tselect-sprite") as HTMLImageElement;
+    this.statStr = document.getElementById("ts-str") as HTMLDivElement;
+    this.statSpd = document.getElementById("ts-spd") as HTMLDivElement;
+    this.statKi  = document.getElementById("ts-ki")  as HTMLDivElement;
+    this.statVit = document.getElementById("ts-vit") as HTMLDivElement;
+
+    this.img = document.getElementById("ts-sprite") as HTMLImageElement;
 
     this.btnBack.addEventListener("click", () => this.onBack());
     this.btnPrev.addEventListener("click", () => this.prev());
@@ -64,10 +64,8 @@ export class TournamentSelectView {
 
   public onShow(): void {
     this.list = this.gm.getAllWarriors();
-    // positionner sur le dernier custom si tu veux (facultatif). Ici on garde 0.
     if (!this.list.length) return;
 
-    // clamp au cas où
     this.index = Math.max(0, Math.min(this.index, this.list.length - 1));
     this.render();
     this.startAnim();
@@ -108,12 +106,20 @@ export class TournamentSelectView {
     this.setFrames(this.img, this.framesFor(w));
   }
 
-  // sprites 3 frames (depuis presets.json si dispo)
   private framesFor(w: Warrior): string[] {
-    const presets = presetsJson as WarriorPreset[];
+    const presets = presetsJson as (WarriorPreset & { spriteFrames?: string[] })[];
     const preset = presets.find(p => p.name === w.name && Array.isArray(p.spriteFrames) && p.spriteFrames.length > 0);
-    const raw = preset?.spriteFrames ?? this.gm.getSpriteFramesForRace?.(w.type as WarriorType) ?? [];
+    const raw = preset?.spriteFrames ?? this.framesByRace(w.type as WarriorType);
     return raw.map(p => new URL(p, import.meta.url).toString());
+  }
+
+  private framesByRace(type: WarriorType): string[] {
+    const fallback: Record<WarriorType, string[]> = {
+      Saiyan:   [],
+      Namekian: [],
+      Android:  [],
+    };
+    return fallback[type] ?? [];
   }
 
   private setFrames(img: HTMLImageElement, frames: string[]): void {
