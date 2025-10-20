@@ -157,9 +157,9 @@ npm run game
 Place tes images/vidéos dans `assets/screens/` puis référence‑les ici :
 
 ```md
-![Warrior Builder View](assets/screens/main-menu.png)
-![Roster View](assets/screens/roster-view.png)
-![Battle View](assets/screens/battle-ki-attack.png)
+![Warrior Builder View](src/assets/ImagesFromGame/BuilderView.png)
+![Roster View](src/assets/ImagesFromGame/RosterView.png)
+![Battle View](src/assets/ImagesFromGame/BattleView.png)
 ```
 
 ---
