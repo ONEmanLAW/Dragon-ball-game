@@ -1,3 +1,5 @@
+// Patterns: App Coordinator (façade UI) + Singleton usage (GameManager/AudioManager)
+
 import { GameManager } from "../app/GameManager";
 import type { Warrior } from "../domain/Warrior";
 import type { WarriorPreset } from "../data/WarriorPreset";
@@ -13,18 +15,15 @@ import { TournamentSelectView } from "./views/TournamentSelectView";
 
 import { AudioManager } from "../app/AudioManager";
 
-type Screen =
-  | "menu"
-  | "create"
-  | "mode"
-  | "tournamentSelect"
-  | "tournament"
-  | "roster"
-  | "battle";
+type Screen = "menu" | "create" | "mode" | "tournamentSelect" | "tournament" | "roster" | "battle";
 
 export class AppUI {
-  private gm = GameManager.getInstance();
+  //#region Services
+  private gameManager = GameManager.getInstance();
+  private audioManager = AudioManager.getInstance();
+  //#endregion
 
+  //#region Views
   private menuView!: MainMenuView;
   private createView!: CreateView;
   private modeMenuView!: ModeMenuView;
@@ -32,25 +31,28 @@ export class AppUI {
   private battleView!: BattleView;
   private tournamentSelectView!: TournamentSelectView;
   private tournamentView!: TournamentView;
+  //#endregion
 
+  //#region Local state
   private audioUnlocked = false;
-  private audio = AudioManager.getInstance();
+  //#endregion
 
+  //#region Boot
   public boot(): void {
-    this.gm.loadPresets(presetsJson as WarriorPreset[]);
-    for (const p of presetsJson as WarriorPreset[]) this.gm.spawnPreset(p.id);
+    this.gameManager.loadPresets(presetsJson as WarriorPreset[]);
+    for (const p of presetsJson as WarriorPreset[]) this.gameManager.spawnPreset(p.id);
 
     this.menuView = new MainMenuView({
       onPlay: () => {
         this.audioUnlocked = true;
-        this.audio.playMenu();
+        this.audioManager.playMenu();
         this.showOnly("create");
       },
     });
 
     this.createView = new CreateView({
       onCreated: (w: Warrior) => {
-        this.gm.registerWarrior(w);
+        this.gameManager.registerWarrior(w);
         this.rosterView.refreshRoster();
         this.showOnly("mode");
       },
@@ -65,15 +67,13 @@ export class AppUI {
         this.tournamentSelectView.onShow?.();
         this.showOnly("tournamentSelect");
       },
-      onThirdOption: () => {
-        alert("Mode 3 bientôt");
-      },
+      onThirdOption: () => { alert("Mode 3 bientôt"); },
     });
 
     this.rosterView = new RosterView({
       onStartBattle: (p1Name, p2Name) => {
-        const p1 = this.gm.getWarrior(p1Name);
-        const p2 = this.gm.getWarrior(p2Name);
+        const p1 = this.gameManager.getWarrior(p1Name);
+        const p2 = this.gameManager.getWarrior(p2Name);
         if (!p1 || !p2) { alert("Invalid fighters."); return; }
         this.showOnly("battle");
         this.battleView.startBattle(p1, p2);
@@ -121,18 +121,20 @@ export class AppUI {
     this.showOnly("menu");
     this.rosterView.refreshRoster();
 
-    this.audio.preload();
-    this.audio.attachGlobalClickSfx();
+    this.audioManager.preload();
+    this.audioManager.attachGlobalClickSfx();
   }
+  //#endregion
 
+  //#region Navigation
   private showOnly(which: Screen): void {
-    (document.getElementById("menu-section")                 as HTMLElement).hidden = which !== "menu";
-    (document.getElementById("create-section")               as HTMLElement).hidden = which !== "create";
-    (document.getElementById("mode-section")                 as HTMLElement).hidden = which !== "mode";
-    (document.getElementById("tournament-select-section")    as HTMLElement).hidden = which !== "tournamentSelect";
-    (document.getElementById("tournament-section")           as HTMLElement).hidden = which !== "tournament";
-    (document.getElementById("roster-section")               as HTMLElement).hidden = which !== "roster";
-    (document.getElementById("battle-section")               as HTMLElement).hidden = which !== "battle";
+    (document.getElementById("menu-section") as HTMLElement).hidden = which !== "menu";
+    (document.getElementById("create-section") as HTMLElement).hidden = which !== "create";
+    (document.getElementById("mode-section") as HTMLElement).hidden = which !== "mode";
+    (document.getElementById("tournament-select-section") as HTMLElement).hidden = which !== "tournamentSelect";
+    (document.getElementById("tournament-section") as HTMLElement).hidden = which !== "tournament";
+    (document.getElementById("roster-section") as HTMLElement).hidden = which !== "roster";
+    (document.getElementById("battle-section") as HTMLElement).hidden = which !== "battle";
 
     if (which !== "battle") this.battleView.stop();
 
@@ -142,8 +144,9 @@ export class AppUI {
     if (which === "tournamentSelect") this.tournamentSelectView.onShow?.(); else this.tournamentSelectView.onHide?.();
 
     if (this.audioUnlocked) {
-      if (which === "battle") this.audio.playBattle();
-      else this.audio.playMenu();
+      if (which === "battle") this.audioManager.playBattle();
+      else this.audioManager.playMenu();
     }
   }
+  //#endregion
 }

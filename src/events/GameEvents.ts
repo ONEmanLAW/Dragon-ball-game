@@ -1,4 +1,4 @@
-// GameEvents : contrats d’événements (pub/sub)
+// Patterns: Observer (pub/sub contracts)
 
 //#region Base
 export type EventKind =
@@ -14,16 +14,16 @@ export type EventKind =
 
 export interface BaseEvent {
   kind: EventKind;
-  timestamp: number; // Date.now() (ms)
+  timestamp: number; // ms since epoch
 }
 //#endregion
 
-//#region Effets (Decorators)
+//#region Effects (Decorator)
 export type EffectKind = "SuperSaiyan" | "Regeneration" | "EnergyLeech";
 
 export interface EffectStartedEvent extends BaseEvent {
   kind: "EffectStarted";
-  who: string; // porteur
+  who: string; // carrier
   effect: EffectKind;
   totalRounds: number;
 }
@@ -70,7 +70,7 @@ export interface StateChangedEvent extends BaseEvent {
 
 export interface TurnChangedEvent extends BaseEvent {
   kind: "TurnChanged";
-  turnNumber: number; // round courant (partagé P1/P2)
+  turnNumber: number; // shared round (P1/P2)
   active: string;
   opponent: string;
 }

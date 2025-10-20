@@ -1,4 +1,4 @@
-// EventBus : pub/sub global (Singleton)
+// Patterns: Observer (pub/sub) + Singleton
 
 import type { GameEvent } from "./GameEvents";
 
@@ -20,13 +20,12 @@ export class EventBus {
   //#endregion
 
   //#region API
-  public subscribe(obs: Observer): void { this.observers.add(obs); }
-  public unsubscribe(obs: Observer): void { this.observers.delete(obs); }
+  public subscribe(observer: Observer): void { this.observers.add(observer); }
+  public unsubscribe(observer: Observer): void { this.observers.delete(observer); }
 
-  // Diffuse l'évènement à tous les observers (résilient aux erreurs)
   public emit(event: GameEvent): void {
-    for (const obs of this.observers) {
-      try { obs.update(event); }
+    for (const observer of this.observers) {
+      try { observer.update(event); }
       catch (err) { console.warn("[EventBus] Observer error:", err); }
     }
   }

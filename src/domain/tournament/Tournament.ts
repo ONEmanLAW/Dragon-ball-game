@@ -1,3 +1,5 @@
+// Rôle: Modèle de bracket + utilitaires (shuffle/simulation) — pas de GoF majeur.
+
 import type { Warrior } from "../../domain/Warrior";
 
 export type Match = { a: string; b: string; winner?: string; done?: boolean };

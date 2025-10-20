@@ -1,13 +1,16 @@
-// ui/views/CreateView.ts
+// Patterns: Singleton (GameManager) + Builder (WarriorBuilder) + Factory (via WarriorFactory sous-jacent)
+
 import type { Warrior, WarriorType } from "../../domain/Warrior";
-import { WarriorBuilder } from "../../build/WarriorBuilder";
+import { WarriorBuilder, type SaiyanKiChoice, type NamekianKiChoice, type AndroidKiChoice } from "../../build/WarriorBuilder";
 import { GameManager } from "../../app/GameManager";
 import { KI_CHOICES_BY_RACE, DEFAULT_STATS_BY_RACE } from "../../domain/Balance";
 
+//#region Types
 type El<T extends HTMLElement> = T;
+//#endregion
 
 export class CreateView {
-  private gm = GameManager.getInstance();
+  private gameManager = GameManager.getInstance();
 
   private section!: El<HTMLElement>;
   private inputName!: El<HTMLInputElement>;
@@ -32,6 +35,7 @@ export class CreateView {
 
   constructor(private readonly cb: { onCreated: (w: Warrior) => void }) {}
 
+  //#region Mount / init
   public mount(): void {
     this.section = document.getElementById("create-section") as HTMLElement;
 
@@ -64,10 +68,14 @@ export class CreateView {
     this.renderStats(initialRace);
     this.setFramesFromJson(initialRace);
   }
+  //#endregion
 
+  //#region Visibility hooks
   public onShow(): void { this.startAnim(); }
   public onHide(): void { this.stopAnim(); }
+  //#endregion
 
+  //#region UI helpers
   private getSelectedRace(): WarriorType {
     return (this.selectRace.value as WarriorType) || "Saiyan";
   }
@@ -87,8 +95,7 @@ export class CreateView {
   }
 
   private setFramesFromJson(race: WarriorType): void {
-    // récupère les chemins from JSON via GameManager
-    const raw = this.gm.getSpriteFramesForRace(race) ?? [];
+    const raw = this.gameManager.getSpriteFramesForRace(race) ?? [];
     this.frames = raw.map(p => new URL(p, import.meta.url).toString());
     this.frameIndex = 0;
 
@@ -102,7 +109,9 @@ export class CreateView {
       this.startAnim();
     }
   }
+  //#endregion
 
+  //#region Anim
   private startAnim(): void {
     if (this.animTimer || this.frames.length === 0) return;
     const delay = Math.max(30, Math.floor(1000 / this.fps));
@@ -119,7 +128,9 @@ export class CreateView {
       this.animTimer = undefined;
     }
   }
+  //#endregion
 
+  //#region Create flow
   private handleCreate(): void {
     this.createError.textContent = "";
 
@@ -129,21 +140,22 @@ export class CreateView {
     const ki = this.selectKi.value;
 
     if (!name) { this.createError.textContent = "Please enter a name."; return; }
-    if (this.gm.getWarrior(name)) {
+    if (this.gameManager.getWarrior(name)) {
       this.createError.textContent = "A warrior with this name already exists.";
       return;
     }
 
     try {
-      const b = new WarriorBuilder().ofRace(race).named(name).describedAs(desc);
-      if (race === "Saiyan")   b.withSaiyanKi(ki as any);
-      if (race === "Namekian") b.withNamekianKi(ki as any);
-      if (race === "Android")  b.withAndroidKi(ki as any);
+      const builder = new WarriorBuilder().ofRace(race).named(name).describedAs(desc);
+      if (race === "Saiyan") builder.withSaiyanKi(ki as SaiyanKiChoice);
+      if (race === "Namekian") builder.withNamekianKi(ki as NamekianKiChoice);
+      if (race === "Android") builder.withAndroidKi(ki as AndroidKiChoice);
 
-      const warrior = b.build();
+      const warrior = builder.build();
       this.cb.onCreated(warrior);
     } catch (e: any) {
       this.createError.textContent = e?.message ?? "Creation failed.";
     }
   }
+  //#endregion
 }

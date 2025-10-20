@@ -1,3 +1,5 @@
+// Patterns: View (UI)
+
 import { GameManager } from "../../app/GameManager";
 import type { Warrior, WarriorType } from "../../domain/Warrior";
 import type { WarriorPreset } from "../../data/WarriorPreset";
@@ -6,64 +8,64 @@ import presetsJson from "../../data/warriors.json";
 type El<T extends HTMLElement> = T;
 
 export class TournamentSelectView {
-  private gm = GameManager.getInstance();
+  //#region Fields
+  private gameManager = GameManager.getInstance();
 
   private section!: El<HTMLElement>;
-  private btnBack!: HTMLButtonElement;
-  private btnPrev!: HTMLButtonElement;
-  private btnNext!: HTMLButtonElement;
-  private btnChoose!: HTMLButtonElement;
+  private buttonBack!: HTMLButtonElement;
+  private buttonPrevious!: HTMLButtonElement;
+  private buttonNext!: HTMLButtonElement;
+  private buttonChoose!: HTMLButtonElement;
 
-  private nameEl!: HTMLDivElement;
-  private typeEl!: HTMLSpanElement;
+  private nameElement!: HTMLDivElement;
+  private typeElement!: HTMLSpanElement;
 
-  private statStr!: HTMLDivElement;
-  private statSpd!: HTMLDivElement;
+  private statStrength!: HTMLDivElement;
+  private statSpeed!: HTMLDivElement;
   private statKi!: HTMLDivElement;
-  private statVit!: HTMLDivElement;
+  private statVitality!: HTMLDivElement;
 
-  private img!: HTMLImageElement;
+  private imageElement!: HTMLImageElement;
 
   private list: Warrior[] = [];
   private index = 0;
 
   private animTimer: number | undefined;
-  private fps = 6;
+  private framesPerSecond = 6;
+  //#endregion
 
-  constructor(private readonly cb: {
-    onBack: () => void;
-    onChosen: (fighterName: string) => void;
-  }) {}
+  constructor(private readonly cb: { onBack: () => void; onChosen: (fighterName: string) => void }) {}
 
+  //#region Lifecycle
   public mount(): void {
-    this.section   = document.getElementById("tournament-select-section") as HTMLElement;
+    this.section = document.getElementById("tournament-select-section") as HTMLElement;
 
-    this.btnBack   = document.getElementById("ts-back")   as HTMLButtonElement;
-    this.btnPrev   = document.getElementById("ts-prev")   as HTMLButtonElement;
-    this.btnNext   = document.getElementById("ts-next")   as HTMLButtonElement;
-    this.btnChoose = document.getElementById("ts-choose") as HTMLButtonElement;
+    this.buttonBack = document.getElementById("ts-back") as HTMLButtonElement;
+    this.buttonPrevious = document.getElementById("ts-prev") as HTMLButtonElement;
+    this.buttonNext = document.getElementById("ts-next") as HTMLButtonElement;
+    this.buttonChoose = document.getElementById("ts-choose") as HTMLButtonElement;
 
-    this.nameEl = document.getElementById("ts-name") as HTMLDivElement;
-    this.typeEl = document.getElementById("ts-type") as HTMLSpanElement;
+    this.nameElement = document.getElementById("ts-name") as HTMLDivElement;
+    this.typeElement = document.getElementById("ts-type") as HTMLSpanElement;
 
-    this.statStr = document.getElementById("ts-str") as HTMLDivElement;
-    this.statSpd = document.getElementById("ts-spd") as HTMLDivElement;
-    this.statKi  = document.getElementById("ts-ki")  as HTMLDivElement;
-    this.statVit = document.getElementById("ts-vit") as HTMLDivElement;
+    this.statStrength = document.getElementById("ts-str") as HTMLDivElement;
+    this.statSpeed = document.getElementById("ts-spd") as HTMLDivElement;
+    this.statKi = document.getElementById("ts-ki") as HTMLDivElement;
+    this.statVitality = document.getElementById("ts-vit") as HTMLDivElement;
 
-    this.img = document.getElementById("ts-sprite") as HTMLImageElement;
+    this.imageElement = document.getElementById("ts-sprite") as HTMLImageElement;
 
-    this.btnBack.addEventListener("click", () => this.onBack());
-    this.btnPrev.addEventListener("click", () => this.prev());
-    this.btnNext.addEventListener("click", () => this.next());
-    this.btnChoose.addEventListener("click", () => {
+    this.buttonBack.addEventListener("click", () => this.handleBack());
+    this.buttonPrevious.addEventListener("click", () => this.prev());
+    this.buttonNext.addEventListener("click", () => this.next());
+    this.buttonChoose.addEventListener("click", () => {
       const w = this.list[this.index];
       if (w) this.cb.onChosen(w.name);
     });
   }
 
   public onShow(): void {
-    this.list = this.gm.getAllWarriors();
+    this.list = this.gameManager.getAllWarriors();
     if (!this.list.length) return;
 
     this.index = Math.max(0, Math.min(this.index, this.list.length - 1));
@@ -74,8 +76,10 @@ export class TournamentSelectView {
   public onHide(): void {
     this.stopAnim();
   }
+  //#endregion
 
-  private onBack(): void {
+  //#region Handlers
+  private handleBack(): void {
     this.cb.onBack();
   }
 
@@ -90,36 +94,52 @@ export class TournamentSelectView {
     this.index = (this.index + 1) % this.list.length;
     this.render();
   }
+  //#endregion
 
+  //#region Rendering
   private render(): void {
     const w = this.list[this.index];
     if (!w) return;
 
-    this.nameEl.textContent = w.name;
-    this.typeEl.textContent = `[${w.type}]`;
+    this.nameElement.textContent = w.name;
+    this.typeElement.textContent = `[${w.type}]`;
 
-    this.statStr.textContent = String(w.stats.strength);
-    this.statSpd.textContent = String(w.stats.speed);
-    this.statKi.textContent  = String(w.stats.ki);
-    this.statVit.textContent = String(w.stats.vitality);
+    this.statStrength.textContent = String(w.stats.strength);
+    this.statSpeed.textContent = String(w.stats.speed);
+    this.statKi.textContent = String(w.stats.ki);
+    this.statVitality.textContent = String(w.stats.vitality);
 
-    this.setFrames(this.img, this.framesFor(w));
+    this.setFrames(this.imageElement, this.framesFor(w));
+  }
+  //#endregion
+
+  //#region Animation
+  private startAnim(): void {
+    if (this.animTimer) return;
+    const delay = Math.max(30, Math.floor(1000 / this.framesPerSecond));
+    this.animTimer = window.setInterval(() => {
+      const frames: string[] = (this.imageElement as any)._frames || [];
+      if (!frames.length) return;
+      let idx: number = (this.imageElement as any)._index ?? 0;
+      idx = (idx + 1) % frames.length;
+      (this.imageElement as any)._index = idx;
+      this.imageElement.src = frames[idx];
+    }, delay) as unknown as number;
   }
 
-  private framesFor(w: Warrior): string[] {
+  private stopAnim(): void {
+    if (!this.animTimer) return;
+    clearInterval(this.animTimer);
+    this.animTimer = undefined;
+  }
+  //#endregion
+
+  //#region Helpers
+  private framesFor(warrior: Warrior): string[] {
     const presets = presetsJson as (WarriorPreset & { spriteFrames?: string[] })[];
-    const preset = presets.find(p => p.name === w.name && Array.isArray(p.spriteFrames) && p.spriteFrames.length > 0);
-    const raw = preset?.spriteFrames ?? this.framesByRace(w.type as WarriorType);
+    const preset = presets.find(p => p.name === warrior.name && Array.isArray(p.spriteFrames) && p.spriteFrames.length > 0);
+    const raw = preset?.spriteFrames ?? this.gameManager.getSpriteFramesForRace(warrior.type as WarriorType) ?? [];
     return raw.map(p => new URL(p, import.meta.url).toString());
-  }
-
-  private framesByRace(type: WarriorType): string[] {
-    const fallback: Record<WarriorType, string[]> = {
-      Saiyan:   [],
-      Namekian: [],
-      Android:  [],
-    };
-    return fallback[type] ?? [];
   }
 
   private setFrames(img: HTMLImageElement, frames: string[]): void {
@@ -127,21 +147,5 @@ export class TournamentSelectView {
     (img as any)._index = 0;
     img.src = frames[0] ?? "";
   }
-
-  private startAnim(): void {
-    if (this.animTimer) return;
-    const delay = Math.max(30, Math.floor(1000 / this.fps));
-    this.animTimer = window.setInterval(() => {
-      const frames: string[] = (this.img as any)._frames || [];
-      if (!frames.length) return;
-      let index: number = (this.img as any)._index ?? 0;
-      index = (index + 1) % frames.length;
-      (this.img as any)._index = index;
-      this.img.src = frames[index];
-    }, delay) as unknown as number;
-  }
-
-  private stopAnim(): void {
-    if (this.animTimer) { clearInterval(this.animTimer); this.animTimer = undefined; }
-  }
+  //#endregion
 }

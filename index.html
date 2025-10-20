@@ -1,41 +1,38 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
+  <meta charset="utf-8"/>
   <title>DBZ WARRIOR BATTLE</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <link rel="stylesheet" href="./src/styles/main.css"/>
-  <link rel="stylesheet" href="./src/styles/view-menu.css" />
-  <link rel="stylesheet" href="./src/styles/view-hub.css" />
-  <link rel="stylesheet" href="./src/styles/view-create.css" />
-  <link rel="stylesheet" href="./src/styles/view-roster.css" />
-  <link rel="stylesheet" href="./src/styles/view-battle.css" />
-  <link rel="stylesheet" href="./src/styles/view-tournament.css" />
-  <link rel="stylesheet" href="./src/styles/view-tournament-select.css" />
-  
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
 
-  <link rel="icon" type="image/svg+xml" href="src/assets/dragonBall_icon.jpg">
-  
+  <link rel="stylesheet" href="./src/styles/main.css"/>
+  <link rel="stylesheet" href="./src/styles/view-menu.css"/>
+  <link rel="stylesheet" href="./src/styles/view-hub.css"/>
+  <link rel="stylesheet" href="./src/styles/view-create.css"/>
+  <link rel="stylesheet" href="./src/styles/view-roster.css"/>
+  <link rel="stylesheet" href="./src/styles/view-battle.css"/>
+  <link rel="stylesheet" href="./src/styles/view-tournament.css"/>
+  <link rel="stylesheet" href="./src/styles/view-tournament-select.css"/>
+
+  <link rel="icon" href="src/assets/dragonBall_icon.jpg" type="image/svg+xml"/>
 </head>
 <body>
 
-  <!-- MAIN MENU -->
+  <!-- #region MAIN MENU -->
   <section id="menu-section" class="view menu-view">
     <div class="menu">
-      <img class="menu__bg" src="src/assets/kameHouse_background.png" alt="">
+      <img class="menu__bg" src="src/assets/kameHouse_background.png" alt="Kame House background" loading="lazy"/>
       <button id="btn-play" class="menu__play" aria-label="Play">
-        <img class="menu__play-img" src="src/assets/play.png" alt="Play">
+        <img class="menu__play-img" src="src/assets/play.png" alt="Play button"/>
       </button>
     </div>
   </section>
+  <!-- #endregion -->
 
-
-
-
-  <!-- Creation perso -->
+  <!-- #region CREATE -->
   <section id="create-section" class="view create-view" hidden>
     <div class="create">
-      <img class="create-bg" src="src/assets/kameHouse_background.png" alt="">
+      <img class="create-bg" src="src/assets/kameHouse_background.png" alt="" loading="lazy"/>
       <div class="create-wrap">
         <header class="create-top">
           <div class="panel create-stats">
@@ -47,7 +44,7 @@
           </div>
 
           <div class="create-name">
-            <input id="input-name" class="input" type="text" placeholder="Warrior name">
+            <input id="input-name" class="input" type="text" placeholder="Warrior name" autocomplete="off"/>
           </div>
 
           <label class="panel create-race">
@@ -60,8 +57,8 @@
           </label>
         </header>
 
-        <main class="create-stage">
-          <img id="sprite-img" class="create-sprite" alt="Warrior preview">
+        <main class="create-stage" aria-label="Warrior preview">
+          <img id="sprite-img" class="create-sprite" alt="Warrior preview"/>
         </main>
 
         <footer class="create-bottom">
@@ -72,7 +69,7 @@
             </label>
             <label class="panel field">
               <span>Description</span>
-              <input id="input-description" class="input" type="text" placeholder="Short flavor text">
+              <input id="input-description" class="input" type="text" placeholder="Short flavor text" autocomplete="off"/>
             </label>
           </div>
 
@@ -87,20 +84,18 @@
       </div>
     </div>
   </section>
+  <!-- #endregion -->
 
-
-
-
-  <!-- MODE MENU -->
+  <!-- #region MODE MENU -->
   <section id="mode-section" class="view hub-view" hidden>
     <div class="hub">
-      <img class="hub-bg" src="src/assets/kameHouse_background.png" alt="">
+      <img class="hub-bg" src="src/assets/kameHouse_background.png" alt="" loading="lazy"/>
       <div class="hub-wrap">
         <h2 class="hub-title">Choose your mode</h2>
         <div class="hub-grid">
           <button id="btn-mode-1v1" class="hub-btn hub-btn--primary">
             <span class="hub-btn-title">1 vs 1</span>
-            <span class="hub-btn-sub">Pick fighters & battle</span>
+            <span class="hub-btn-sub">Pick fighters &amp; battle</span>
           </button>
           <button id="btn-mode-2" class="hub-btn hub-btn--secondary">
             <span class="hub-btn-title">Tournament</span>
@@ -114,11 +109,12 @@
       </div>
     </div>
   </section>
+  <!-- #endregion -->
 
-
+  <!-- #region TOURNAMENT SELECT -->
   <section id="tournament-select-section" class="view tournament-select-view" hidden>
     <div class="tselect">
-      <img class="tselect-bg" src="src/assets/kameHouse_background.png" alt="">
+      <img class="tselect-bg" src="src/assets/kameHouse_background.png" alt="" loading="lazy"/>
       <div class="tselect-wrap">
 
         <header class="tselect-top">
@@ -141,11 +137,11 @@
             </div>
 
             <div class="card-sprite">
-              <img id="ts-sprite" class="sprite" alt="Fighter preview">
+              <img id="ts-sprite" class="sprite" alt="Fighter preview"/>
             </div>
 
             <div class="card-actions">
-              <button id="ts-back"   class="btn btn-secondary">Back</button>
+              <button id="ts-back" class="btn btn-secondary">Back</button>
               <button id="ts-choose" class="btn">Choose</button>
             </div>
           </div>
@@ -156,61 +152,50 @@
       </div>
     </div>
   </section>
+  <!-- #endregion -->
 
+  <!-- #region TOURNAMENT -->
+  <section id="tournament-section" class="view tournament-view" hidden>
+    <div class="tournament">
+      <img class="tournament-bg" src="src/assets/kameHouse_background.png" alt="" loading="lazy"/>
+      <div class="tournament-wrap">
 
+        <header class="t-topbar">
+          <div class="t-left">
+            <button id="tournament-cancel" class="t-btn t-btn-danger" hidden>Cancel Tournament</button>
+          </div>
+          <div class="t-right">
+            <button id="tournament-play" class="t-btn t-btn-primary">Play Round</button>
+          </div>
+        </header>
 
+        <div id="tournament-status" class="t-status" aria-live="polite">Play to start the tournament.</div>
 
+        <main class="t-bracket-area" aria-label="Tournament bracket">
+          <div id="tournament-bracket" class="t-bracket"></div>
+        </main>
 
-
-
-<section id="tournament-section" class="view tournament-view" hidden>
-  <div class="tournament">
-    <img class="tournament-bg" src="src/assets/kameHouse_background.png" alt="">
-    <div class="tournament-wrap">
-
-      <header class="t-topbar">
-        <div class="t-left">
-          <button id="tournament-cancel" class="t-btn t-btn-danger" hidden>Cancel Tournament</button>
-        </div>
-        <div class="t-right">
-          <button id="tournament-play" class="t-btn t-btn-primary">Play Round</button>
-        </div>
-      </header>
-
-      <div id="tournament-status" class="t-status">Play to start the tournament.</div>
-
-      <main class="t-bracket-area">
-        <div id="tournament-bracket" class="t-bracket"></div>
-      </main>
-
-      <!-- modal -->
-      <div id="tournament-modal" class="t-modal" hidden>
-        <div class="t-modal-backdrop"></div>
-        <div class="t-modal-dialog">
-          <div class="t-modal-title">Cancel the tournament?</div>
-          <p class="t-modal-text">Are you sure you want to stop the tournament? Your progress won’t be saved.</p>
-          <div class="t-modal-actions">
-            <button id="tmodal-no"  class="t-btn">No</button>
-            <button id="tmodal-yes" class="t-btn t-btn-danger">Yes, cancel</button>
+        <div id="tournament-modal" class="t-modal" hidden>
+          <div class="t-modal-backdrop"></div>
+          <div class="t-modal-dialog" role="dialog" aria-modal="true" aria-labelledby="tmodal-title">
+            <div id="tmodal-title" class="t-modal-title">Cancel the tournament?</div>
+            <p class="t-modal-text">Are you sure you want to stop the tournament? Your progress won’t be saved.</p>
+            <div class="t-modal-actions">
+              <button id="tmodal-no" class="t-btn">No</button>
+              <button id="tmodal-yes" class="t-btn t-btn-danger">Yes, cancel</button>
+            </div>
           </div>
         </div>
+
       </div>
-
     </div>
-  </div>
-</section>
+  </section>
+  <!-- #endregion -->
 
-
-
-
-
-
-
-
-  <!-- ROSTER + P1/P2  -->
+  <!-- #region ROSTER -->
   <section id="roster-section" class="view roster-view" hidden>
     <div class="roster">
-      <img class="roster-bg" src="src/assets/kameHouse_background.png" alt="">
+      <img class="roster-bg" src="src/assets/kameHouse_background.png" alt="" loading="lazy"/>
       <div class="roster-wrap">
 
         <header class="roster-top">
@@ -236,7 +221,7 @@
             <button class="nav-btn" id="btn-p1-next" aria-label="Next fighter">&gt;</button>
           </div>
 
-          <div class="vs">VS</div>
+          <div class="vs" aria-hidden="true">VS</div>
 
           <div class="side side--right">
             <button class="nav-btn" id="btn-p2-prev" aria-label="Previous fighter">&lt;</button>
@@ -248,15 +233,14 @@
       </div>
     </div>
   </section>
+  <!-- #endregion -->
 
-
-
- <!-- Battle -->
+  <!-- #region BATTLE -->
   <section id="battle-section" class="view battle-view" hidden>
     <div class="battle">
-      <img class="battle-bg" src="src/assets/combats_bg.gif" alt="">
+      <img class="battle-bg" src="src/assets/combats_bg.gif" alt="" loading="lazy"/>
       <div class="battle-wrap">
-        
+
         <div class="top-actions">
           <button id="btn-exit" class="btn-exit" title="Exit">Exit</button>
           <button id="btn-next-fight" class="btn btn-next" hidden>Next Fight</button>
@@ -277,35 +261,34 @@
 
         <main class="battle-stage">
           <div class="actions actions--left">
-            <button id="p1-basic"   class="act-btn">Basic</button>
-            <button id="p1-ki"      class="act-btn">Ki</button>
+            <button id="p1-basic" class="act-btn">Basic</button>
+            <button id="p1-ki" class="act-btn">Ki</button>
             <button id="p1-special" class="act-btn">Special</button>
           </div>
 
           <div class="fighters">
             <div class="fighter fighter--left">
               <div class="effect-badge" id="eff-p1" hidden>—</div>
-              <img id="sprite-p1" class="char-sprite" alt="P1">
+              <img id="sprite-p1" class="char-sprite" alt="P1 sprite"/>
             </div>
             <div class="fighter fighter--right">
               <div class="effect-badge" id="eff-p2" hidden>—</div>
-              <img id="sprite-p2" class="char-sprite" alt="P2">
+              <img id="sprite-p2" class="char-sprite" alt="P2 sprite"/>
             </div>
           </div>
 
           <div class="actions actions--right">
-            <button id="p2-basic"   class="act-btn">Basic</button>
-            <button id="p2-ki"      class="act-btn">Ki</button>
+            <button id="p2-basic" class="act-btn">Basic</button>
+            <button id="p2-ki" class="act-btn">Ki</button>
             <button id="p2-special" class="act-btn">Special</button>
           </div>
 
-          <div id="floating-feed" class="feed"></div>
+          <div id="floating-feed" class="feed" aria-live="polite"></div>
         </main>
 
-        <!-- Modal Exit -->
         <div id="battle-modal" class="modal" hidden>
-          <div class="modal-box">
-            <p class="modal-text">Quitter le combat ?</p>
+          <div class="modal-box" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+            <p id="modal-title" class="modal-text">Quitter le combat ?</p>
             <div class="modal-actions">
               <button id="btn-modal-resume" class="btn">Resume</button>
               <button id="btn-modal-quit" class="btn btn-danger">Quit</button>
@@ -316,15 +299,7 @@
       </div>
     </div>
   </section>
-
-
-
-
-
-
-
-
-
+  <!-- #endregion -->
 
   <script type="module" src="./src/main.ts"></script>
 </body>
