@@ -12,6 +12,7 @@ import {
 } from "../../domain/Balance";
 import { eventBus } from "../../events/EventBus";
 import { battleMemento } from "../../app/BattleMemento";
+import { assetUrlFromJsonPath } from "../../app/assetResolver";
 import type { WarriorPreset } from "../../data/WarriorPreset";
 import presetsJson from "../../data/warriors.json";
 
@@ -474,21 +475,21 @@ export class BattleView {
   private baseFramesFor(w: Warrior): string[] {
     const preset = this.presets().find(p => p.name === w.name && Array.isArray(p.spriteFrames) && p.spriteFrames.length > 0);
     const raw = preset?.spriteFrames ?? this.gameManager.getSpriteFramesForRace(w.type) ?? [];
-    return raw.map(p => new URL(p, import.meta.url).toString());
+    return raw.map(p => assetUrlFromJsonPath(p, import.meta.url));
   }
 
   private ssjFramesFor(w: Warrior): string[] {
     if (w.type !== "Saiyan") return [];
     const preset = this.presets().find(p => p.name === w.name && Array.isArray((p as any).spriteFramesSSJ) && (p as any).spriteFramesSSJ.length > 0);
     const raw: string[] = (preset as any)?.spriteFramesSSJ ?? this.defaultSaiyanSSJ();
-    return raw.map((p) => new URL(p, import.meta.url).toString());
+    return raw.map(p => assetUrlFromJsonPath(p, import.meta.url));
   }
 
   private defaultSaiyanSSJ(): string[] {
     return [
-      "../../assets/characters/goku_SSJ1_idle_01.png",
-      "../../assets/characters/goku_SSJ1_idle_02.png",
-      "../../assets/characters/goku_SSJ1_idle_03.png"
+      "src/assets/saiyan/goku_ssj/idle_0.png",
+      "src/assets/saiyan/goku_ssj/idle_1.png",
+      "src/assets/saiyan/goku_ssj/idle_2.png",
     ];
   }
 
