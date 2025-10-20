@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="utf-8"/>
-  <title>DBZ WARRIOR BATTLE</title>
+  <title>Dragon ball Warriors</title>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
 
   <link rel="stylesheet" href="./src/styles/main.css"/>
@@ -18,18 +18,22 @@
 </head>
 <body>
 
-  <!-- #region MAIN MENU -->
+ <!-- MAIN MENU -->
   <section id="menu-section" class="view menu-view">
     <div class="menu">
-      <img class="menu__bg" src="src/assets/kameHouse_background.png" alt="Kame House background" loading="lazy"/>
+      <img class="menu__bg" src="src/assets/kameHouse_background.png" alt="">
+
+      <div class="menu__brand" aria-label="Game logo">
+        <img class="menu__logo" src="src/assets/logoGame.png" alt="DBZ Warrior Battle logo">
+      </div>
+
       <button id="btn-play" class="menu__play" aria-label="Play">
-        <img class="menu__play-img" src="src/assets/play.png" alt="Play button"/>
+        <img class="menu__play-img" src="src/assets/play.png" alt="Play">
       </button>
     </div>
   </section>
-  <!-- #endregion -->
 
-  <!-- #region CREATE -->
+  <!-- CREATE -->
   <section id="create-section" class="view create-view" hidden>
     <div class="create">
       <img class="create-bg" src="src/assets/kameHouse_background.png" alt="" loading="lazy"/>
@@ -84,9 +88,8 @@
       </div>
     </div>
   </section>
-  <!-- #endregion -->
 
-  <!-- #region MODE MENU -->
+  <!-- MODE MENU -->
   <section id="mode-section" class="view hub-view" hidden>
     <div class="hub">
       <img class="hub-bg" src="src/assets/kameHouse_background.png" alt="" loading="lazy"/>
@@ -109,9 +112,8 @@
       </div>
     </div>
   </section>
-  <!-- #endregion -->
 
-  <!-- #region TOURNAMENT SELECT -->
+  <!-- TOURNAMENT SELECT -->
   <section id="tournament-select-section" class="view tournament-select-view" hidden>
     <div class="tselect">
       <img class="tselect-bg" src="src/assets/kameHouse_background.png" alt="" loading="lazy"/>
@@ -152,9 +154,8 @@
       </div>
     </div>
   </section>
-  <!-- #endregion -->
 
-  <!-- #region TOURNAMENT -->
+  <!-- TOURNAMENT -->
   <section id="tournament-section" class="view tournament-view" hidden>
     <div class="tournament">
       <img class="tournament-bg" src="src/assets/kameHouse_background.png" alt="" loading="lazy"/>
@@ -190,9 +191,8 @@
       </div>
     </div>
   </section>
-  <!-- #endregion -->
 
-  <!-- #region ROSTER -->
+  <!-- ROSTER -->
   <section id="roster-section" class="view roster-view" hidden>
     <div class="roster">
       <img class="roster-bg" src="src/assets/kameHouse_background.png" alt="" loading="lazy"/>
@@ -233,9 +233,8 @@
       </div>
     </div>
   </section>
-  <!-- #endregion -->
 
-  <!-- #region BATTLE -->
+  <!-- BATTLE -->
   <section id="battle-section" class="view battle-view" hidden>
     <div class="battle">
       <img class="battle-bg" src="src/assets/combats_bg.gif" alt="" loading="lazy"/>
@@ -299,7 +298,6 @@
       </div>
     </div>
   </section>
-  <!-- #endregion -->
 
   <script type="module" src="./src/main.ts"></script>
 </body>
