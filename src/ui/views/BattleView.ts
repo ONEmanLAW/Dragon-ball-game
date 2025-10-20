@@ -17,8 +17,8 @@ import presetsJson from "../../data/warriors.json";
 
 //#region Types
 type El<T extends HTMLElement> = T;
-type BattleContext = "duel" | "tournament";
-type Callbacks = { onExit: () => void; onAbortTournament?: () => void };
+type BattleContext = "duel" | "tournament" | "campaign";
+type Callbacks = { onExit: () => void; onAbortTournament?: () => void; onAbortCampaign?: () => void };
 //#endregion
 
 export class BattleView {
@@ -55,6 +55,9 @@ export class BattleView {
   private btnModalResume!: HTMLButtonElement;
   private btnModalQuit!: HTMLButtonElement;
 
+  private actionsLeft?: HTMLElement;
+  private actionsRight?: HTMLElement;
+
   private p1!: Warrior;
   private p2!: Warrior;
   private turn!: TurnManager;
@@ -65,14 +68,16 @@ export class BattleView {
   private animTimer: number | undefined;
   private fps = 6;
 
-  // Observer → UI reacts to domain events
+  // Observer : UI reacts to domain events
   private sub = { update: (e: any) => this.onEvent(e) };
 
   private effectText = new Map<string, string>();
   private stateText = new Map<string, string>();
 
-  constructor(private readonly cb: Callbacks) {}
+  private aiTimer?: number;
   //#endregion
+
+  constructor(private readonly cb: Callbacks) {}
 
   //#region Mount / boot
   public mount(): void {
@@ -106,6 +111,9 @@ export class BattleView {
     this.btnModalResume = document.getElementById("btn-modal-resume") as HTMLButtonElement;
     this.btnModalQuit = document.getElementById("btn-modal-quit") as HTMLButtonElement;
 
+    this.actionsLeft  = document.querySelector(".actions.actions--left")  as HTMLElement;
+    this.actionsRight = document.querySelector(".actions.actions--right") as HTMLElement;
+
     this.btnNextFight.addEventListener("click", () => {
       if (!this.onEnded) return;
       const winner = !this.p1.isAlive() ? this.p2.name : this.p1.name;
@@ -136,8 +144,8 @@ export class BattleView {
     this.onEnded = onEnded;
     this.ctx = context ?? (onEnded ? "tournament" : "duel");
 
-    this.restoreFull(this.p1);
-    this.restoreFull(this.p2);
+    this.restoreForNewBattle(this.p1);
+    this.restoreForNewBattle(this.p2);
 
     this.hudP1Name.textContent = `${this.p1.name} [${this.p1.type}]`;
     this.hudP2Name.textContent = `${this.p2.name} [${this.p2.type}]`;
@@ -153,6 +161,13 @@ export class BattleView {
     this.stopAnim();
     this.startAnim();
 
+    // UI spécifique campagne (cache les boutons P2)
+    if (this.isCampaign()) {
+      if (this.actionsRight) this.actionsRight.hidden = true;
+    } else {
+      if (this.actionsRight) this.actionsRight.hidden = false;
+    }
+
     this.refreshButtons();
     this.hideNextFight();
 
@@ -162,14 +177,21 @@ export class BattleView {
     this.renderBadge(this.p2.name);
     this.clearFeed();
     this.closeModal(true);
+
+    // Si la campagne commence par P2, on laisse l’IA jouer
+    this.scheduleAiIfNeeded();
   }
 
   public stop(): void {
-    if (this.p1 && this.p2) {
-      this.restoreFull(this.p1);
-      this.restoreFull(this.p2);
+    if (this.aiTimer) { window.clearTimeout(this.aiTimer); this.aiTimer = undefined; }
+
+    // En campagne, on ne remet PAS à fond (on persiste le Ki) ; ailleurs on restaure tout
+    if (this.p1 && this.p2 && !this.isCampaign()) {
+      this.restoreToFull(this.p1);
+      this.restoreToFull(this.p2);
       this.updateBars();
     }
+
     this.stopAnim();
     eventBus.unsubscribe(this.sub);
     this.clearFeed();
@@ -180,7 +202,35 @@ export class BattleView {
     this.renderBadge(this.p1?.name);
     this.renderBadge(this.p2?.name);
 
+    if (this.actionsRight) this.actionsRight.hidden = false;
+
     this.closeModal(true);
+  }
+  //#endregion
+
+  //#region Helpers (campagne)
+  private isCampaign(): boolean { return this.ctx === "campaign"; }
+
+  private scheduleAiIfNeeded(): void {
+    if (!this.isCampaign()) return;
+    if (!this.p1?.isAlive() || !this.p2?.isAlive()) return;
+    const active = this.turn.getActive().name;
+    if (active !== this.p2.name) return;
+
+    if (this.aiTimer) { window.clearTimeout(this.aiTimer); this.aiTimer = undefined; }
+    this.aiTimer = window.setTimeout(() => {
+      if (!this.p2.isAlive() || !this.p1.isAlive()) return;
+      const choice = this.cpuChooseAttack(this.p2);
+      this.onClick("p2", choice);
+    }, 550) as unknown as number;
+  }
+
+  private cpuChooseAttack(w: Warrior): AttackKind {
+    const canSpecial = this.canUseSpecial(w);
+    if (canSpecial && Math.random() < 0.4) return "Special";
+    const kiCost = w.adjustKiCost(KI_ENERGY_ATTACK_KI_COST);
+    if (w.canSpendKi(kiCost) && Math.random() < 0.8) return "KiEnergy";
+    return "Normal";
   }
   //#endregion
 
@@ -196,6 +246,7 @@ export class BattleView {
   private quitBattle(): void {
     this.stop();
     if (this.ctx === "tournament") this.cb.onAbortTournament?.();
+    else if (this.ctx === "campaign") this.cb.onAbortCampaign?.();
     else this.cb.onExit();
   }
   //#endregion
@@ -247,9 +298,12 @@ export class BattleView {
     this.setEnabled(this.btnP1Basic, isP1Turn);
     this.setEnabled(this.btnP1Ki, isP1Turn);
     this.setEnabled(this.btnP1Special, isP1Turn && this.canUseSpecial(this.p1));
-    this.setEnabled(this.btnP2Basic, !isP1Turn);
-    this.setEnabled(this.btnP2Ki, !isP1Turn);
-    this.setEnabled(this.btnP2Special, !isP1Turn && this.canUseSpecial(this.p2));
+
+    // En campagne on masque déjà le bloc droit, mais on désactive au cas où
+    const enableP2 = !this.isCampaign() && !isP1Turn;
+    this.setEnabled(this.btnP2Basic, enableP2);
+    this.setEnabled(this.btnP2Ki, enableP2);
+    this.setEnabled(this.btnP2Special, enableP2 && this.canUseSpecial(this.p2));
   }
 
   private canUseSpecial(w: Warrior): boolean {
@@ -287,6 +341,8 @@ export class BattleView {
 
       case "TurnChanged":
         this.refreshButtons();
+        this.scheduleAiIfNeeded();
+        // IA joue en campagne
         break;
 
       case "EffectStarted":
@@ -308,7 +364,6 @@ export class BattleView {
       case "BattleEnded":
         this.updateBars();
         this.fx("KO!");
-        // Garantit l’affichage du badge DEAD côté perdant et nettoie ses effets
         this.stateText.set(e.loser, "Dead");
         this.effectText.delete(e.loser);
         this.renderBadge(e.loser);
@@ -329,7 +384,6 @@ export class BattleView {
     const eff = this.effectText.get(who);
     const st  = this.stateText.get(who);
     if (eff) parts.push(eff);
-    // Affiche aussi l’état "Dead" (ou tout autre) sans filtrage
     if (st) parts.push(st);
     el.textContent = parts.join(" • ");
     el.hidden = parts.length === 0;
@@ -346,7 +400,18 @@ export class BattleView {
     this.kiP2.style.width = `${Math.floor(p2Ki * 100)}%`;
   }
 
-  private restoreFull(w: Warrior): void {
+  // Règles de resto :
+  // - campagne: on restaure la VIE seulement (pas le Ki)
+  // - autres modes: tout à fond
+  private restoreForNewBattle(w: Warrior): void {
+    if (this.isCampaign()) {
+      w.heal(w.stats.vitality * 2);
+      // pas de gainKi ici
+    } else {
+      this.restoreToFull(w);
+    }
+  }
+  private restoreToFull(w: Warrior): void {
     w.heal(w.stats.vitality * 2);
     w.gainKi(w.stats.ki * 2);
   }

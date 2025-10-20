@@ -1,0 +1,82 @@
+.training-view .training {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background: rgb(0,0,0);
+  color: rgb(238,238,238);
+}
+.training-view .training-bg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  image-rendering: pixelated;
+  opacity: 0.9;
+}
+.training-view .training-wrap {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 1100px;
+  padding: 20px;
+  display: grid;
+  gap: 16px;
+}
+
+.training-view .topbar {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 10px;
+  align-items: end;
+}
+.training-view .status {
+  background: rgba(0,0,0,.6);
+  border: 1px solid rgba(255,255,255,.15);
+  border-radius: 12px;
+  padding: 10px 12px;
+  font-size: 14px;
+  justify-self: center;
+}
+
+.training-view .card {
+  background: rgba(0,0,0,.55);
+  border: 1px solid rgba(255,255,255,.12);
+  border-radius: 12px;
+  padding: 12px;
+  display: grid;
+  gap: 10px;
+}
+.training-view .card-head {
+  display: flex;
+  gap: 8px;
+  align-items: baseline;
+}
+.training-view .grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+.training-view .stat {
+  background: rgba(0,0,0,.35);
+  border: 1px dashed rgba(255,255,255,.18);
+  border-radius: 10px;
+  padding: 10px;
+  display: grid;
+  gap: 6px;
+}
+.training-view .actions { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; }
+.training-view .btn {
+  border: 1px solid rgb(70,70,70);
+  background: rgb(40,40,40);
+  color: rgb(255,255,255);
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-size: 14px;
+  font-weight: 800;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+.training-view .btn:hover { background: rgb(52,52,52); }
+.training-view .btn:disabled { opacity: .6; cursor: not-allowed; }

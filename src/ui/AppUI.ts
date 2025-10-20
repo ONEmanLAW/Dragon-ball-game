@@ -1,4 +1,4 @@
-// Patterns: App Coordinator (façade UI) + Singleton usage (GameManager/AudioManager)
+// Patterns: App Coordinator (façade), Singleton (GameManager/AudioManager)
 
 import { GameManager } from "../app/GameManager";
 import type { Warrior } from "../domain/Warrior";
@@ -12,10 +12,21 @@ import { RosterView } from "./views/RosterView";
 import { BattleView } from "./views/BattleView";
 import { TournamentView } from "./views/TournamentView";
 import { TournamentSelectView } from "./views/TournamentSelectView";
+import { CampaignView } from "./views/CampaignView";
+import { TrainingView } from "./views/TrainingView";
 
 import { AudioManager } from "../app/AudioManager";
 
-type Screen = "menu" | "create" | "mode" | "tournamentSelect" | "tournament" | "roster" | "battle";
+type Screen =
+  | "menu"
+  | "create"
+  | "mode"
+  | "tournamentSelect"
+  | "tournament"
+  | "roster"
+  | "battle"
+  | "campaign"
+  | "training";
 
 export class AppUI {
   //#region Services
@@ -31,10 +42,14 @@ export class AppUI {
   private battleView!: BattleView;
   private tournamentSelectView!: TournamentSelectView;
   private tournamentView!: TournamentView;
+  private campaignView!: CampaignView;
+  private trainingView!: TrainingView;
   //#endregion
 
   //#region Local state
   private audioUnlocked = false;
+  private campaignPlayerName: string | null = null;
+  private pendingCampaignContinue: (() => void) | undefined;
   //#endregion
 
   //#region Boot
@@ -53,6 +68,7 @@ export class AppUI {
     this.createView = new CreateView({
       onCreated: (w: Warrior) => {
         this.gameManager.registerWarrior(w);
+        this.campaignPlayerName = w.name;
         this.rosterView.refreshRoster();
         this.showOnly("mode");
       },
@@ -67,7 +83,10 @@ export class AppUI {
         this.tournamentSelectView.onShow?.();
         this.showOnly("tournamentSelect");
       },
-      onThirdOption: () => { alert("Mode 3 bientôt"); },
+      onThirdOption: () => {
+        this.campaignView.onShow?.();
+        this.showOnly("campaign");
+      },
     });
 
     this.rosterView = new RosterView({
@@ -88,6 +107,10 @@ export class AppUI {
       onAbortTournament: () => {
         this.showOnly("tournament");
         this.tournamentView.onShow();
+      },
+      onAbortCampaign: () => {
+        this.showOnly("campaign");
+        this.campaignView.onShow();
       },
     });
 
@@ -110,6 +133,20 @@ export class AppUI {
       onCancel: () => { this.showOnly("mode"); },
     });
 
+    this.campaignView = new CampaignView({
+      onBack: () => this.showOnly("mode"),
+      onStartStage: (stageIndex) => this.playCampaignStage(stageIndex),
+    });
+
+    this.trainingView = new TrainingView({
+      onCancel: () => { this.showOnly("campaign"); this.campaignView.onShow(); },
+      onDone: () => {
+        const cont = this.pendingCampaignContinue;
+        this.pendingCampaignContinue = undefined;
+        if (cont) cont();
+      },
+    });
+
     this.menuView.mount();
     this.createView.mount();
     this.modeMenuView.mount();
@@ -117,6 +154,8 @@ export class AppUI {
     this.battleView.mount();
     this.tournamentSelectView.mount();
     this.tournamentView.mount();
+    this.campaignView.mount();
+    this.trainingView.mount();
 
     this.showOnly("menu");
     this.rosterView.refreshRoster();
@@ -135,6 +174,8 @@ export class AppUI {
     (document.getElementById("tournament-section") as HTMLElement).hidden = which !== "tournament";
     (document.getElementById("roster-section") as HTMLElement).hidden = which !== "roster";
     (document.getElementById("battle-section") as HTMLElement).hidden = which !== "battle";
+    (document.getElementById("campaign-section") as HTMLElement).hidden = which !== "campaign";
+    (document.getElementById("training-section") as HTMLElement).hidden = which !== "training";
 
     if (which !== "battle") this.battleView.stop();
 
@@ -142,11 +183,87 @@ export class AppUI {
     if (which === "roster") this.rosterView.onShow?.(); else this.rosterView.onHide?.();
     if (which === "tournament") this.tournamentView.onShow?.();
     if (which === "tournamentSelect") this.tournamentSelectView.onShow?.(); else this.tournamentSelectView.onHide?.();
+    if (which === "campaign") this.campaignView.onShow?.();
+    if (which === "training") this.trainingView.onShow?.();
 
     if (this.audioUnlocked) {
       if (which === "battle") this.audioManager.playBattle();
       else this.audioManager.playMenu();
     }
+  }
+  //#endregion
+
+  //#region Campaign flow
+  private playCampaignStage(stageIndex: number): void {
+    const playerName = this.campaignPlayerName || this.gameManager.getAllWarriors()[0]?.name;
+    if (!playerName) { alert("No player."); return; }
+    const player = this.gameManager.getWarrior(playerName);
+    if (!player) { alert("No player warrior."); return; }
+
+    const oppNames = this.campaignView.getOpponentsForStage(stageIndex);
+    let i = 0;
+
+    const playNext = () => {
+      if (i >= oppNames.length) {
+        this.campaignView.markStageWon(stageIndex);
+        this.showOnly("campaign");
+        this.campaignView.onShow();
+        return;
+      }
+
+      const requestName = oppNames[i++];
+      const opp = this.resolveOpponent(requestName);
+      if (!opp) {
+        alert(`Missing opponent: ${requestName}`);
+        this.showOnly("campaign");
+        this.campaignView.onShow?.();
+        return;
+      }
+
+      this.showOnly("battle");
+      this.battleView.startBattle(player, opp, (winnerName) => {
+        const win = winnerName === player.name;
+        if (!win) {
+          this.showOnly("campaign");
+          this.campaignView.onShow?.();
+          return;
+        }
+        this.pendingCampaignContinue = () => playNext();
+        this.trainingView.startFor(player.name, 2);
+        this.showOnly("training");
+      }, "campaign");
+    };
+
+    playNext();
+  }
+
+  private resolveOpponent(name: string): Warrior | null {
+    const direct = this.gameManager.getWarrior(name);
+    if (direct) return direct;
+
+    const wanted = this.normalize(name);
+    const all = this.gameManager.getAllWarriors();
+
+    let found = all.find(w => this.normalize(w.name) === wanted);
+    if (found) return found;
+
+    const numMatch = wanted.match(/(\d{1,2})$/);
+    if (numMatch) {
+      const num = numMatch[1];
+      const variants = [`android${num}`, `c${num}`, `c-${num}`, `no${num}`, `n${num}`, `${num}`];
+      found = all.find(w => {
+        const wn = this.normalize(w.name);
+        return variants.some(v => wn === v || wn.endsWith(v) || wn.includes(v));
+      });
+      if (found) return found;
+    }
+
+    found = all.find(w => this.normalize(w.name).includes(wanted));
+    return found ?? null;
+  }
+
+  private normalize(n: string): string {
+    return (n || "").toLowerCase().replace(/[^a-z0-9]/g, "");
   }
   //#endregion
 }

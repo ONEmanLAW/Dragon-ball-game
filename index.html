@@ -13,6 +13,8 @@
   <link rel="stylesheet" href="./src/styles/view-battle.css"/>
   <link rel="stylesheet" href="./src/styles/view-tournament.css"/>
   <link rel="stylesheet" href="./src/styles/view-tournament-select.css"/>
+  <link rel="stylesheet" href="./src/styles/view-training.css"/>
+  <link rel="stylesheet" href="./src/styles/view-campaign.css"/>
 
   <link rel="icon" href="src/assets/dragonBall_icon.jpg" type="image/svg+xml"/>
 </head>
@@ -105,8 +107,8 @@
             <span class="hub-btn-sub">8 fighters bracket</span>
           </button>
           <button id="btn-mode-3" class="hub-btn hub-btn--ghost">
-            <span class="hub-btn-title">Coming soon</span>
-            <span class="hub-btn-sub">Surprise mode</span>
+            <span class="hub-btn-title">Campagne</span>
+            <span class="hub-btn-sub">Be the best Warrior</span>
           </button>
         </div>
       </div>
@@ -227,6 +229,61 @@
             <button class="nav-btn" id="btn-p2-prev" aria-label="Previous fighter">&lt;</button>
             <div class="card panel" id="p2-card"></div>
             <button class="nav-btn" id="btn-p2-next" aria-label="Next fighter">&gt;</button>
+          </div>
+        </main>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- CAMPAGNE -->
+  <section id="campaign-section" class="view campaign-view" hidden>
+    <div class="campaign">
+      <img class="campaign-bg" src="src/assets/kameHouse_background.png" alt="">
+      <div class="campaign-wrap">
+
+        <header class="campaign-top">
+          <button id="campaign-back" class="btn btn-secondary">Back</button>
+          <div id="campaign-status" class="campaign-status">Select a fight.</div>
+        </header>
+
+        <main id="campaign-grid" class="campaign-grid"></main>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- Traning -->
+  <section id="training-section" class="view training-view" hidden>
+    <div class="training">
+      <img class="training-bg" src="src/assets/kameHouse_background.png" alt="">
+      <div class="training-wrap">
+
+        <header class="topbar">
+          <button id="training-back" class="btn btn-secondary">Back</button>
+          <div class="status" id="tr-points">Points: 2</div>
+          <button id="training-continue" class="btn" disabled>Continue</button>
+        </header>
+
+        <main class="card">
+          <div class="card-head">
+            <strong id="tr-name">—</strong>
+            <span id="tr-type" class="type">[—]</span>
+          </div>
+
+          <div class="grid">
+            <div class="stat"><span>Strength</span><strong id="tr-str">—</strong></div>
+            <div class="stat"><span>Speed</span><strong id="tr-spd">—</strong></div>
+            <div class="stat"><span>Ki</span><strong id="tr-ki">—</strong></div>
+            <div class="stat"><span>Vitality</span><strong id="tr-vit">—</strong></div>
+          </div>
+
+          <div class="actions">
+            <button id="tr-btn-str" class="btn">+ STR</button>
+            <button id="tr-btn-spd" class="btn">+ SPD</button>
+            <button id="tr-btn-kimax" class="btn">+ KI MAX</button>
+            <button id="tr-btn-vitmax" class="btn">+ VIT MAX</button>
+            <button id="tr-btn-kirec" class="btn">Recover +70 KI</button>
           </div>
         </main>
 
