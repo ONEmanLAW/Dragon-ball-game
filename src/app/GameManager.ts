@@ -2,7 +2,8 @@
 // GameManager - Singleton
 
 import type { Warrior, WarriorType } from "../domain/Warrior";
-import { Attack, type AttackKind, NormalAttack, KiEnergyAttack, SpecialAttack } from "../domain/Attacks";
+import { Attack, type AttackKind, NormalAttack, KiEnergyAttack } from "../domain/Attacks";
+import { SpecialAttackProxy } from "../domain/AttackProxies"; // ⬅️ utilise le Proxy ici
 import { WarriorFactory } from "./WarriorFactory";
 import type { WarriorPreset } from "../data/WarriorPreset";
 
@@ -19,9 +20,9 @@ export class GameManager {
 
   //#region Singleton
   private constructor() {
-    this.registerAttack("Normal", NormalAttack);
+    this.registerAttack("Normal",   NormalAttack);
     this.registerAttack("KiEnergy", KiEnergyAttack);
-    this.registerAttack("Special", SpecialAttack);
+    this.registerAttack("Special",  SpecialAttackProxy); // ⬅️ enregistre le Proxy, pas la vraie Special
   }
   public static getInstance(): GameManager {
     if (!GameManager.instance) GameManager.instance = new GameManager();
