@@ -1,3 +1,5 @@
+// Pattern: Singleton :  gestionnaire audio
+
 export class AudioManager {
   //#region Singleton
   private static instance: AudioManager;

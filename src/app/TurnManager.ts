@@ -1,3 +1,5 @@
+// Pattern: Observer (Publisher) : émet BattleStarted/TurnChanged.
+
 import { eventBus } from "../events/EventBus";
 import type { TurnChangedEvent, BattleStartedEvent } from "../events/GameEvents";
 import type { Warrior } from "../domain/Warrior";

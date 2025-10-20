@@ -1,5 +1,6 @@
-// Effects: Decorators temporaires appliqués à un Warrior
-// Durée en actions du lanceur. Émet : EffectStarted / EffectTick / EffectEnded.
+// Patterns: Decorator + Observer : effets temporaires décorant un Warrior,
+// tickés via AttackExecuted (EffectStarted/Tick/Ended).
+
 
 import { eventBus } from "../events/EventBus";
 import type {
@@ -10,8 +11,8 @@ import type {
   EffectEndedEvent,
   EffectKind,
 } from "../events/GameEvents";
+import type { Observer } from "../events/EventBus";
 import { Warrior, WarriorType } from "./Warrior";
-
 import {
   EFFECT_DEFAULT_ROUNDS,
   SSJ_STR_MULTIPLIER,
@@ -22,7 +23,7 @@ import {
 } from "./Balance";
 
 //#region Utils
-function labelFor(k: EffectKind): string {
+function effectLabelFor(k: EffectKind): string {
   return k === "SuperSaiyan" ? "Super Saiyan" : k === "Regeneration" ? "Regeneration" : "Energy Leech";
 }
 //#endregion
@@ -36,16 +37,15 @@ abstract class WarriorEffect {
   constructor(
     protected readonly owner: Warrior,
     rounds: number = EFFECT_DEFAULT_ROUNDS,
-    // true = compte l'activation ; false = commence au prochain tour du lanceur
+    // true => compte l'activation ; false => commence au prochain tour du lanceur
     private readonly countOnApply: boolean,
     private readonly kind: EffectKind
   ) {
     this.remainingRounds = Math.max(0, Math.floor(rounds));
     this.ignoreNextOwnerAction = !countOnApply;
-    this.tagLabel = labelFor(kind);
+    this.tagLabel = effectLabelFor(kind);
   }
 
-  // Active l'effet : badge + event + hook + subscribe
   public apply(): void {
     this.owner.addStatusTag(this.tagLabel, this.remainingRounds);
 
@@ -78,12 +78,11 @@ abstract class WarriorEffect {
   }
 
   // Hooks spécifiques aux effets
-  protected onApplyNow(): void {} // appelé immédiatement à l'activation
-  protected onCleanup(): void {} // appelé à la fin (rollback)
-  protected onOwnerActsTick(): void {} // appelé à chaque action du lanceur
+  protected onApplyNow(): void {}
+  protected onCleanup(): void {}
+  protected onOwnerActsTick(): void {}
 
-  // Écoute AttackExecuted(attacker == owner) => 1 round consommé
-  private observer = {
+  private observer: Observer = {
     update: (e: GameEvent) => {
       if (e.kind !== "AttackExecuted") return;
       const evt = e as AttackExecutedEvent;
@@ -91,7 +90,7 @@ abstract class WarriorEffect {
 
       if (this.ignoreNextOwnerAction) {
         this.ignoreNextOwnerAction = false;
-        return; // ne compte pas l'action d'activation si demandé
+        return;
       }
 
       this.onOwnerActsTick();
@@ -116,13 +115,13 @@ abstract class WarriorEffect {
 //#endregion
 
 //#region Concrete effects
-// Super Saiyan : +20% STR & SPD pendant N actions (sans compter l'activation).
+// Super Saiyan : +STR/+SPD pendant N actions (sans compter l'activation)
 export class SuperSaiyanEffect extends WarriorEffect {
   private baseStr!: number;
   private baseSpd!: number;
 
   constructor(owner: Warrior, rounds = EFFECT_DEFAULT_ROUNDS) {
-    super(owner, rounds, /*countOnApply*/ false, "SuperSaiyan");
+    super(owner, rounds, false, "SuperSaiyan");
   }
 
   protected onApplyNow(): void {
@@ -140,10 +139,10 @@ export class SuperSaiyanEffect extends WarriorEffect {
   }
 }
 
-// Regeneration : à chaque action du lanceur => +KI/+VIT (clampés).
+// Regeneration : à chaque action du lanceur => +KI/+VIT
 export class RegenerationEffect extends WarriorEffect {
   constructor(owner: Warrior, rounds = EFFECT_DEFAULT_ROUNDS) {
-    super(owner, rounds, /*countOnApply*/ false, "Regeneration");
+    super(owner, rounds, false, "Regeneration");
   }
   protected onOwnerActsTick(): void {
     this.owner.gainKi(REGEN_KI_PER_TICK);
@@ -151,14 +150,10 @@ export class RegenerationEffect extends WarriorEffect {
   }
 }
 
-// Energy Leech : à chaque action du lanceur Android => −KI à la cible.
+// Energy Leech : à chaque action du lanceur => −KI sur la cible
 export class EnergyLeechEffect extends WarriorEffect {
-  constructor(
-    owner: Warrior,
-    private readonly target: Warrior,
-    rounds = EFFECT_DEFAULT_ROUNDS
-  ) {
-    super(owner, rounds, /*countOnApply*/ false, "EnergyLeech");
+  constructor(private readonly ownerRef: Warrior, private readonly target: Warrior, rounds = EFFECT_DEFAULT_ROUNDS) {
+    super(ownerRef, rounds, false, "EnergyLeech");
   }
   protected onOwnerActsTick(): void {
     if (!this.target.isAlive()) return;
@@ -167,13 +162,14 @@ export class EnergyLeechEffect extends WarriorEffect {
 }
 //#endregion
 
-export type EffectFactory = (owner: Warrior, target: Warrior) =>  WarriorEffect;
+//#region Factory map
+export type EffectFactory = (owner: Warrior, target: Warrior) => WarriorEffect;
 
 export const SPECIAL_EFFECT_BY_RACE: Record<WarriorType, EffectFactory> = {
-  Saiyan:   (o, _t) => new SuperSaiyanEffect(o, EFFECT_DEFAULT_ROUNDS),
-  Namekian: (o, _t) => new RegenerationEffect(o, EFFECT_DEFAULT_ROUNDS),
-  Android:  (o,  t) => new EnergyLeechEffect(o, t, EFFECT_DEFAULT_ROUNDS),
+  Saiyan: (o) => new SuperSaiyanEffect(o, EFFECT_DEFAULT_ROUNDS),
+  Namekian: (o) => new RegenerationEffect(o, EFFECT_DEFAULT_ROUNDS),
+  Android: (o, t) => new EnergyLeechEffect(o, t, EFFECT_DEFAULT_ROUNDS),
 };
+//#endregion
 
-// Export base si besoin de typer
 export { WarriorEffect };

@@ -1,4 +1,5 @@
-// data/WarriorPreset.ts
+// Rôle: Data Contract : schéma des presets
+
 import type { WarriorStats, WarriorType } from "../domain/Warrior";
 import type { AttackKind } from "../domain/Attacks";
 

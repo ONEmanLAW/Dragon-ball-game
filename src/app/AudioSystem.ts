@@ -1,3 +1,5 @@
+// Patterns: Singleton + Observer : s’abonne au EventBus pour switch BGM.
+
 import { eventBus } from "../events/EventBus";
 import type { GameEvent } from "../events/GameEvents";
 import { AudioManager } from "./AudioManager";

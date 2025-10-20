@@ -1,4 +1,6 @@
-// Command Pattern : bus + contexte + historique + middleware
+// Patterns: Command + Middleware(Chain-of-Responsibility-lite)
+// - Command: actions Attack/EndTurn/Seed/Simulate/PlayPlayerMatch.
+// - Middleware: log, historique, etc. avant exécution.
 
 import { GameManager } from "../app/GameManager";
 import { TurnManager } from "../app/TurnManager";
@@ -10,19 +12,31 @@ export interface Command { readonly type: string; execute(ctx: CommandContext): 
 export type CommandResult = { ok: true } | { ok: false; error: string };
 export type Middleware = (cmd: Command, ctx: CommandContext) => void;
 
+//#region Context
 export class CommandContext {
   constructor(
-    public gm: GameManager,
-    public turn?: TurnManager,
-    public tour?: Tournament
+    public gameManager: GameManager,
+    public turnManager?: TurnManager,
+    public tournament?: Tournament
   ) {}
-  setTurn(turn?: TurnManager) { this.turn = turn; }
-  setTournament(tour?: Tournament) { this.tour = tour; }
-}
 
+  setTurnManager(turnManager?: TurnManager) { this.turnManager = turnManager; }
+  setTournament(tournament?: Tournament) { this.tournament = tournament; }
+
+  // Back-compat (UI existante)
+  get gm() { return this.gameManager; }
+  get turn() { return this.turnManager; }
+  set turn(v: TurnManager | undefined) { this.turnManager = v; }
+  get tour() { return this.tournament; }
+  set tour(v: Tournament | undefined) { this.tournament = v; }
+}
+//#endregion
+
+//#region Bus
 export class CommandBus {
   public history: Command[] = [];
   constructor(private ctx: CommandContext, private middlewares: Middleware[] = []) {}
+
   dispatch(cmd: Command): CommandResult {
     try {
       for (const m of this.middlewares) m(cmd, this.ctx);
@@ -37,19 +51,15 @@ export class CommandBus {
 }
 
 export const logMiddleware: Middleware = (cmd) => { console.log(`[CMD] ${cmd.type}`); };
+//#endregion
 
 // ===== Combat (temps réel)
-
 export class AttackCommand implements Command {
   readonly type = "AttackCommand";
-  constructor(
-    private kind: AttackKind,
-    private attacker: Warrior,
-    private defender: Warrior
-  ) {}
+  constructor(private kind: AttackKind, private attacker: Warrior, private defender: Warrior) {}
   execute(ctx: CommandContext): CommandResult {
     try {
-      ctx.gm.createAttack(this.kind).execute(this.attacker, this.defender);
+      ctx.gameManager.createAttack(this.kind).execute(this.attacker, this.defender);
       return { ok: true };
     } catch (e: any) {
       return { ok: false, error: e?.message ?? "Attack failed" };
@@ -60,14 +70,13 @@ export class AttackCommand implements Command {
 export class EndTurnCommand implements Command {
   readonly type = "EndTurnCommand";
   execute(ctx: CommandContext): CommandResult {
-    if (!ctx.turn) return { ok: false, error: "No active TurnManager" };
-    ctx.turn.nextTurn();
+    if (!ctx.turnManager) return { ok: false, error: "No active TurnManager" };
+    ctx.turnManager.nextTurn();
     return { ok: true };
   }
 }
 
 // ===== Tournoi
-
 export class SeedTournamentCommand implements Command {
   readonly type = "SeedTournamentCommand";
   constructor(private playerName: string, private allNames: string[]) {}
@@ -81,35 +90,27 @@ export class SeedTournamentCommand implements Command {
 
 export class SimulateAIMatchCommand implements Command {
   readonly type = "SimulateAIMatchCommand";
-  constructor(
-    private roundIndex: number,
-    private matchIndex: number,
-    private a: Warrior,
-    private b: Warrior
-  ) {}
+  constructor(private roundIndex: number, private matchIndex: number, private a: Warrior, private b: Warrior) {}
   execute(ctx: CommandContext): CommandResult {
-    if (!ctx.tour) return { ok: false, error: "Tournament not ready" };
+    if (!ctx.tournament) return { ok: false, error: "Tournament not ready" };
     const winner = simulateBattleQuick(this.a, this.b);
-    ctx.tour.report(this.roundIndex, this.matchIndex, winner);
+    ctx.tournament.report(this.roundIndex, this.matchIndex, winner);
     return { ok: true };
   }
 }
 
 export class PlayPlayerMatchCommand implements Command {
   readonly type = "PlayPlayerMatchCommand";
-  constructor(
-    private onPlay: (a: Warrior, b: Warrior, done: (winner: string) => void) => void
-  ) {}
+  constructor(private onPlay: (a: Warrior, b: Warrior, done: (winner: string) => void) => void) {}
   execute(ctx: CommandContext): CommandResult {
-    if (!ctx.tour) return { ok: false, error: "Tournament not ready" };
-    const mine = ctx.tour.nextPlayerMatch();
+    if (!ctx.tournament) return { ok: false, error: "Tournament not ready" };
+    const mine = ctx.tournament.nextPlayerMatch();
     if (!mine) return { ok: false, error: "No playable match" };
-    const a = ctx.gm.getWarrior(mine.m.a)!;
-    const b = ctx.gm.getWarrior(mine.m.b)!;
 
-    this.onPlay(a, b, (winner) => {
-      ctx.tour!.report(mine.r, mine.i, winner);
-    });
+    const a = ctx.gameManager.getWarrior(mine.m.a)!;
+    const b = ctx.gameManager.getWarrior(mine.m.b)!;
+
+    this.onPlay(a, b, (winner) => { ctx.tournament!.report(mine.r, mine.i, winner); });
     return { ok: true };
   }
 }

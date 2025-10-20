@@ -1,3 +1,5 @@
+// Pattern: Builder : construction fluide d’un Warrior (UI-only).
+
 import { WarriorFactory } from "../app/WarriorFactory";
 import type { Warrior, WarriorStats, WarriorType } from "../domain/Warrior";
 import { NORMAL_ATTACK_NAME, SPECIAL_LABEL_BY_RACE } from "../domain/Balance";

@@ -3,16 +3,24 @@ import type { Warrior } from "../../domain/Warrior";
 export type Match = { a: string; b: string; winner?: string; done?: boolean };
 
 export class Tournament {
+  //#region Fields
   public rounds: Match[][] = [[], [], []]; // [0]=Quarts (4), [1]=Demis (2), [2]=Finale (1)
-  private player!: string;
+  private playerName!: string;
+  private static readonly TBD = "TBD";
+  //#endregion
 
+  //#region Ctor
   constructor(private allNames: string[]) {}
+  //#endregion
 
+  //#region Public API
   seed8(playerName: string): void {
-    this.player = playerName;
+    this.playerName = playerName;
+
     const names = [...this.allNames];
-    const idx = names.indexOf(playerName);
-    if (idx >= 0) names.splice(idx, 1);
+    const playerIndex = names.indexOf(playerName);
+    if (playerIndex >= 0) names.splice(playerIndex, 1);
+
     shuffle(names);
     const pool = [playerName, ...names.slice(0, 7)];
 
@@ -22,13 +30,13 @@ export class Tournament {
       { a: pool[4], b: pool[5] },
       { a: pool[6], b: pool[7] },
     ];
-    this.rounds[1] = [{ a: "TBD", b: "TBD" }, { a: "TBD", b: "TBD" }];
-    this.rounds[2] = [{ a: "TBD", b: "TBD" }];
+    this.rounds[1] = [{ a: Tournament.TBD, b: Tournament.TBD }, { a: Tournament.TBD, b: Tournament.TBD }];
+    this.rounds[2] = [{ a: Tournament.TBD, b: Tournament.TBD }];
   }
 
   isFinished(): boolean {
-    const f = this.rounds[2][0];
-    return !!f.done && !!f.winner;
+    const finalMatch = this.rounds[2][0];
+    return !!finalMatch.done && !!finalMatch.winner;
   }
 
   getWinner(): string | undefined {
@@ -36,11 +44,12 @@ export class Tournament {
   }
 
   nextPlayerMatch(): { r: number; i: number; m: Match } | undefined {
-    for (let r = 0; r < this.rounds.length; r++) {
-      for (let i = 0; i < this.rounds[r].length; i++) {
-        const m = this.rounds[r][i];
-        const isPlayer = m.a === this.player || m.b === this.player;
-        if (!m.done && isPlayer && m.a !== "TBD" && m.b !== "TBD") return { r, i, m };
+    for (let roundIndex = 0; roundIndex < this.rounds.length; roundIndex++) {
+      for (let matchIndex = 0; matchIndex < this.rounds[roundIndex].length; matchIndex++) {
+        const match = this.rounds[roundIndex][matchIndex];
+        const involvesPlayer = match.a === this.playerName || match.b === this.playerName;
+        const ready = match.a !== Tournament.TBD && match.b !== Tournament.TBD;
+        if (!match.done && involvesPlayer && ready) return { r: roundIndex, i: matchIndex, m: match };
       }
     }
     return undefined;
@@ -48,40 +57,47 @@ export class Tournament {
 
   pendingNonPlayer(): Array<{ r: number; i: number; m: Match }> {
     const out: Array<{ r: number; i: number; m: Match }> = [];
-    for (let r = 0; r < this.rounds.length; r++) {
-      for (let i = 0; i < this.rounds[r].length; i++) {
-        const m = this.rounds[r][i];
-        const isPlayer = m.a === this.player || m.b === this.player;
-        if (!m.done && !isPlayer && m.a !== "TBD" && m.b !== "TBD") out.push({ r, i, m });
+    for (let roundIndex = 0; roundIndex < this.rounds.length; roundIndex++) {
+      for (let matchIndex = 0; matchIndex < this.rounds[roundIndex].length; matchIndex++) {
+        const match = this.rounds[roundIndex][matchIndex];
+        const involvesPlayer = match.a === this.playerName || match.b === this.playerName;
+        const ready = match.a !== Tournament.TBD && match.b !== Tournament.TBD;
+        if (!match.done && !involvesPlayer && ready) out.push({ r: roundIndex, i: matchIndex, m: match });
       }
     }
     return out;
   }
 
-  report(r: number, i: number, winner: string): void {
-    const m = this.rounds[r][i];
-    m.winner = winner;
-    m.done = true;
+  report(roundIndex: number, matchIndex: number, winner: string): void {
+    const match = this.rounds[roundIndex][matchIndex];
+    match.winner = winner;
+    match.done = true;
 
-    if (r >= this.rounds.length - 1) return;
-    const next = this.rounds[r + 1];
-    const target = Math.floor(i / 2);
-    if (i % 2 === 0) next[target].a = winner;
-    else next[target].b = winner;
+    if (roundIndex >= this.rounds.length - 1) return;
+
+    const nextRound = this.rounds[roundIndex + 1];
+    const targetIndex = Math.floor(matchIndex / 2);
+    if (matchIndex % 2 === 0) nextRound[targetIndex].a = winner;
+    else nextRound[targetIndex].b = winner;
   }
+  //#endregion
 }
 
+//#region AI
 // IA simple pour matches non-joueur (pas “temps réel”)
 export function simulateBattleQuick(a: Warrior, b: Warrior): string {
-  const ra = a.stats.strength + a.stats.speed;
-  const rb = b.stats.strength + b.stats.speed;
-  if (ra === rb) return Math.random() < 0.5 ? a.name : b.name;
-  return ra > rb ? a.name : b.name;
+  const ratingA = a.stats.strength + a.stats.speed;
+  const ratingB = b.stats.strength + b.stats.speed;
+  if (ratingA === ratingB) return Math.random() < 0.5 ? a.name : b.name;
+  return ratingA > ratingB ? a.name : b.name;
 }
+//#endregion
 
+//#region Utils
 function shuffle<T>(arr: T[]): void {
   for (let i = arr.length - 1; i > 0; i--) {
     const j = (Math.random() * (i + 1)) | 0;
     [arr[i], arr[j]] = [arr[j], arr[i]];
   }
 }
+//#endregion

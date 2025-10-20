@@ -1,3 +1,5 @@
+// Pattern: Factory : instancie les Warriors par type (registry extensible).
+
 import { Warrior, type WarriorType, type WarriorStats, SaiyanWarrior, NamekianWarrior, AndroidWarrior } from "../domain/Warrior";
 
 //#region Types

@@ -1,3 +1,5 @@
+// Patterns: Singleton + Factory Registry + Proxy (Special via Proxy enregistré).
+
 import type { Warrior, WarriorType } from "../domain/Warrior";
 import { Attack, type AttackKind, NormalAttack, KiEnergyAttack } from "../domain/Attacks";
 import { SpecialAttackProxy } from "../domain/AttackProxies";
