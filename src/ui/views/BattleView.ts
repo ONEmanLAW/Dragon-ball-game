@@ -14,7 +14,6 @@ import { eventBus } from "../../events/EventBus";
 
 import type { WarriorPreset } from "../../data/WarriorPreset";
 import presetsJson from "../../data/warriors.json";
-import { assetUrlFromJsonPath } from "../../app/assetResolver";
 
 //#region Types
 type El<T extends HTMLElement> = T;
@@ -276,9 +275,10 @@ export class BattleView {
 
       case "StateChanged": {
         const label =
-          e.to === "Injured" ? "Blessé" :
+          e.to === "Injured"   ? "Blessé" :
           e.to === "Exhausted" ? "Épuisé" :
-          e.to === "Dead" ? "K.O." : "";
+          e.to === "Dead"      ? "Dead"   :
+          "";
         if (label) this.fx(`${e.warrior} est ${label} !`);
         this.stateText.set(e.warrior, label);
         this.renderBadge(e.warrior);
@@ -308,6 +308,11 @@ export class BattleView {
       case "BattleEnded":
         this.updateBars();
         this.fx("KO!");
+        // Garantit l’affichage du badge DEAD côté perdant et nettoie ses effets
+        this.stateText.set(e.loser, "Dead");
+        this.effectText.delete(e.loser);
+        this.renderBadge(e.loser);
+
         this.disableAll();
         if (this.onEnded) this.showNextFightPulse();
         break;
@@ -322,9 +327,10 @@ export class BattleView {
     if (!el) return;
     const parts: string[] = [];
     const eff = this.effectText.get(who);
-    const st = this.stateText.get(who);
+    const st  = this.stateText.get(who);
     if (eff) parts.push(eff);
-    if (st && st !== "K.O.") parts.push(st);
+    // Affiche aussi l’état "Dead" (ou tout autre) sans filtrage
+    if (st) parts.push(st);
     el.textContent = parts.join(" • ");
     el.hidden = parts.length === 0;
   }
@@ -379,7 +385,7 @@ export class BattleView {
     const presets = presetsJson as WarriorPreset[];
     const preset = presets.find(p => p.name === w.name && Array.isArray(p.spriteFrames) && p.spriteFrames.length > 0);
     const raw = preset?.spriteFrames ?? this.gameManager.getSpriteFramesForRace(w.type) ?? [];
-    return raw.map(p => assetUrlFromJsonPath(p, import.meta.url));
+    return raw.map(p => new URL(p, import.meta.url).toString());
   }
   //#endregion
 
