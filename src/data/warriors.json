@@ -10,6 +10,11 @@
       "../../assets/characters/goku_idle_01.png",
       "../../assets/characters/goku_idle_02.png",
       "../../assets/characters/goku_idle_03.png"
+    ],
+    "spriteFramesSSJ": [
+    "../../assets/characters/goku_SSJ1_idle_01.png",
+    "../../assets/characters/goku_SSJ1_idle_02.png",
+    "../../assets/characters/goku_SSJ1_idle_03.png"
     ]
   },
   {
@@ -23,6 +28,11 @@
       "../../assets/characters/vegeta_idle_01.png",
       "../../assets/characters/vegeta_idle_02.png",
       "../../assets/characters/vegeta_idle_03.png"
+    ],
+    "spriteFramesSSJ": [
+    "../../assets/characters/vegeta_SSJ1_idle_01.png",
+    "../../assets/characters/vegeta_SSJ1_idle_02.png",
+    "../../assets/characters/vegeta_SSJ1_idle_03.png"
     ]
   },
    {
@@ -75,6 +85,11 @@
       "../../assets/characters/trunks_idle_01.png",
       "../../assets/characters/trunks_idle_02.png",
       "../../assets/characters/trunks_idle_03.png"
+    ],
+    "spriteFramesSSJ": [
+    "../../assets/characters/trunks_SSJ1_idle_01.png",
+    "../../assets/characters/trunks_SSJ1_idle_02.png",
+    "../../assets/characters/trunks_SSJ1_idle_03.png"
     ]
   },
   {
@@ -88,6 +103,11 @@
       "../../assets/characters/gohan_idle_01.png",
       "../../assets/characters/gohan_idle_02.png",
       "../../assets/characters/gohan_idle_03.png"
+    ],
+    "spriteFramesSSJ": [
+    "../../assets/characters/gohan_SSJ1_idle_01.png",
+    "../../assets/characters/gohan_SSJ1_idle_02.png",
+    "../../assets/characters/gohan_SSJ1_idle_03.png"
     ]
   },
   {

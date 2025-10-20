@@ -141,10 +141,7 @@ export class BattleView {
     this.btnP2Special.addEventListener("click", () => this.onClick("p2", "Special"));
 
     this.btnRetryYes.addEventListener("click", () => this.retryFromMemento());
-    this.btnRetryNo.addEventListener("click", () => {
-      this.closeRetryModal();
-      this.quitBattle();
-    });
+    this.btnRetryNo.addEventListener("click", () => { this.closeRetryModal(); this.quitBattle(); });
   }
   //#endregion
 
@@ -162,8 +159,8 @@ export class BattleView {
     this.hudP2Name.textContent = `${this.p2.name} [${this.p2.type}]`;
 
     this.setLabels();
-    this.setFrames(this.imgP1, this.framesFor(this.p1));
-    this.setFrames(this.imgP2, this.framesFor(this.p2));
+    this.setFrames(this.imgP1, this.baseFramesFor(this.p1));
+    this.setFrames(this.imgP2, this.baseFramesFor(this.p2));
     this.updateBars();
 
     this.turn = new TurnManager(this.p1, this.p2);
@@ -370,6 +367,7 @@ export class BattleView {
       case "EffectStarted":
         this.effectText.set(e.who, `${this.effectShort(e.effect)} ${e.totalRounds}`);
         this.renderBadge(e.who);
+        if (e.effect === "SuperSaiyan") this.switchToSSJIfSaiyan(e.who);
         break;
 
       case "EffectTick":
@@ -381,6 +379,7 @@ export class BattleView {
       case "EffectEnded":
         this.effectText.delete(e.who);
         this.renderBadge(e.who);
+        if (e.effect === "SuperSaiyan") this.switchBackToBaseIfSaiyan(e.who);
         break;
 
       case "BattleEnded":
@@ -428,7 +427,7 @@ export class BattleView {
 
   private restoreForNewBattle(w: Warrior): void {
     if (this.isCampaign()) {
-      w.heal(w.stats.vitality * 2); // vie full, pas de KI
+      w.heal(w.stats.vitality * 2);
     } else {
       this.restoreToFull(w);
     }
@@ -468,11 +467,45 @@ export class BattleView {
     }
   }
 
-  private framesFor(w: Warrior): string[] {
-    const presets = presetsJson as WarriorPreset[];
-    const preset = presets.find(p => p.name === w.name && Array.isArray(p.spriteFrames) && p.spriteFrames.length > 0);
+  private presets(): (WarriorPreset & { spriteFrames?: string[]; spriteFramesSSJ?: string[] })[] {
+    return presetsJson as any;
+  }
+
+  private baseFramesFor(w: Warrior): string[] {
+    const preset = this.presets().find(p => p.name === w.name && Array.isArray(p.spriteFrames) && p.spriteFrames.length > 0);
     const raw = preset?.spriteFrames ?? this.gameManager.getSpriteFramesForRace(w.type) ?? [];
     return raw.map(p => new URL(p, import.meta.url).toString());
+  }
+
+  private ssjFramesFor(w: Warrior): string[] {
+    if (w.type !== "Saiyan") return [];
+    const preset = this.presets().find(p => p.name === w.name && Array.isArray((p as any).spriteFramesSSJ) && (p as any).spriteFramesSSJ.length > 0);
+    const raw = (preset as any)?.spriteFramesSSJ ?? [];
+    return raw.map((p: string) => new URL(p, import.meta.url).toString());
+  }
+
+  private imgOf(name: string): HTMLImageElement | undefined {
+    if (name === this.p1?.name) return this.imgP1;
+    if (name === this.p2?.name) return this.imgP2;
+    return undefined;
+  }
+
+  private switchToSSJIfSaiyan(who: string): void {
+    const w = who === this.p1.name ? this.p1 : who === this.p2.name ? this.p2 : undefined;
+    if (!w || w.type !== "Saiyan") return;
+    const ssj = this.ssjFramesFor(w);
+    if (ssj.length) {
+      const img = this.imgOf(who);
+      if (img) this.setFrames(img, ssj);
+    }
+  }
+
+  private switchBackToBaseIfSaiyan(who: string): void {
+    const w = who === this.p1.name ? this.p1 : who === this.p2.name ? this.p2 : undefined;
+    if (!w || w.type !== "Saiyan") return;
+    const base = this.baseFramesFor(w);
+    const img = this.imgOf(who);
+    if (img && base.length) this.setFrames(img, base);
   }
   //#endregion
 
