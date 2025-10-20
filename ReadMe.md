@@ -154,15 +154,15 @@ npm run game
 
 ## 🖼️ Captures d’écran / médias
 
-Place tes images/vidéos dans `assets/screens/` puis référence‑les ici :
+<p align="center">
+  <img src="src/assets/ImagesFromGame/BuilderView.png" alt="Warrior Builder View" width="70%">
+</p>
+<p align="center">
+  <img src="src/assets/ImagesFromGame/RosterView.png" alt="Roster View" width="48%">
+  <img src="src/assets/ImagesFromGame/BattleView.png" alt="Battle View" width="48%">
+</p>
 
-```md
-![Warrior Builder View](src/assets/ImagesFromGame/BuilderView.png)
-![Roster View](src/assets/ImagesFromGame/RosterView.png)
-![Battle View](src/assets/ImagesFromGame/BattleView.png)
-```
 
----
 
 
 ## ❓ FAQ rapide
