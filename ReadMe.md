@@ -96,6 +96,11 @@ npm run game
   *Rôle* : encapsuler les **actions métier** (attaque, fin de tour, IA, tournoi).  
   *Effet* : exécution structurée + logs/historique.
 
+- **Memento** - `battleMemento` (BattleMemento + BattleSnapshot)
+  *Rôle* : sauvegarder/restaurer l’état d’un combat (HP/Ki P1/P2, effets actifs, tour, contexte) sans exposer les détails internes.
+  *Utilisation* : snapshot créé au startBattle(), en campagne le bouton Retry restaure via battleMemento.applyTo(...).
+  *Effet* : permet de réessayer un combat perdu sans casser la progression ; Originator = Warrior/TurnManager, Caretaker = BattleView (mémoire in-memory, extensible).
+
 ---
 
 ## 🔁 Flux type
