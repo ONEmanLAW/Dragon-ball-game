@@ -1,4 +1,4 @@
-// Patterns: Observer (EventBus UI listener) + Template Method (Attacks pipeline) + Singleton (GameManager/EventBus) + Memento (BattleMemento)
+// Patterns: Observer, Template Method, Singleton, Memento (via battleMemento)
 
 import type { Warrior } from "../../domain/Warrior";
 import { GameManager } from "../../app/GameManager";
@@ -12,7 +12,6 @@ import {
 } from "../../domain/Balance";
 import { eventBus } from "../../events/EventBus";
 import { battleMemento } from "../../app/BattleMemento";
-
 import type { WarriorPreset } from "../../data/WarriorPreset";
 import presetsJson from "../../data/warriors.json";
 
@@ -56,7 +55,6 @@ export class BattleView {
   private btnModalResume!: HTMLButtonElement;
   private btnModalQuit!: HTMLButtonElement;
 
-  // Modal Retry (campagne)
   private retryModal!: HTMLDivElement;
   private btnRetryYes!: HTMLButtonElement;
   private btnRetryNo!: HTMLButtonElement;
@@ -74,44 +72,15 @@ export class BattleView {
   private animTimer: number | undefined;
   private fps = 6;
 
-  // Observer
   private sub = { update: (e: any) => this.onEvent(e) };
-
   private effectText = new Map<string, string>();
   private stateText = new Map<string, string>();
-
   private aiTimer?: number;
-
-  // Hotkey P (K.O. instant) – attach/detach
-  private onKeyDown = (e: KeyboardEvent) => {
-    if (!this.isCampaign()) return;
-    if (this.modalOpen() || this.retryModalOpen()) return;
-    if ((e.key || "").toLowerCase() !== "p") return;
-    if (!this.p1?.isAlive()) return;
-
-    // Force K.O. du joueur
-    try {
-      const hp = this.p1.getVitality?.() ?? 0;
-      if (typeof (this.p1 as any).heal === "function") {
-        (this.p1 as any).heal(-hp - 9999);
-      } else if (typeof (this.p1 as any).takeDamage === "function") {
-        (this.p1 as any).takeDamage(hp + 9999);
-      } else if ((this.p1 as any)._vitality !== undefined) {
-        (this.p1 as any)._vitality = 0;
-      }
-    } catch {}
-
-    this.updateBars();
-    if (!this.p1.isAlive()) {
-      this.onEvent({ kind: "StateChanged", warrior: this.p1.name, to: "Dead" });
-      this.onEvent({ kind: "BattleEnded", loser: this.p1.name, winner: this.p2.name });
-    }
-  };
   //#endregion
 
+  //#region Mount
   constructor(private readonly cb: Callbacks) {}
 
-  //#region Mount / boot
   public mount(): void {
     this.hudP1Name = document.getElementById("hud-p1-name") as HTMLDivElement;
     this.hudP2Name = document.getElementById("hud-p2-name") as HTMLDivElement;
@@ -143,7 +112,6 @@ export class BattleView {
     this.btnModalResume = document.getElementById("btn-modal-resume") as HTMLButtonElement;
     this.btnModalQuit = document.getElementById("btn-modal-quit") as HTMLButtonElement;
 
-    // Retry modal
     this.retryModal = document.getElementById("battle-retry-modal") as HTMLDivElement;
     this.btnRetryYes = document.getElementById("btn-retry-yes") as HTMLButtonElement;
     this.btnRetryNo = document.getElementById("btn-retry-no") as HTMLButtonElement;
@@ -172,11 +140,10 @@ export class BattleView {
     this.btnP2Ki.addEventListener("click", () => this.onClick("p2", "KiEnergy"));
     this.btnP2Special.addEventListener("click", () => this.onClick("p2", "Special"));
 
-    // Retry modal handlers
     this.btnRetryYes.addEventListener("click", () => this.retryFromMemento());
     this.btnRetryNo.addEventListener("click", () => {
       this.closeRetryModal();
-      this.quitBattle(); // retour campagne
+      this.quitBattle();
     });
   }
   //#endregion
@@ -202,7 +169,6 @@ export class BattleView {
     this.turn = new TurnManager(this.p1, this.p2);
     eventBus.subscribe(this.sub);
 
-    // Memento: save début du combat
     battleMemento.saveFrom(this.p1, this.p2, this.ctx, this.turn.getActive().name);
 
     this.stopAnim();
@@ -210,15 +176,12 @@ export class BattleView {
 
     if (this.isCampaign()) {
       if (this.actionsRight) this.actionsRight.hidden = true;
-      window.addEventListener("keydown", this.onKeyDown); // hotkey P actif en campagne
     } else {
       if (this.actionsRight) this.actionsRight.hidden = false;
-      window.removeEventListener("keydown", this.onKeyDown);
     }
 
     this.refreshButtons();
     this.hideNextFight();
-
     this.effectText.clear();
     this.stateText.clear();
     this.renderBadge(this.p1.name);
@@ -251,15 +214,13 @@ export class BattleView {
 
     if (this.actionsRight) this.actionsRight.hidden = false;
 
-    window.removeEventListener("keydown", this.onKeyDown);
     this.closeModal(true);
     this.closeRetryModal(true);
   }
   //#endregion
 
-  //#region Helpers (campagne + IA)
+  //#region Campaign / AI
   private isCampaign(): boolean { return this.ctx === "campaign"; }
-  private modalOpen(): boolean { return !this.modal.hidden; }
   private retryModalOpen(): boolean { return !this.retryModal.hidden; }
 
   private scheduleAiIfNeeded(): void {
@@ -285,15 +246,9 @@ export class BattleView {
   }
   //#endregion
 
-  //#region Modal / exit
-  private openModal(): void {
-    this.modal.hidden = false;
-    this.disableAll();
-  }
-  private closeModal(silent = false): void {
-    this.modal.hidden = true;
-    if (!silent) this.refreshButtons();
-  }
+  //#region Exit modal
+  private openModal(): void { this.modal.hidden = false; this.disableAll(); }
+  private closeModal(silent = false): void { this.modal.hidden = true; if (!silent) this.refreshButtons(); }
   private quitBattle(): void {
     this.stop();
     if (this.ctx === "tournament") this.cb.onAbortTournament?.();
@@ -312,7 +267,6 @@ export class BattleView {
     this.closeRetryModal();
     if (!ok) return;
 
-    // Reboot du tour & UI
     this.turn = new TurnManager(this.p1, this.p2);
     this.clearFeed();
     this.hideNextFight();
@@ -333,9 +287,7 @@ export class BattleView {
     const opp = side === "p1" ? this.p2 : this.p1;
 
     if ((side === "p1" && !isP1Turn) || (side === "p2" && isP1Turn)) return;
-
-    if (!me.isAlive()) { this.fx(`${me.name} est K.O.`); return; }
-    if (!opp.isAlive()) { this.fx(`${opp.name} est K.O.`); return; }
+    if (!me.isAlive() || !opp.isAlive()) return;
 
     if (kind === "Special") {
       if (this.turn.getTurnNumber() < SPECIAL_UNLOCK_TURN) { this.fx(`Spéciale dispo tour ${SPECIAL_UNLOCK_TURN}`); return; }
@@ -352,20 +304,18 @@ export class BattleView {
       const attack = this.gameManager.createAttack(kind);
       attack.execute(me, opp);
       if (me.isAlive() && opp.isAlive()) this.turn.nextTurn();
-    } catch {
-      this.fx("Action impossible");
-    }
+    } catch { this.fx("Action impossible"); }
   }
   //#endregion
 
   //#region UI state
   private setLabels(): void {
-    this.btnP1Basic.textContent = this.p1.getAttackLabel?.("Normal") ?? "Basic";
-    this.btnP1Ki.textContent = this.p1.getAttackLabel?.("KiEnergy") ?? "Ki";
-    this.btnP1Special.textContent = this.p1.getAttackLabel?.("Special") ?? "Special";
-    this.btnP2Basic.textContent = this.p2.getAttackLabel?.("Normal") ?? "Basic";
-    this.btnP2Ki.textContent = this.p2.getAttackLabel?.("KiEnergy") ?? "Ki";
-    this.btnP2Special.textContent = this.p2.getAttackLabel?.("Special") ?? "Special";
+    this.btnP1Basic.textContent   = this.p1.getAttackLabel?.("Normal")   ?? "Basic";
+    this.btnP1Ki.textContent      = this.p1.getAttackLabel?.("KiEnergy") ?? "Ki";
+    this.btnP1Special.textContent = this.p1.getAttackLabel?.("Special")  ?? "Special";
+    this.btnP2Basic.textContent   = this.p2.getAttackLabel?.("Normal")   ?? "Basic";
+    this.btnP2Ki.textContent      = this.p2.getAttackLabel?.("KiEnergy") ?? "Ki";
+    this.btnP2Special.textContent = this.p2.getAttackLabel?.("Special")  ?? "Special";
   }
 
   private refreshButtons(): void {
@@ -389,7 +339,7 @@ export class BattleView {
   private setEnabled(btn: HTMLButtonElement, enabled: boolean): void { btn.disabled = !enabled; }
   //#endregion
 
-  //#region Observer → UI reactions
+  //#region Observer
   private onEvent(e: any): void {
     switch (e.kind) {
       case "AttackExecuted":
@@ -405,8 +355,7 @@ export class BattleView {
         const label =
           e.to === "Injured"   ? "Blessé" :
           e.to === "Exhausted" ? "Épuisé" :
-          e.to === "Dead"      ? "Dead"   :
-          "";
+          e.to === "Dead"      ? "Dead"   : "";
         if (label) this.fx(`${e.warrior} est ${label} !`);
         this.stateText.set(e.warrior, label);
         this.renderBadge(e.warrior);
@@ -442,11 +391,9 @@ export class BattleView {
         this.renderBadge(e.loser);
 
         if (this.isCampaign() && e.loser === this.p1.name && battleMemento.has()) {
-          // Ouvre le modal Retry (au lieu d'un confirm)
           this.openRetryModal();
           break;
         }
-
         this.disableAll();
         if (this.onEnded) this.showNextFightPulse();
         break;
@@ -479,12 +426,9 @@ export class BattleView {
     this.kiP2.style.width = `${Math.floor(p2Ki * 100)}%`;
   }
 
-  // Règles de resto :
-  // - campagne: VIE seulement (pas de gain Ki)
-  // - autres modes: tout à fond
   private restoreForNewBattle(w: Warrior): void {
     if (this.isCampaign()) {
-      w.heal(w.stats.vitality * 2);
+      w.heal(w.stats.vitality * 2); // vie full, pas de KI
     } else {
       this.restoreToFull(w);
     }
@@ -533,14 +477,8 @@ export class BattleView {
   //#endregion
 
   //#region UX helpers
-  private showNextFightPulse(): void {
-    this.btnNextFight.hidden = false;
-    this.btnNextFight.classList.add("is-pulse");
-  }
-  private hideNextFight(): void {
-    this.btnNextFight.hidden = true;
-    this.btnNextFight.classList.remove("is-pulse");
-  }
+  private showNextFightPulse(): void { this.btnNextFight.hidden = false; this.btnNextFight.classList.add("is-pulse"); }
+  private hideNextFight(): void { this.btnNextFight.hidden = true; this.btnNextFight.classList.remove("is-pulse"); }
 
   private effectShort(k: "SuperSaiyan" | "Regeneration" | "EnergyLeech"): string {
     if (k === "SuperSaiyan") return "SSJ";
