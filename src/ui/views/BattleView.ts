@@ -56,6 +56,11 @@ export class BattleView {
   private btnModalResume!: HTMLButtonElement;
   private btnModalQuit!: HTMLButtonElement;
 
+  // Modal Retry (campagne)
+  private retryModal!: HTMLDivElement;
+  private btnRetryYes!: HTMLButtonElement;
+  private btnRetryNo!: HTMLButtonElement;
+
   private actionsLeft?: HTMLElement;
   private actionsRight?: HTMLElement;
 
@@ -69,12 +74,39 @@ export class BattleView {
   private animTimer: number | undefined;
   private fps = 6;
 
+  // Observer
   private sub = { update: (e: any) => this.onEvent(e) };
 
   private effectText = new Map<string, string>();
   private stateText = new Map<string, string>();
 
   private aiTimer?: number;
+
+  // Hotkey P (K.O. instant) – attach/detach
+  private onKeyDown = (e: KeyboardEvent) => {
+    if (!this.isCampaign()) return;
+    if (this.modalOpen() || this.retryModalOpen()) return;
+    if ((e.key || "").toLowerCase() !== "p") return;
+    if (!this.p1?.isAlive()) return;
+
+    // Force K.O. du joueur
+    try {
+      const hp = this.p1.getVitality?.() ?? 0;
+      if (typeof (this.p1 as any).heal === "function") {
+        (this.p1 as any).heal(-hp - 9999);
+      } else if (typeof (this.p1 as any).takeDamage === "function") {
+        (this.p1 as any).takeDamage(hp + 9999);
+      } else if ((this.p1 as any)._vitality !== undefined) {
+        (this.p1 as any)._vitality = 0;
+      }
+    } catch {}
+
+    this.updateBars();
+    if (!this.p1.isAlive()) {
+      this.onEvent({ kind: "StateChanged", warrior: this.p1.name, to: "Dead" });
+      this.onEvent({ kind: "BattleEnded", loser: this.p1.name, winner: this.p2.name });
+    }
+  };
   //#endregion
 
   constructor(private readonly cb: Callbacks) {}
@@ -111,6 +143,11 @@ export class BattleView {
     this.btnModalResume = document.getElementById("btn-modal-resume") as HTMLButtonElement;
     this.btnModalQuit = document.getElementById("btn-modal-quit") as HTMLButtonElement;
 
+    // Retry modal
+    this.retryModal = document.getElementById("battle-retry-modal") as HTMLDivElement;
+    this.btnRetryYes = document.getElementById("btn-retry-yes") as HTMLButtonElement;
+    this.btnRetryNo = document.getElementById("btn-retry-no") as HTMLButtonElement;
+
     this.actionsLeft  = document.querySelector(".actions.actions--left")  as HTMLElement;
     this.actionsRight = document.querySelector(".actions.actions--right") as HTMLElement;
 
@@ -134,6 +171,13 @@ export class BattleView {
     this.btnP2Basic.addEventListener("click", () => this.onClick("p2", "Normal"));
     this.btnP2Ki.addEventListener("click", () => this.onClick("p2", "KiEnergy"));
     this.btnP2Special.addEventListener("click", () => this.onClick("p2", "Special"));
+
+    // Retry modal handlers
+    this.btnRetryYes.addEventListener("click", () => this.retryFromMemento());
+    this.btnRetryNo.addEventListener("click", () => {
+      this.closeRetryModal();
+      this.quitBattle(); // retour campagne
+    });
   }
   //#endregion
 
@@ -158,7 +202,7 @@ export class BattleView {
     this.turn = new TurnManager(this.p1, this.p2);
     eventBus.subscribe(this.sub);
 
-    // Memento: on sauvegarde l’état de départ du combat (utile pour “rejouer”)
+    // Memento: save début du combat
     battleMemento.saveFrom(this.p1, this.p2, this.ctx, this.turn.getActive().name);
 
     this.stopAnim();
@@ -166,8 +210,10 @@ export class BattleView {
 
     if (this.isCampaign()) {
       if (this.actionsRight) this.actionsRight.hidden = true;
+      window.addEventListener("keydown", this.onKeyDown); // hotkey P actif en campagne
     } else {
       if (this.actionsRight) this.actionsRight.hidden = false;
+      window.removeEventListener("keydown", this.onKeyDown);
     }
 
     this.refreshButtons();
@@ -179,6 +225,7 @@ export class BattleView {
     this.renderBadge(this.p2.name);
     this.clearFeed();
     this.closeModal(true);
+    this.closeRetryModal(true);
 
     this.scheduleAiIfNeeded();
   }
@@ -204,12 +251,16 @@ export class BattleView {
 
     if (this.actionsRight) this.actionsRight.hidden = false;
 
+    window.removeEventListener("keydown", this.onKeyDown);
     this.closeModal(true);
+    this.closeRetryModal(true);
   }
   //#endregion
 
   //#region Helpers (campagne + IA)
   private isCampaign(): boolean { return this.ctx === "campaign"; }
+  private modalOpen(): boolean { return !this.modal.hidden; }
+  private retryModalOpen(): boolean { return !this.retryModal.hidden; }
 
   private scheduleAiIfNeeded(): void {
     if (!this.isCampaign()) return;
@@ -248,6 +299,30 @@ export class BattleView {
     if (this.ctx === "tournament") this.cb.onAbortTournament?.();
     else if (this.ctx === "campaign") this.cb.onAbortCampaign?.();
     else this.cb.onExit();
+  }
+  //#endregion
+
+  //#region Retry modal (Memento)
+  private openRetryModal(): void { this.retryModal.hidden = false; }
+  private closeRetryModal(silent = false): void { this.retryModal.hidden = true; if (!silent) this.refreshButtons(); }
+
+  private retryFromMemento(): void {
+    if (!battleMemento.has()) { this.closeRetryModal(); return; }
+    const ok = battleMemento.applyTo(this.p1, this.p2);
+    this.closeRetryModal();
+    if (!ok) return;
+
+    // Reboot du tour & UI
+    this.turn = new TurnManager(this.p1, this.p2);
+    this.clearFeed();
+    this.hideNextFight();
+    this.effectText.clear();
+    this.stateText.clear();
+    this.renderBadge(this.p1.name);
+    this.renderBadge(this.p2.name);
+    this.updateBars();
+    this.refreshButtons();
+    this.scheduleAiIfNeeded();
   }
   //#endregion
 
@@ -366,25 +441,10 @@ export class BattleView {
         this.effectText.delete(e.loser);
         this.renderBadge(e.loser);
 
-        // Memento: si le joueur (P1) perd en campagne, proposer de recharger la sauvegarde de début de combat
         if (this.isCampaign() && e.loser === this.p1.name && battleMemento.has()) {
-          const retry = window.confirm("Défaite. Rejouer depuis la sauvegarde du début du combat ?");
-          if (retry) {
-            const ok = battleMemento.applyTo(this.p1, this.p2);
-            if (ok) {
-              this.turn = new TurnManager(this.p1, this.p2);
-              this.clearFeed();
-              this.hideNextFight();
-              this.effectText.clear();
-              this.stateText.clear();
-              this.renderBadge(this.p1.name);
-              this.renderBadge(this.p2.name);
-              this.updateBars();
-              this.refreshButtons();
-              this.scheduleAiIfNeeded();
-              break;
-            }
-          }
+          // Ouvre le modal Retry (au lieu d'un confirm)
+          this.openRetryModal();
+          break;
         }
 
         this.disableAll();
@@ -420,7 +480,7 @@ export class BattleView {
   }
 
   // Règles de resto :
-  // - campagne: on restaure la VIE seulement (pas le Ki)
+  // - campagne: VIE seulement (pas de gain Ki)
   // - autres modes: tout à fond
   private restoreForNewBattle(w: Warrior): void {
     if (this.isCampaign()) {
