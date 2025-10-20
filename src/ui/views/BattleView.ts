@@ -1,4 +1,4 @@
-// Patterns: Observer (EventBus UI listener) + Template Method (Attacks pipeline) + Singleton (GameManager/EventBus)
+// Patterns: Observer (EventBus UI listener) + Template Method (Attacks pipeline) + Singleton (GameManager/EventBus) + Memento (BattleMemento)
 
 import type { Warrior } from "../../domain/Warrior";
 import { GameManager } from "../../app/GameManager";
@@ -11,6 +11,7 @@ import {
   SPECIAL_ATTACK_KI_COST,
 } from "../../domain/Balance";
 import { eventBus } from "../../events/EventBus";
+import { battleMemento } from "../../app/BattleMemento";
 
 import type { WarriorPreset } from "../../data/WarriorPreset";
 import presetsJson from "../../data/warriors.json";
@@ -68,7 +69,6 @@ export class BattleView {
   private animTimer: number | undefined;
   private fps = 6;
 
-  // Observer : UI reacts to domain events
   private sub = { update: (e: any) => this.onEvent(e) };
 
   private effectText = new Map<string, string>();
@@ -158,10 +158,12 @@ export class BattleView {
     this.turn = new TurnManager(this.p1, this.p2);
     eventBus.subscribe(this.sub);
 
+    // Memento: on sauvegarde l’état de départ du combat (utile pour “rejouer”)
+    battleMemento.saveFrom(this.p1, this.p2, this.ctx, this.turn.getActive().name);
+
     this.stopAnim();
     this.startAnim();
 
-    // UI spécifique campagne (cache les boutons P2)
     if (this.isCampaign()) {
       if (this.actionsRight) this.actionsRight.hidden = true;
     } else {
@@ -178,14 +180,12 @@ export class BattleView {
     this.clearFeed();
     this.closeModal(true);
 
-    // Si la campagne commence par P2, on laisse l’IA jouer
     this.scheduleAiIfNeeded();
   }
 
   public stop(): void {
     if (this.aiTimer) { window.clearTimeout(this.aiTimer); this.aiTimer = undefined; }
 
-    // En campagne, on ne remet PAS à fond (on persiste le Ki) ; ailleurs on restaure tout
     if (this.p1 && this.p2 && !this.isCampaign()) {
       this.restoreToFull(this.p1);
       this.restoreToFull(this.p2);
@@ -208,7 +208,7 @@ export class BattleView {
   }
   //#endregion
 
-  //#region Helpers (campagne)
+  //#region Helpers (campagne + IA)
   private isCampaign(): boolean { return this.ctx === "campaign"; }
 
   private scheduleAiIfNeeded(): void {
@@ -299,7 +299,6 @@ export class BattleView {
     this.setEnabled(this.btnP1Ki, isP1Turn);
     this.setEnabled(this.btnP1Special, isP1Turn && this.canUseSpecial(this.p1));
 
-    // En campagne on masque déjà le bloc droit, mais on désactive au cas où
     const enableP2 = !this.isCampaign() && !isP1Turn;
     this.setEnabled(this.btnP2Basic, enableP2);
     this.setEnabled(this.btnP2Ki, enableP2);
@@ -342,7 +341,6 @@ export class BattleView {
       case "TurnChanged":
         this.refreshButtons();
         this.scheduleAiIfNeeded();
-        // IA joue en campagne
         break;
 
       case "EffectStarted":
@@ -367,6 +365,27 @@ export class BattleView {
         this.stateText.set(e.loser, "Dead");
         this.effectText.delete(e.loser);
         this.renderBadge(e.loser);
+
+        // Memento: si le joueur (P1) perd en campagne, proposer de recharger la sauvegarde de début de combat
+        if (this.isCampaign() && e.loser === this.p1.name && battleMemento.has()) {
+          const retry = window.confirm("Défaite. Rejouer depuis la sauvegarde du début du combat ?");
+          if (retry) {
+            const ok = battleMemento.applyTo(this.p1, this.p2);
+            if (ok) {
+              this.turn = new TurnManager(this.p1, this.p2);
+              this.clearFeed();
+              this.hideNextFight();
+              this.effectText.clear();
+              this.stateText.clear();
+              this.renderBadge(this.p1.name);
+              this.renderBadge(this.p2.name);
+              this.updateBars();
+              this.refreshButtons();
+              this.scheduleAiIfNeeded();
+              break;
+            }
+          }
+        }
 
         this.disableAll();
         if (this.onEnded) this.showNextFightPulse();
@@ -406,7 +425,6 @@ export class BattleView {
   private restoreForNewBattle(w: Warrior): void {
     if (this.isCampaign()) {
       w.heal(w.stats.vitality * 2);
-      // pas de gainKi ici
     } else {
       this.restoreToFull(w);
     }

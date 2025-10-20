@@ -33,8 +33,8 @@ export class CampaignView {
 
   public mount(): void {
     this.section = document.getElementById("campaign-section") as HTMLElement;
-    this.status  = document.getElementById("campaign-status") as HTMLDivElement;
-    this.grid    = document.getElementById("campaign-grid") as HTMLDivElement;
+    this.status = document.getElementById("campaign-status") as HTMLDivElement;
+    this.grid = document.getElementById("campaign-grid") as HTMLDivElement;
     this.btnBack = document.getElementById("campaign-back") as HTMLButtonElement;
 
     this.btnBack.addEventListener("click", () => this.cb.onBack());
