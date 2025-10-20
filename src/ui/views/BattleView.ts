@@ -480,8 +480,16 @@ export class BattleView {
   private ssjFramesFor(w: Warrior): string[] {
     if (w.type !== "Saiyan") return [];
     const preset = this.presets().find(p => p.name === w.name && Array.isArray((p as any).spriteFramesSSJ) && (p as any).spriteFramesSSJ.length > 0);
-    const raw = (preset as any)?.spriteFramesSSJ ?? [];
-    return raw.map((p: string) => new URL(p, import.meta.url).toString());
+    const raw: string[] = (preset as any)?.spriteFramesSSJ ?? this.defaultSaiyanSSJ();
+    return raw.map((p) => new URL(p, import.meta.url).toString());
+  }
+
+  private defaultSaiyanSSJ(): string[] {
+    return [
+      "../../assets/characters/goku_SSJ1_idle_01.png",
+      "../../assets/characters/goku_SSJ1_idle_02.png",
+      "../../assets/characters/goku_SSJ1_idle_03.png"
+    ];
   }
 
   private imgOf(name: string): HTMLImageElement | undefined {
