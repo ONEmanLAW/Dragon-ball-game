@@ -4,6 +4,7 @@ import type { Warrior } from "../../domain/Warrior";
 import type { WarriorPreset } from "../../data/WarriorPreset";
 import presetsJson from "../../data/warriors.json";
 import { GameManager } from "../../app/GameManager";
+import { assetUrlFromJsonPath } from "../../app/assetResolver";
 
 type El<T extends HTMLElement> = T;
 type PlayerSlot = "p1" | "p2";
@@ -191,7 +192,7 @@ export class RosterView {
     const presets = presetsJson as WarriorPreset[];
     const preset = presets.find(p => p.name === warrior.name && Array.isArray(p.spriteFrames) && p.spriteFrames.length > 0);
     const raw = preset?.spriteFrames ?? this.gameManager.getSpriteFramesForRace(warrior.type) ?? [];
-    return raw.map(p => new URL(p, import.meta.url).toString());
+    return raw.map(p => assetUrlFromJsonPath(p, import.meta.url));
   }
   //#endregion
 }

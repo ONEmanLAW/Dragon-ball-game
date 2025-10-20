@@ -4,6 +4,7 @@ import { GameManager } from "../../app/GameManager";
 import type { Warrior, WarriorType } from "../../domain/Warrior";
 import type { WarriorPreset } from "../../data/WarriorPreset";
 import presetsJson from "../../data/warriors.json";
+import { assetUrlFromJsonPath } from "../../app/assetResolver";
 
 type El<T extends HTMLElement> = T;
 
@@ -139,7 +140,7 @@ export class TournamentSelectView {
     const presets = presetsJson as (WarriorPreset & { spriteFrames?: string[] })[];
     const preset = presets.find(p => p.name === warrior.name && Array.isArray(p.spriteFrames) && p.spriteFrames.length > 0);
     const raw = preset?.spriteFrames ?? this.gameManager.getSpriteFramesForRace(warrior.type as WarriorType) ?? [];
-    return raw.map(p => new URL(p, import.meta.url).toString());
+    return raw.map(p => assetUrlFromJsonPath(p, import.meta.url));
   }
 
   private setFrames(img: HTMLImageElement, frames: string[]): void {

@@ -4,6 +4,7 @@ import type { Warrior, WarriorType } from "../../domain/Warrior";
 import { WarriorBuilder, type SaiyanKiChoice, type NamekianKiChoice, type AndroidKiChoice } from "../../build/WarriorBuilder";
 import { GameManager } from "../../app/GameManager";
 import { KI_CHOICES_BY_RACE, DEFAULT_STATS_BY_RACE } from "../../domain/Balance";
+import { assetUrlFromJsonPath } from "../../app/assetResolver";
 
 //#region Types
 type El<T extends HTMLElement> = T;
@@ -96,7 +97,7 @@ export class CreateView {
 
   private setFramesFromJson(race: WarriorType): void {
     const raw = this.gameManager.getSpriteFramesForRace(race) ?? [];
-    this.frames = raw.map(p => new URL(p, import.meta.url).toString());
+    this.frames = raw.map(p => assetUrlFromJsonPath(p, import.meta.url));
     this.frameIndex = 0;
 
     if (this.frames.length > 0) {

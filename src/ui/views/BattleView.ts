@@ -14,6 +14,7 @@ import { eventBus } from "../../events/EventBus";
 
 import type { WarriorPreset } from "../../data/WarriorPreset";
 import presetsJson from "../../data/warriors.json";
+import { assetUrlFromJsonPath } from "../../app/assetResolver";
 
 //#region Types
 type El<T extends HTMLElement> = T;
@@ -378,7 +379,7 @@ export class BattleView {
     const presets = presetsJson as WarriorPreset[];
     const preset = presets.find(p => p.name === w.name && Array.isArray(p.spriteFrames) && p.spriteFrames.length > 0);
     const raw = preset?.spriteFrames ?? this.gameManager.getSpriteFramesForRace(w.type) ?? [];
-    return raw.map(p => new URL(p, import.meta.url).toString());
+    return raw.map(p => assetUrlFromJsonPath(p, import.meta.url));
   }
   //#endregion
 
