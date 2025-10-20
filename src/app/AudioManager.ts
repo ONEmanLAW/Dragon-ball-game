@@ -1,60 +1,54 @@
-// src/app/AudioManager.ts
 export class AudioManager {
+  //#region Singleton
   private static instance: AudioManager;
   static getInstance(): AudioManager {
     if (!AudioManager.instance) AudioManager.instance = new AudioManager();
     return AudioManager.instance;
   }
+  //#endregion
 
-  private bgm?: HTMLAudioElement;
-  private currentSrc?: string;
-  private sfx = new Map<string, HTMLAudioElement>();
-  private globalBound = false;
-  private lastTick = 0;
+  //#region Fields
+  private backgroundMusic?: HTMLAudioElement;
+  private currentSource?: string;
+  private soundEffects = new Map<string, HTMLAudioElement>();
+  private isGlobalClickBound = false;
+  private lastClickTick = 0;
 
-  private readonly URLS = {
-    menu:   new URL("../assets/audios/music.mp3",      import.meta.url).toString(),
-    battle: new URL("../assets/audios/secondMusic.mp3",      import.meta.url).toString(),
-    click:  new URL("../assets/audios/clickSound.wav", import.meta.url).toString(),
+  private readonly audioUrls = {
+    menu: new URL("../assets/audios/music.mp3", import.meta.url).toString(),
+    battle: new URL("../assets/audios/secondMusic.mp3", import.meta.url).toString(),
+    click: new URL("../assets/audios/clickSound.wav", import.meta.url).toString(),
   };
+  //#endregion
 
+  //#region Public API
   preload(): void {
-    if (!this.sfx.has("click")) {
-      const a = new Audio(this.URLS.click);
-      a.preload = "auto";
-      a.volume = 0.6;
-      this.sfx.set("click", a);
+    if (!this.soundEffects.has("click")) {
+      const audio = new Audio(this.audioUrls.click);
+      audio.preload = "auto";
+      audio.volume = 0.6;
+      this.soundEffects.set("click", audio);
     }
   }
 
-  playMenu(): void  { this.playBgm(this.URLS.menu,   0.05); }
-  playBattle(): void{ this.playBgm(this.URLS.battle, 0.10); }
+  playMenu(): void {
+    this.playBackgroundMusic(this.audioUrls.menu, 0.05);
+  }
 
-  private playBgm(src: string, volume: number): void {
-    if (this.bgm && this.currentSrc === src) {
-      this.bgm.volume = volume;
-      if (this.bgm.paused) this.bgm.play().catch(() => {});
-      return;
-    }
-    this.stopBgm();
-    this.bgm = new Audio(src);
-    this.currentSrc = src;
-    this.bgm.loop = true;
-    this.bgm.preload = "auto";
-    this.bgm.volume = volume;
-    this.bgm.play().catch(() => {});
+  playBattle(): void {
+    this.playBackgroundMusic(this.audioUrls.battle, 0.1);
   }
 
   stopBgm(): void {
-    if (!this.bgm) return;
-    try { this.bgm.pause(); } catch {}
-    this.bgm.currentTime = 0;
-    this.bgm = undefined;
-    this.currentSrc = undefined;
+    if (!this.backgroundMusic) return;
+    try { this.backgroundMusic.pause(); } catch {}
+    this.backgroundMusic.currentTime = 0;
+    this.backgroundMusic = undefined;
+    this.currentSource = undefined;
   }
 
   playSfx(name: "click"): void {
-    const base = this.sfx.get(name);
+    const base = this.soundEffects.get(name);
     if (!base) return;
     const node = base.cloneNode(true) as HTMLAudioElement;
     node.volume = base.volume;
@@ -62,20 +56,45 @@ export class AudioManager {
   }
 
   attachGlobalClickSfx(): void {
-    if (this.globalBound) return;
-    this.globalBound = true;
+    if (this.isGlobalClickBound) return;
+    this.isGlobalClickBound = true;
     this.preload();
 
     const handler = (ev: PointerEvent | MouseEvent) => {
       const now = performance.now();
-      if (now - this.lastTick < 80) return;
-      const t = ev.target as HTMLElement | null;
-      if (t && t.closest("[data-click-sfx='off']")) return;
-      if ("pointerType" in ev && (ev as PointerEvent).pointerType && (ev as PointerEvent).pointerType !== "mouse") return;
-      this.lastTick = now;
+      if (now - this.lastClickTick < 80) return;
+
+      const target = ev.target as HTMLElement | null;
+      if (target && target.closest("[data-click-sfx='off']")) return;
+
+      if ("pointerType" in ev) {
+        const pt = (ev as PointerEvent).pointerType;
+        if (pt && pt !== "mouse") return;
+      }
+
+      this.lastClickTick = now;
       this.playSfx("click");
     };
 
     document.addEventListener("pointerdown", handler, { capture: true });
   }
+  //#endregion
+
+  //#region Internals
+  private playBackgroundMusic(src: string, volume: number): void {
+    if (this.backgroundMusic && this.currentSource === src) {
+      this.backgroundMusic.volume = volume;
+      if (this.backgroundMusic.paused) this.backgroundMusic.play().catch(() => {});
+      return;
+    }
+
+    this.stopBgm();
+    this.backgroundMusic = new Audio(src);
+    this.currentSource = src;
+    this.backgroundMusic.loop = true;
+    this.backgroundMusic.preload = "auto";
+    this.backgroundMusic.volume = volume;
+    this.backgroundMusic.play().catch(() => {});
+  }
+  //#endregion
 }
