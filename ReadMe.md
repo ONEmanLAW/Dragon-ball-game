@@ -1,60 +1,106 @@
-# Dragon ball Warriors
+# Dragon Ball Warriors:
 
-Petit jeu de combat **tour par tour** (1v1 + tournoi 8 joueurs + un autre mode bientôt) en **TypeScript** sans **FrameWork**.   
-Architecture orientée “domain” et **Design Patterns** : Singleton, Factory, Builder, State, Template Method, Proxy, Observer, Decorator, Command.
-
-> Attention Projet éducatif / fan-made. Visuels/sons utilisés à des fins de démonstration.
+Projet **fan‑made** en **TypeScript orienté objet (POO)**, sans framework.  
+Particularité : architecture propre en **design patterns** (Singleton, Factory, Builder, State, Template Method, Proxy, Observer, Decorator, Command).
 
 ---
 
-## Démarrage
+## 📚 Sommaire
+1. [🚀 Lancer le jeu (2 manières)](#-lancer-le-jeu-2-manières)
+2. [🧰 Prérequis & installation](#-prérequis--installation)
+3. [🧠 Comment ça marche (POO + Patterns)](#-comment-ça-marche-poo--patterns)
+4. [🔁 Flux type](#-flux-type)
+5. [🧪 Recettes d’extensibilité](#-recettes-dextensibilité)
+6. [📣 Catalogue d’événements](#-catalogue-dévévénements)
+7. [🖼️ Captures d’écran / médias](#️-captures-décran--médias)
+8. [❓ FAQ rapide](#-faq-rapide)
+9. [⚖️ Licence & crédits](#️-licence--crédits)
 
-### Prérequis
-- **Node.js ≥ 18**
-- **npm** (ou pnpm/yarn)
+---
 
-### Installation
+## 🚀 Lancer le jeu (2 manières)
+
+> **Important** : les deux modes utilisent **la même base de code**. Choisis ce qui te convient.
+
+### 1) Dans le navigateur (dev)
 ```bash
-git clone <Repo>
 npm install
-```
-
-### Lancement
-```bash
-# Lancement in game
-npm run game
-# Lancement in web browser
 npm run dev
 ```
+- Ouvre l’URL locale affichée dans le terminal (ex: `http://localhost:****`).
 
-### Note
-- Jouer en 1080p et mieux. La version responsive n'est pas encore optimisé.
+### 2) En application de bureau (Electron)
+```bash
+npm install
+npm run game
+```
+- Lance une fenêtre **Electron** avec le jeu.
 
-### Architecture en un coup d’œil
-- Domaine (combat, persos, états, attaques, effets, règles d’équilibrage)
-- Infra (gestion du roster, presets, audio, bus d’événements, tournoi, tour par tour)
-- UI (vues Create / Roster / Battle / Tournament + routeur d’écrans)
-- Répertoires clés : app/, domain/, events/, build/, data/, ui/, styles/.
-
-# 🧩 Architecture & Design Patterns
-
----
-
-
-- **Création de perso** : `WarriorBuilder` (UI) + validations → enregistrement dans `GameManager` (Singleton).  
-- **Combat** : `Attack` (Template Method) orchestre un pipeline commun ; variations via classes concrètes (Normal/Ki/Special).  
-- **Règles méta de Spéciale** : `SpecialAttackProxy` (Proxy) filtre avant d’exécuter la vraie `SpecialAttack`.  
-- **Effets temporaires** (transformations, regen, vol d’énergie) : `Effects` (Decorator) ajoutent/retirent des capacités.  
-- **États** (Normal/Injured/Exhausted/Dead) : `WarriorState` (State) module dégâts/coûts et transitions.  
-- **Événements** (Observer) : tout le domaine **émet**, l’UI/audio **réagit**.  
-- **Historique et traçabilité** : actions métier via `Command` + middleware de log.
-
+> Si les scripts ne sont pas présents, ajoute-les dans ton `package.json` :
+```jsonc
+{
+  "scripts": {
+    "dev": "vite",         // lance le jeu dans le navigateur
+    "game": "electron ."   // lance le jeu via Electron
+  }
+}
+```
 
 ---
 
-## Flux type
+## 🧰 Prérequis & installation
 
-### A. Pipeline d’une attaque (Template Method + Observer)
+- **Node.js** ≥ 18 recommandé (LTS)  
+- **npm** (fourni avec Node)
+- Cloner le repo puis :  
+  ```bash
+  npm install
+  ```
+
+---
+
+## 🧠 Comment ça marche (POO + Patterns)
+
+- **Singleton** — `GameManager`, `EventBus`, `AudioManager`  
+  *Rôle* : un seul point de vérité pour le roster, les attaques, les événements et l’audio.  
+  *Effet* : cohérence globale, abonnements simples côté UI.
+
+- **Factory** — `WarriorFactory`  
+  *Rôle* : créer un guerrier selon sa **race** (Saiyan, Namekian, Android) sans `if` partout.  
+  *Effet* : ajouter une race = enregistrer une nouvelle classe dans la Factory.
+
+- **Builder** — `WarriorBuilder` (CreateView)  
+  *Rôle* : construire un **perso custom** en étapes (race → nom → choix KI) avec validations.  
+  *Effet* : objets propres, prêts à être enregistrés dans le `GameManager`.
+
+- **State** — `WarriorState` (`Normal`, `Injured`, `Exhausted`, `Dead`)  
+  *Rôle* : comportement dépendant de l’état (dégâts sortants, coût en KI).  
+  *Effet* : transitions d’état après pertes/soins, émission d’événements `StateChanged`.
+
+- **Template Method** — `Attack` base + `NormalAttack`, `KiEnergyAttack`, `SpecialAttack`  
+  *Rôle* : pipeline commun d’une attaque (coûts → esquive → dégâts → événements).  
+  *Effet* : cohérence des attaques, variations simples par sous‑classes.
+
+- **Proxy** — `SpecialAttackProxy`  
+  *Rôle* : **gating** des Spéciales (KI mini, PV bas autorisés…) avant d’appeler la vraie `SpecialAttack`.  
+  *Effet* : règles méta centralisées, feedback propre si refus.
+
+- **Observer** — `EventBus` + `GameEvents`  
+  *Rôle* : le domaine **publie**, l’UI/audio **s’abonnent** (barres de vie/ki, toasts, sons).
+
+- **Decorator** — `Effects` : `SuperSaiyanEffect`, `RegenerationEffect`, `EnergyLeechEffect`  
+  *Rôle* : capacités **temporaires** (bonus/malus) ajoutées sans toucher à la classe.  
+  *Effet* : badges UI, hooks par **tick**, rollback garanti à la fin.
+
+- **Command** — `domain/commands` (bus + handlers + contexte)  
+  *Rôle* : encapsuler les **actions métier** (attaque, fin de tour, IA, tournoi).  
+  *Effet* : exécution structurée + logs/historique.
+
+---
+
+## 🔁 Flux type
+
+### A) Pipeline d’une attaque (Template Method + Observer)
 1. **Pré‑checks** (ex: Proxy Spéciale) → Event `AttackPreviewFailed` si refus.  
 2. **Dépense** KI (ou annulation si impossible).  
 3. **Jet d’esquive** (probabilités selon stats/états/effets).  
@@ -63,7 +109,7 @@ npm run dev
 6. **Événements** : `AttackExecuted`, `DamageApplied`, `StateChanged`, `KO` éventuel.  
 7. **Hooks d’effets** (ex: `EnergyLeech` sur tick).
 
-### B. Cycle d’un tour (Command + Observer)
+### B) Cycle d’un tour (Command + Observer)
 1. UI **dispatch** `StartTurnCommand`.  
 2. Joueur choisit une **Action** (attaque, item/bean, transfo, défense) → commande dédiée.  
 3. Bus → Handler → Domaine ; événements vers l’UI (`TurnChanged`, `EffectTicked`).  
@@ -72,29 +118,27 @@ npm run dev
 
 ---
 
-## Recettes d’extensibilité
+## 🧪 Recettes d’extensibilité
 
-### + Ajouter une **race**
-1. Créer `class NewRaceWarrior extends Warrior` (invariants de base).  
-2. Déclarer dans `WarriorFactory.register("newrace", NewRaceWarrior)`.  
+### ➕ Ajouter une **race**
+1. `class NewRaceWarrior extends Warrior` (invariants).  
+2. `WarriorFactory.register("newrace", NewRaceWarrior)`.  
 3. Mettre à jour `KI_CHOICES_BY_RACE` + presets si besoin.  
-4. (Optionnel) Effets/transformations spécifiques via Decorators.
+4. (Optionnel) effets/transfos spécifiques via Decorators.
 
-### Ajouter une **attaque**
-1. Étendre `Attack` (ou configurer via stratégie) : label, multiplicateur, conditions.  
-2. Si règles méta : créer un **Proxy** dédié.  
-3. Enregistrer côté `GameManager` / tables d’attaques.  
-4. Tests : pipeline + événements + interactions `State/Effects`.
+### 💥 Ajouter une **attaque**
+1. Étendre `Attack` (label, multiplicateur, conditions).  
+2. Si règles méta : **Proxy** dédié.  
+3. Enregistrer côté `GameManager` / tables d’attaques.
 
-### Ajouter un **effet** (Decorator)
+### ✨ Ajouter un **effet** (Decorator)
 1. Implémenter `Effect` : `apply()`, `onTick()`, `cleanup()`.  
-2. Déclarer badges UI + règles de cumul/priorité.  
-3. Publier `EffectApplied/EffectTicked/EffectExpired`.  
-4. Tests : rollback garanti même en cas de KO/quitting.
+2. Déclarer badge + règles de cumul/priorité.  
+3. Publier `EffectApplied/EffectTicked/EffectExpired`.
 
 ---
 
-## Catalogue d’événements
+## 📣 Catalogue d’événements
 
 - `BattleStarted`, `BattleEnded`  
 - `TurnChanged`, `EndTurnRequested`  
@@ -104,30 +148,37 @@ npm run dev
 - `EffectApplied`, `EffectTicked`, `EffectExpired`  
 - `TournamentSeeded`, `MatchLaunched`, `AIMoveComputed`
 
-> **Conseil UX** : regrouper certains événements en **toasts** lisibles (durée/hiérarchie), et limiter le spam (throttle).
+> Astuce UX : regrouper en **toasts** lisibles et limiter le spam (throttle).
 
 ---
 
-## Checklist de validation & métriques
+## 🖼️ Captures d’écran / médias
 
-- **Couplage** : UI ne connaît **pas** les classes concrètes (Factory/Proxy/Effects).  
-- **Traçabilité** : chaque action génère un **log** (Command middleware) exploitable pour rejouer un match.  
-- **Événements** : zéro fuite d’abonnement ; listeners nettoyés en fin de combat/vue.  
-- **États** : transitions **exhaustives** et **déterministes** ; pas de “coups fantômes”.  
-- **Effets** : rollback garanti ; règles de stacking documentées.  
-- **Performances** : coût moyen d’un tour, latence UI post‐événement, taille du log.  
-- **Testabilité** : mocks pour Singletons ; seeds de combats reproductibles.
+Place tes images/vidéos dans `assets/screens/` puis référence‑les ici :
 
----
-
-### Annexes rapides
-
-- **Glossaire** : *KI* (énergie), *PV* (points de vie), *Tick* (pas d’horloge/étape), *KO* (knockout).  
-- **Dossier utiles** (exemple) :  
-  - `src/domain/{warrior, attack, effects, state, commands}/...`  
-  - `src/app/views/{create, roster, battle, tournament}/...`  
-  - `src/shared/{event-bus, audio, balance}/...`
+```md
+![Warrior Builder View](assets/screens/main-menu.png)
+![Roster View](assets/screens/roster-view.png)
+![Battle View](assets/screens/battle-ki-attack.png)
+```
 
 ---
 
 
+## ❓ FAQ rapide
+
+- **Rien ne s’affiche avec `npm run game` ?**  
+  Vérifie que **Electron** est installé dans le projet (`devDependencies`) et que le point d’entrée existe (`main` côté Electron).
+
+- **Port déjà utilisé en `dev` ?**  
+  Ferme l’autre serveur ou lance `vite --port 5174` (ou mets un port libre).
+
+- **Node trop ancien ?**  
+  Installe Node LTS (≥ 18), supprime `node_modules/` et `package-lock.json`, puis `npm install`.
+
+---
+
+## ⚖️ Licence & crédits
+
+Projet **fan‑made** à but **éducatif**. Non affilié à Toei Animation, Bird Studio, Shueisha, etc.  
+Tous les noms/visuels originaux restent la propriété de leurs ayants droit.
