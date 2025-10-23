@@ -16,7 +16,7 @@ Particularité : architecture propre en **design patterns** (Singleton, Factory,
 5. [🧪 Recettes d’extensibilité](#-recettes-dextensibilité)
 6. [📣 Catalogue d’événements](#-catalogue-dévévénements)
 7. [🖼️ Captures d’écran / médias](#️-captures-décran--médias)
-8. [❓ FAQ rapide](#-faq-rapide)
+8. [❓ FAQ](#-faq)
 9. [⚖️ Licence & crédits](#️-licence--crédits)
 
 ---
@@ -173,7 +173,7 @@ npm run game
 
 
 
-## ❓ FAQ rapide
+## ❓ FAQ
 
 - **Rien ne s’affiche avec `npm run game` ?**  
   Vérifie que **Electron** est installé dans le projet (`devDependencies`) et que le point d’entrée existe (`main` côté Electron).
