@@ -9,7 +9,7 @@ Particularité : architecture propre en **design patterns** (Singleton, Factory,
 ---
 
 ## 📚 Sommaire
-1. [🚀 Lancer le jeu (2 manières)](#-lancer-le-jeu-2-manières)
+1. [🚀 Lancer le jeu](#-lancer-le-jeu-2-manières)
 2. [🧰 Prérequis & installation](#-prérequis--installation)
 3. [🧠 Comment ça marche (POO + Patterns)](#-comment-ça-marche-poo--patterns)
 4. [🔁 Flux type](#-flux-type)
