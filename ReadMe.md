@@ -1,4 +1,7 @@
 # Dragon Ball Warriors:
+<p align="center">
+  <img src="src/assets/logoGame.png" alt="game logo">
+</p>
 
 Projet **fan‑made** en **TypeScript orienté objet (POO)**, sans framework.  
 Particularité : architecture propre en **design patterns** (Singleton, Factory, Builder, State, Template Method, Proxy, Observer, Decorator, Command).
