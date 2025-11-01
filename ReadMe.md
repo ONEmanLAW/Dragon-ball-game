@@ -8,16 +8,16 @@ Particularité : architecture propre en **design patterns** (Singleton, Factory,
 
 ---
 
-## 📚 Sommaire
-1. [🚀 Lancer le jeu (2 manières)](#-lancer-le-jeu-2-manières)
-2. [🧰 Prérequis & installation](#-prérequis--installation)
-3. [🧠 Comment ça marche (POO + Patterns)](#-comment-ça-marche-poo--patterns)
-4. [🔁 Flux type](#-flux-type)
-5. [🧪 Recettes d’extensibilité](#-recettes-dextensibilité)
-6. [📣 Catalogue d’événements](#-catalogue-dévévénements)
-7. [🖼️ Captures d’écran / médias](#️-captures-décran--médias)
-8. [❓ FAQ](#-faq)
-9. [⚖️ Licence & crédits](#️-licence--crédits)
+## Sommaire
+1. [Lancer le jeu (2 manières)](#-lancer-le-jeu-2-manières)
+2. [Prérequis & installation](#-prérequis--installation)
+3. [Comment ça marche (POO + Patterns)](#-comment-ça-marche-poo--patterns)
+4. [Flux type](#-flux-type)
+5. [Recettes d’extensibilité](#-recettes-dextensibilité)
+6. [Catalogue d’événements](#-catalogue-dévévénements)
+7. [Captures d’écran / médias](#️-captures-décran--médias)
+8. [FAQ](#-faq)
+9. [Licence & crédits](#️-licence--crédits)
 
 ---
 
@@ -51,7 +51,7 @@ npm run game
 
 ---
 
-## 🧰 Prérequis & installation
+## Prérequis & installation
 
 - **Node.js** ≥ 18 recommandé (LTS)  
 - **npm** (fourni avec Node)
@@ -62,7 +62,7 @@ npm run game
 
 ---
 
-## 🧠 Comment ça marche (POO + Patterns)
+## Comment ça marche (POO + Patterns)
 
 - **Singleton** — `GameManager`, `EventBus`, `AudioManager`  
   *Rôle* : un seul point de vérité pour le roster, les attaques, les événements et l’audio.  
@@ -106,7 +106,7 @@ npm run game
 
 ---
 
-## 🔁 Flux type
+## Flux type
 
 ### A) Pipeline d’une attaque (Template Method + Observer)
 1. **Pré‑checks** (ex: Proxy Spéciale) → Event `AttackPreviewFailed` si refus.  
@@ -126,27 +126,27 @@ npm run game
 
 ---
 
-## 🧪 Recettes d’extensibilité
+## Recettes d’extensibilité
 
-### ➕ Ajouter une **race**
+### Ajouter une **race**
 1. `class NewRaceWarrior extends Warrior` (invariants).  
 2. `WarriorFactory.register("newrace", NewRaceWarrior)`.  
 3. Mettre à jour `KI_CHOICES_BY_RACE` + presets si besoin.  
 4. (Optionnel) effets/transfos spécifiques via Decorators.
 
-### 💥 Ajouter une **attaque**
+### Ajouter une **attaque**
 1. Étendre `Attack` (label, multiplicateur, conditions).  
 2. Si règles méta : **Proxy** dédié.  
 3. Enregistrer côté `GameManager` / tables d’attaques.
 
-### ✨ Ajouter un **effet** (Decorator)
+### Ajouter un **effet** (Decorator)
 1. Implémenter `Effect` : `apply()`, `onTick()`, `cleanup()`.  
 2. Déclarer badge + règles de cumul/priorité.  
 3. Publier `EffectApplied/EffectTicked/EffectExpired`.
 
 ---
 
-## 📣 Catalogue d’événements
+## Catalogue d’événements
 
 - `BattleStarted`, `BattleEnded`  
 - `TurnChanged`, `EndTurnRequested`  
@@ -160,7 +160,7 @@ npm run game
 
 ---
 
-## 🖼️ Captures d’écran / médias
+## Captures d’écran / médias
 
 <p align="center">
   <img src="src/assets/ImagesFromGame/BuilderView.png" alt="Warrior Builder View" width="70%">
